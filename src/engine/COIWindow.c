@@ -42,11 +42,15 @@ void COIWindowLoop(COIWindow* window) {
   }
 }
 
-void COIWindowSetBoard(COIWindow* window, COIBoard* board) {
+void COIWindowSetBoard(COIWindow* window, struct COIBoard* board) {
   window->_currentBoard = board;
   SDL_SetRenderDrawColor(window->_renderer,
 			 COIBoardBGColor(board, INDEX_RED),
 			 COIBoardBGColor(board, INDEX_GREEN),
 			 COIBoardBGColor(board, INDEX_BLUE),
 			 COIBoardBGColor(board, INDEX_ALPHA));
+}
+
+SDL_Renderer* COIWindowGetRenderer(COIWindow* window) {
+  return window->_renderer;
 }

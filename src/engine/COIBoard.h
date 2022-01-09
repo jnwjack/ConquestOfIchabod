@@ -1,3 +1,7 @@
+#include "COISprite.h"
+#include "COIAssetLoader.h"
+#include "util.h"
+
 #ifndef COIBOARD_H
 #define COIBOARD_H
 
@@ -6,13 +10,11 @@
 #define INDEX_BLUE  2
 #define INDEX_ALPHA 3
 
-#include <stdlib.h>
-#include <SDL2/SDL.h>
-#include "COISprite.h"
 
 typedef struct COIBoard {
   int _bgColor[4];
-  COISprite* _sprites;
+  struct COISprite** _sprites;
+  int _spriteCount;
   
 }COIBoard;
 
@@ -20,5 +22,6 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a);
 void COIBoardDestroy(COIBoard* board);
 
 int COIBoardBGColor(COIBoard* board, int index);
+void COIBoardLoadSpriteMap(COIBoard* board, struct COIAssetLoader* loader, struct SDL_Renderer* renderer, const char* filename);
 
 #endif
