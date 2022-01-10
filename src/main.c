@@ -6,7 +6,7 @@ int main(int argc, char** argv) {
   COIAssetLoader* loader = COIAssetLoaderCreate("src/engine/etc/mapping.cfg");
 
   COIWindow* window = COIWindowCreate();
-  COIBoard* board = COIBoardCreate(230, 25, 25, 255);
+  COIBoard* board = COIBoardCreate(230, 25, 25, 255, 700, 700);
 
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/spritemaps/turtles.dat");
   COIWindowSetBoard(window, board);

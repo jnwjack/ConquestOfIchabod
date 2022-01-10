@@ -21,7 +21,11 @@ COIAssetLoader* COIAssetLoaderCreate(const char* filename) {
     surfaces[i] = IMG_Load(line);
     if(surfaces[i] == NULL) {
       printf("Error loading asset %s", line);
+    } else {
+      printf("%s\n", line);
     }
+
+    i++;
   }
 
   fclose(fp);

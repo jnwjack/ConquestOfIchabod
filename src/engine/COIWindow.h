@@ -12,7 +12,9 @@
 typedef struct COIWindow {
   SDL_Window* _screen;
   SDL_Renderer* _renderer;
-  struct COIBoard* _currentBoard;
+  COIBoard* _currentBoard;
+  int _width;
+  int _height;
 }COIWindow;
 
 COIWindow* COIWindowCreate();
@@ -21,5 +23,6 @@ void COIWindowDestroy(COIWindow* window);
 void COIWindowLoop(COIWindow* window);
 void COIWindowSetBoard(COIWindow* window, struct COIBoard* board);
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window);
+
 
 #endif
