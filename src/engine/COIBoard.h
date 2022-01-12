@@ -16,23 +16,28 @@ typedef struct COIBoard {
   int _bgColor[4];
   int _width;
   int _height;
+  
+  // View window dimensions
   int _frameX;
   int _frameY;
+  int _frameWidth;
+  int _frameHeight;
+  
   COISprite** _sprites;
   int _spriteCount;
-  
+  int _shouldDraw;
 }COIBoard;
 
 COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h);
 void COIBoardDestroy(COIBoard* board);
 
 int COIBoardBGColor(COIBoard* board, int index);
-void COIBoardLoadSpriteMap(COIBoard* board, struct COIAssetLoader* loader, SDL_Renderer* renderer, const char* filename);
+void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader, SDL_Renderer* renderer, const char* filename);
 COISprite** COIBoardGetSprites(COIBoard* board);
 int COIBoardGetSpriteCount(COIBoard* board);
-bool COIBoardShiftFrameX(COIBoard* board, int stride, int frameWidth);
-bool COIBoardShiftFrameY(COIBoard* board, int stride, int frameHeight);
-void COIBoardUpdateSpriteVisibility(COIBoard* board, int frameWidth, int frameHeight);
-
+bool COIBoardShiftFrameX(COIBoard* board, int stride);
+bool COIBoardShiftFrameY(COIBoard* board, int stride);
+void COIBoardUpdateSpriteVisibility(COIBoard* board);
+void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
 
 #endif

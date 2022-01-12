@@ -10,11 +10,14 @@ typedef struct COISprite {
   int _width;
   int _height;
   bool _visible;
-  SDL_Rect* _rect;
+  SDL_Rect* _drawRect;
+  SDL_Rect* _srcRect;
   SDL_Texture* _texture;
 }COISprite;
 
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture);
 void COISpriteDestroy(COISprite* sprite);
+void COISpriteSetSheetIndex(COISprite* sprite, int index);
+void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h);
 
 #endif

@@ -11,6 +11,7 @@ COIWindow* COIWindowCreate() {
   window->_screen = SDL_CreateWindow("Conquest of Ichabod", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
+  window->_loop = NULL;
   return window;
 }
 
@@ -31,7 +32,7 @@ void COIWindowLoop(COIWindow* window) {
   bool shouldDraw = true;
 
   while (!quit){
-    //SDL_Delay(1);
+    SDL_Delay(20);
     SDL_PollEvent(&event);
 
     switch (event.type){
@@ -39,48 +40,36 @@ void COIWindowLoop(COIWindow* window) {
 	quit = true;
 	break;
       case SDL_KEYDOWN:
-	switch (event.key.keysym.sym) {
-	  case SDLK_LEFT:
-	    COIBoardShiftFrameX(window->_currentBoard, -1, window->_width);
-	    shouldDraw = true;
-	    break;
-	  case SDLK_RIGHT:
-	    COIBoardShiftFrameX(window->_currentBoard, 1, window->_width);
-	    shouldDraw = true;
-	    break;
-	  case SDLK_UP:
-	    COIBoardShiftFrameY(window->_currentBoard, -1, window->_height);
-	    shouldDraw = true;
-	    break;
-	  case SDLK_DOWN:
-	    COIBoardShiftFrameY(window->_currentBoard, 1, window->_width);
-	    shouldDraw = true;
-	    break;
+	if (window->_loop) {
+	  window->_loop(window->_currentBoard, event.key.keysym.sym);
 	}
 	break;
     }
 
-    if (shouldDraw) {
+    if (window->_currentBoard->_shouldDraw) {
+      printf("redrawing...\n");
       SDL_RenderClear(window->_renderer);
 
-      COIBoardUpdateSpriteVisibility(window->_currentBoard, window->_width, window->_height);
+      COIBoardUpdateSpriteVisibility(window->_currentBoard);
       int i;
       COISprite** sprites = COIBoardGetSprites(window->_currentBoard);
       COISprite* sprite;
       for (i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
 	sprite = sprites[i];
 	if (sprite->_visible) {
-	  SDL_RenderCopy(window->_renderer, sprite->_texture, NULL, sprite->_rect);
+	  SDL_RenderCopy(window->_renderer, sprite->_texture, NULL, sprite->_drawRect);
 	}
       }
       
       SDL_RenderPresent(window->_renderer);
-      shouldDraw = false;
+      window->_currentBoard->_shouldDraw = false;
     }
   }
 }
 
 void COIWindowSetBoard(COIWindow* window, struct COIBoard* board) {
+  board->_frameWidth = window->_width;
+  board->_frameHeight = window->_height;
   window->_currentBoard = board;
   SDL_SetRenderDrawColor(window->_renderer,
 			 COIBoardBGColor(board, INDEX_RED),
@@ -91,4 +80,8 @@ void COIWindowSetBoard(COIWindow* window, struct COIBoard* board) {
 
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window) {
   return window->_renderer;
+}
+
+void COIWindowSetLoop(COIWindow* window, COILoop loop) {
+  window->_loop = loop;
 }
