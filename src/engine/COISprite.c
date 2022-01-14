@@ -14,6 +14,7 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture) {
   sprite->_drawRect->w = w;
   sprite->_drawRect->h = h;
   sprite->_srcRect = NULL;
+  sprite->_sheetCount = 0;
 
   return sprite;
 }
@@ -37,6 +38,7 @@ void COISpriteSetSheetIndex(COISprite* sprite, int index) {
   }
   // Assume sprite sheet is an n x 1 image of sprites
   sprite->_srcRect->x = index * sprite->_width;
+  sprite->_sheetCount = 1;
 }
 
 void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h) {
@@ -47,4 +49,14 @@ void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h) {
   }
   sprite->_srcRect->w = w;
   sprite->_srcRect->h = h;
+  sprite->_sheetCount = sprite->_width / w;
+}
+
+void COISpriteSheetIncrementIndex(COISprite* sprite) {
+  if (sprite->_srcRect == NULL) {
+    return;
+  }
+  int currentIndex = sprite->_srcRect->x / sprite->_srcRect->w;
+  int nextIndex = (currentIndex + 1) % sprite->_sheetCount; 
+  sprite->_srcRect->x = nextIndex * sprite->_srcRect->w;
 }

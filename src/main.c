@@ -6,8 +6,6 @@ void testCallback(COIBoard* board, SDL_Keycode key) {
   COISprite* player = board->_sprites[board->_spriteCount - 1];
 
   int playerCenterX, playerCenterY;
-  printf("height: %i width: %i\n", player->_width, player->_height);
-  printf("frameheight: %i framewidth: %i\n", board->_frameHeight, board->_frameWidth);
   
   switch (key) {
     case SDLK_LEFT:
