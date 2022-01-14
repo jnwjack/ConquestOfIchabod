@@ -12,6 +12,7 @@ COIWindow* COIWindowCreate() {
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
+  window->_loopContext = NULL;
   return window;
 }
 
@@ -37,12 +38,11 @@ void COIWindowLoop(COIWindow* window) {
 
     switch (event.type){
       case SDL_QUIT:
-	quit = true;
-	break;
-      case SDL_KEYDOWN:
-	if (window->_loop) {
-	  window->_loop(window->_currentBoard, event.key.keysym.sym);
-	}
+	      quit = true;
+	      break;
+      default:
+        window->_loop(window->_currentBoard, &event, window->_loopContext);
+        // window->_loop(window->_currentBoard, event.key.keysym.sym);
 	break;
     }
 
@@ -81,6 +81,7 @@ SDL_Renderer* COIWindowGetRenderer(COIWindow* window) {
   return window->_renderer;
 }
 
-void COIWindowSetLoop(COIWindow* window, COILoop loop) {
+void COIWindowSetLoop(COIWindow* window, COILoop loop, void* context) {
   window->_loop = loop;
+  window->_loopContext = context;
 }

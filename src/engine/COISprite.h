@@ -14,6 +14,7 @@ typedef struct COISprite {
   SDL_Rect* _srcRect;
   SDL_Texture* _texture;
   int _sheetCount;
+  bool _moving;
 }COISprite;
 
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture);

@@ -8,7 +8,7 @@
 #ifndef COIWINDOW_H
 #define COIWINDOW_H
 
-typedef void (*COILoop)(COIBoard*, SDL_Keycode);
+typedef void (*COILoop)(COIBoard*, SDL_Event* event, void* context);
 
 typedef struct COIWindow {
   SDL_Window* _screen;
@@ -17,6 +17,7 @@ typedef struct COIWindow {
   int _width;
   int _height;
   COILoop _loop;
+  void* _loopContext;
 }COIWindow;
 
 COIWindow* COIWindowCreate();
@@ -25,7 +26,7 @@ void COIWindowDestroy(COIWindow* window);
 void COIWindowLoop(COIWindow* window);
 void COIWindowSetBoard(COIWindow* window, struct COIBoard* board);
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window);
-void COIWindowSetLoop(COIWindow* window, COILoop loop);
+void COIWindowSetLoop(COIWindow* window, COILoop loop, void* context);
 
 
 #endif

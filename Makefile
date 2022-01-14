@@ -12,4 +12,3 @@ build:
 
 clean:
 	rm -f *.o $(OUTPUT) *~ src/*~ src/engine/*~
-
