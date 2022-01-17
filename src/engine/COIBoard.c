@@ -120,11 +120,11 @@ bool COIBoardShiftFrameY(COIBoard* board, int stride) {
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y) {
   int newX = sprite->_x + x;
   int newY = sprite->_y + y;
-  if (newX >= 0 && newX <= board->_width) {
+  if (newX >= 0 && newX + sprite->_width <= board->_width) {
     sprite->_x = newX;
     board->_shouldDraw = true;
   }
-  if (newY >= 0 && newY <= board->_height) {
+  if (newY >= 0 && newY + sprite->_height <= board->_height) {
     sprite->_y = newY;
     board->_shouldDraw = true;
   }

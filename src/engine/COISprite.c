@@ -61,3 +61,36 @@ void COISpriteSheetIncrementIndex(COISprite* sprite) {
   int nextIndex = (currentIndex + 1) % sprite->_sheetCount; 
   sprite->_srcRect->x = nextIndex * sprite->_srcRect->w;
 }
+
+// Assumes that otherRect is smaller than or equal to the sprite's rect
+int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {
+  int myTopLeft[] = { sprite->_x, sprite->_y };
+  int myBottomRight[] = { sprite->_x + sprite->_width, sprite->_y + sprite->_height };
+  int otherCorners[4][2] = {{ x, y },
+			  { x, y + height },
+			  { x + width, y },
+			  { x + width, y + height }};
+
+  bool collision = false;
+  // Iterate through 4 corners of other rect and check if at least one is inside the box defined by
+  // this sprite's top left and bottom right corners.
+  int i, otherX, otherY;
+  for (i = 0; i < 4; i++) {
+    otherX = otherCorners[i][0];
+    otherY = otherCorners[i][1];
+    
+    if (otherX >= myTopLeft[0] &&
+	otherY >= myTopLeft[1] &&
+	otherX <= myBottomRight[0] &&
+	otherY <= myBottomRight[1]) {
+      collision = true;
+    }
+  }
+
+  if (!collision) {
+    return COI_NO_COLLISION;
+  }
+
+  return COI_COLLISION;
+ 
+}

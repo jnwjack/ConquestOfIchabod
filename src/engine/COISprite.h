@@ -4,6 +4,9 @@
 #ifndef COISPRITE_H
 #define COISPRITE_H
 
+#define COI_NO_COLLISION 0
+#define COI_COLLISION 1
+
 typedef struct COISprite {
   int _x;
   int _y;
@@ -22,5 +25,6 @@ void COISpriteDestroy(COISprite* sprite);
 void COISpriteSetSheetIndex(COISprite* sprite, int index);
 void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h);
 void COISpriteSheetIncrementIndex(COISprite* sprite);
+int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height);
 
 #endif
