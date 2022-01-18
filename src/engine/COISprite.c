@@ -16,6 +16,7 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture) {
   sprite->_srcRect = NULL;
   sprite->_sheetCount = 0;
   sprite->_moving = false;
+  sprite->_extraCollision = NULL;
 
   return sprite;
 }
@@ -23,8 +24,11 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture) {
 void COISpriteDestroy(COISprite* sprite) {
   SDL_DestroyTexture(sprite->_texture);
   free(sprite->_drawRect);
-  if (sprite->_srcRect) {
+  if (sprite->_srcRect != NULL) {
     free(sprite->_srcRect);
+  }
+  if (sprite->_extraCollision != NULL) {
+    free(sprite->_extraCollision);
   }
   free(sprite);
 }
@@ -83,6 +87,14 @@ int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {
 	otherY >= myTopLeft[1] &&
 	otherX <= myBottomRight[0] &&
 	otherY <= myBottomRight[1]) {
+      // Check for extra collision if one exists
+      if(sprite->_extraCollision != NULL &&
+	 otherX >= sprite->_extraCollision->tlX - myTopLeft[0] &&
+	 otherY >= sprite->_extraCollision->tlY - myTopLeft[1] &&
+	 otherX <= sprite->_extraCollision->brX - myBottomRight[0] &&
+	 otherY <= sprite->_extraCollision->brY - myBottomRight[1]) {
+	return sprite->_extraCollision->returnValue;
+      }
       collision = true;
     }
   }
@@ -92,5 +104,15 @@ int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {
   }
 
   return COI_COLLISION;
- 
+}
+
+void COISpriteSetExtraCollision(COISprite* sprite, int topLeftX, int topLeftY, int bottomRightX, int bottomRightY, int returnValue) {
+  if (sprite->_extraCollision == NULL) {
+    sprite->_extraCollision = malloc(sizeof(COIExtraCollision));
+  }
+  sprite->_extraCollision->tlX = topLeftX;
+  sprite->_extraCollision->tlY = topLeftY;
+  sprite->_extraCollision->brX = bottomRightX;
+  sprite->_extraCollision->brY = bottomRightY;
+  sprite->_extraCollision->returnValue = returnValue;
 }
