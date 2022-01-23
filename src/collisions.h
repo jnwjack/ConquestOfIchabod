@@ -1,4 +1,6 @@
-#include "engine/COISprite.h"
-#include <stdbool.h>
+#ifndef COLLISIONS_H
+#define COLLISIONS_H
 
-bool armoryDoor(COISprite* sprite)
+#define ARMORY_DOOR 2
+
+#endif

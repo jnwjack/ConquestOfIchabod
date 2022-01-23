@@ -1,21 +1,27 @@
 #include "inputloops.h"
 
-bool testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
+int testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
   int maxSpriteIndex = board->_spriteCount - 1;
   COISprite* currentSprite;
   int i;
+  int collisionResult;
   for (i = 0; i < maxSpriteIndex; i++) {
     currentSprite = board->_sprites[i];
-    if (COISpriteCollision(currentSprite,
-			  player->_x + changeX,
-			  player->_y + changeY,
-			  player->_width,
-			  player->_height)) {
-	return true;
-      }
+    collisionResult = COISpriteCollision(currentSprite,
+					 player->_x + changeX,
+					 player->_y + changeY,
+					 player->_width,
+					 player->_height);
+    if (collisionResult != COI_NO_COLLISION) {
+      return collisionResult;
+    }
   }
 
-  return false;
+  return COI_NO_COLLISION;
+}
+
+void armory(COIBoard* board, SDL_Event* event, void* context) {
+
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
@@ -49,9 +55,11 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       }
   }
 
+  int collisionResult = -1;
   switch (*direction) {
     case MOVING_LEFT:
-      if (testForCollision(board, player, -5, 0)) {
+      collisionResult = testForCollision(board, player, -5, 0);
+      if (collisionResult) {
 	break;
       }
       COIBoardMoveSprite(board, player, -5, 0);
@@ -59,9 +67,10 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (playerCenterX <= board->_frameWidth / 2) {
         COIBoardShiftFrameX(board, -5);
       }
-      break;
+      return;
     case MOVING_RIGHT:
-      if (testForCollision(board, player, 5, 0)) {
+      collisionResult = testForCollision(board, player, 5, 0);
+      if (collisionResult) {
 	break;
       }
       COIBoardMoveSprite(board, player, 5, 0);
@@ -69,9 +78,10 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (playerCenterX >= board->_frameWidth / 2) {
         COIBoardShiftFrameX(board, 5);
       }
-      break;
+      return;
     case MOVING_UP:
-      if (testForCollision(board, player, 0, -5)) {
+      collisionResult = testForCollision(board, player, 0, -5);
+      if (collisionResult) {
 	break;
       }
       COIBoardMoveSprite(board, player, 0, -5);
@@ -79,9 +89,10 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (playerCenterY <= board->_frameHeight / 2) {
         COIBoardShiftFrameY(board, -5);
       }
-      break;
+      return;
     case MOVING_DOWN:
-      if (testForCollision(board, player, 0, 5)) {
+      collisionResult = testForCollision(board, player, 0, 5);
+      if (collisionResult) {
 	break;
       }
       COIBoardMoveSprite(board, player, 0, 5);
@@ -89,5 +100,17 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (playerCenterY >= board->_frameHeight / 2) {
         COIBoardShiftFrameY(board, 5);
       }
+      return;
+  }
+  switch (collisionResult) {
+    COIBoard* board;
+    COIWindow* window;
+    case ARMORY_DOOR:
+      board = *(COIBoard**) (context + sizeof(int));
+      window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
+      COIWindowSetLoop(window, &armory, NULL);
+      COIWindowSetBoard(window, board);
+      
+      break;
   }
 }

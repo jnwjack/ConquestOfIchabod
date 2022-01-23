@@ -19,14 +19,18 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h) {
 }
 
 void COIBoardDestroy(COIBoard* board) {
+  if (board == NULL){
+    return;
+  }
   if (board->_sprites != NULL) {
     int i;
     for (i = 0; i < board->_spriteCount; i++) {
-      free(board->_sprites[i]);
+      if (board->_sprites[i] != NULL) {
+	free(board->_sprites[i]);
+      }
     }
     free(board->_sprites);
   }
-  free(board);
 }
 
 int COIBoardBGColor(COIBoard* board, int index) {

@@ -23,8 +23,10 @@ void COIWindowDestroy(COIWindow* window) {
   SDL_DestroyWindow(window->_screen);
 
   SDL_Quit();
-  
-  free(window);
+
+  if (window != NULL) {
+    free(window);
+  }
 }
 
 void COIWindowLoop(COIWindow* window) {
@@ -42,7 +44,6 @@ void COIWindowLoop(COIWindow* window) {
 	      break;
       default:
         window->_loop(window->_currentBoard, &event, window->_loopContext);
-        // window->_loop(window->_currentBoard, event.key.keysym.sym);
 	break;
     }
 
