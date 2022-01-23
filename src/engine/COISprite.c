@@ -89,10 +89,10 @@ int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {
 	otherY <= myBottomRight[1]) {
       // Check for extra collision if one exists
       if(sprite->_extraCollision != NULL &&
-	 otherX >= sprite->_extraCollision->tlX - myTopLeft[0] &&
-	 otherY >= sprite->_extraCollision->tlY - myTopLeft[1] &&
-	 otherX <= sprite->_extraCollision->brX - myBottomRight[0] &&
-	 otherY <= sprite->_extraCollision->brY - myBottomRight[1]) {
+	 otherX >= myTopLeft[0] + sprite->_extraCollision->tlX &&
+	 otherY >= myTopLeft[1] + sprite->_extraCollision->tlY &&
+	 otherX <= myTopLeft[0] + sprite->_extraCollision->brX &&
+	 otherY <= myTopLeft[1] + sprite->_extraCollision->brY) {
 	return sprite->_extraCollision->returnValue;
       }
       collision = true;
@@ -106,13 +106,7 @@ int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {
   return COI_COLLISION;
 }
 
-void COISpriteSetExtraCollision(COISprite* sprite, int topLeftX, int topLeftY, int bottomRightX, int bottomRightY, int returnValue) {
-  if (sprite->_extraCollision == NULL) {
-    sprite->_extraCollision = malloc(sizeof(COIExtraCollision));
-  }
-  sprite->_extraCollision->tlX = topLeftX;
-  sprite->_extraCollision->tlY = topLeftY;
-  sprite->_extraCollision->brX = bottomRightX;
-  sprite->_extraCollision->brY = bottomRightY;
-  sprite->_extraCollision->returnValue = returnValue;
+void COISpriteSetExtraCollision(COISprite* sprite, COIExtraCollision* collision) {
+  sprite->_extraCollision = collision;
 }
+

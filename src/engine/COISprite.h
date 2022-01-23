@@ -1,19 +1,12 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include "COIExtraCollision.h"
 
 #ifndef COISPRITE_H
 #define COISPRITE_H
 
 #define COI_NO_COLLISION 0
 #define COI_COLLISION 1
-
-typedef struct COIExtraCollision {
-  int tlX;
-  int tlY;
-  int brX;
-  int brY;
-  int returnValue;
-}COIExtraCollision;
 
 typedef struct COISprite {
   int _x;
@@ -35,11 +28,6 @@ void COISpriteSetSheetIndex(COISprite* sprite, int index);
 void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h);
 void COISpriteSheetIncrementIndex(COISprite* sprite);
 int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height);
-void COISpriteSetExtraCollision(COISprite* sprite,
-				int topLeftX,
-				int topLeftY,
-				int bottomRightX,
-				int bottomRightY,
-				int returnValue);
+void COISpriteSetExtraCollision(COISprite* sprite, COIExtraCollision* collision);
 
 #endif

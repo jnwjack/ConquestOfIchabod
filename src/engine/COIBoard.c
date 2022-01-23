@@ -53,6 +53,7 @@ void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader,  SDL_Rendere
   int w;
   int h;
   int i = 0;
+  COISprite* sprite;
   while (getline(&line, &len, fp) != -1) {
     line[strcspn(line, "\n")] = '\0';
 
@@ -64,8 +65,9 @@ void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader,  SDL_Rendere
 
     SDL_Surface* asset = COIAssetLoaderGetAsset(loader, assetID);
     SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);
-    board->_sprites[i] = COISpriteCreate(x, y, w, h, texture);
-    
+    sprite = COISpriteCreate(x, y, w, h, texture);
+    COISpriteSetExtraCollision(sprite, COIAssetLoaderGetCollision(loader, assetID));
+    board->_sprites[i] = sprite;
     i++;
   }
 }

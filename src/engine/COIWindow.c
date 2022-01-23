@@ -4,7 +4,7 @@ COIWindow* COIWindowCreate() {
   // Initialize SDL
   SDL_Init(SDL_INIT_VIDEO);
   IMG_Init(IMG_INIT_PNG);
-  
+
   COIWindow* window = malloc(sizeof(COIWindow));
   window->_width = 640;
   window->_height = 480;

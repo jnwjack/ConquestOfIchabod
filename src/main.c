@@ -4,11 +4,13 @@
 
 
 int main(int argc, char** argv) {
-  COIAssetLoader* loader = COIAssetLoaderCreate("src/engine/etc/mapping.cfg");
+  COIWindow* window = COIWindowCreate();
+  
+  COIAssetLoader* loader = COIAssetLoaderCreate();
   COILoop threadTownLoop = &threadTown;
   int* context = malloc(sizeof(int));
 
-  COIWindow* window = COIWindowCreate();
+
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700);  
 
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/spritemaps/threadtown.dat");
