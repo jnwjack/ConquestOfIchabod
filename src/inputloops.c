@@ -108,8 +108,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case ARMORY_DOOR:
       board = *(COIBoard**) (context + sizeof(int));
       window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-      COIWindowSetLoop(window, &armory, NULL);
-      COIWindowSetBoard(window, board);
+      COIWindowSetBoard(window, board, &armory);
       
       break;
   }

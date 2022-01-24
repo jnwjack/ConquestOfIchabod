@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include "COIBoard.h"
 
 #ifndef COIWINDOW_H
@@ -24,9 +25,8 @@ COIWindow* COIWindowCreate();
 void COIWindowDestroy(COIWindow* window);
 
 void COIWindowLoop(COIWindow* window);
-void COIWindowSetBoard(COIWindow* window, struct COIBoard* board);
+void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop);
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window);
-void COIWindowSetLoop(COIWindow* window, COILoop loop, void* context);
 
 
 #endif

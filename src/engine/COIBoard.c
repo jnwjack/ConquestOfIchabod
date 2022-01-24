@@ -15,6 +15,7 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h) {
   board->_sprites = NULL;
   board->_spriteCount = 0;
   board->_shouldDraw = true;
+  board->_context = NULL;
   return board;
 }
 
@@ -134,5 +135,9 @@ void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y) {
     sprite->_y = newY;
     board->_shouldDraw = true;
   }
+}
+
+void COIBoardSetContext(COIBoard* board, void* context) {
+  board->_context = context;
 }
 

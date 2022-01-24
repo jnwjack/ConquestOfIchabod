@@ -6,6 +6,7 @@ COIAssetLoader* COIAssetLoaderCreate() {
   size_t len = 0;
   const char* mappingFilename = "src/engine/etc/mapping.cfg";
   const char* collisionsFilename = "src/engine/etc/collisions.cfg";
+  const char* textFilename = "src/engine/etc/text.cfg";
   int assetCount = countLines(mappingFilename);
 
   COIAssetLoader* loader = malloc(sizeof(COIAssetLoader));

@@ -26,6 +26,7 @@ typedef struct COIBoard {
   COISprite** _sprites;
   int _spriteCount;
   int _shouldDraw;
+  void* _context;
 }COIBoard;
 
 COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h);
@@ -39,5 +40,6 @@ bool COIBoardShiftFrameX(COIBoard* board, int stride);
 bool COIBoardShiftFrameY(COIBoard* board, int stride);
 void COIBoardUpdateSpriteVisibility(COIBoard* board);
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
+void COIBoardSetContext(COIBoard* board, void* context);
 
 #endif

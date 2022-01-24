@@ -12,7 +12,6 @@ COIWindow* COIWindowCreate() {
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
-  window->_loopContext = NULL;
   return window;
 }
 
@@ -43,7 +42,7 @@ void COIWindowLoop(COIWindow* window) {
 	      quit = true;
 	      break;
       default:
-        window->_loop(window->_currentBoard, &event, window->_loopContext);
+        window->_loop(window->_currentBoard, &event, window->_currentBoard->_context);
 	break;
     }
 
@@ -67,10 +66,11 @@ void COIWindowLoop(COIWindow* window) {
   }
 }
 
-void COIWindowSetBoard(COIWindow* window, struct COIBoard* board) {
+void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop) {
   board->_frameWidth = window->_width;
   board->_frameHeight = window->_height;
   window->_currentBoard = board;
+  window->_loop = loop;
   SDL_SetRenderDrawColor(window->_renderer,
 			 COIBoardBGColor(board, INDEX_RED),
 			 COIBoardBGColor(board, INDEX_GREEN),
@@ -82,7 +82,4 @@ SDL_Renderer* COIWindowGetRenderer(COIWindow* window) {
   return window->_renderer;
 }
 
-void COIWindowSetLoop(COIWindow* window, COILoop loop, void* context) {
-  window->_loop = loop;
-  window->_loopContext = context;
-}
+
