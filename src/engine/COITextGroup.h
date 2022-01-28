@@ -7,8 +7,9 @@ typedef struct COIText {
   int _y;
   int _width;
   int _height;
-  SDL_Rect* _drawRect;
+  SDL_Rect _drawRect;
   SDL_Texture* _texture;
+  char* _string;
   bool _visible;
 }COIText;
 
@@ -19,6 +20,6 @@ typedef struct COITextGroup {
   COIText** _texts;
 }COITextGroup;
 
-COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* filename);
+COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* filename, SDL_Renderer* renderer);
 void COITextGroupDestroy(COITextGroup* group);
 

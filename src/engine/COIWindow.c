@@ -4,6 +4,7 @@ COIWindow* COIWindowCreate() {
   // Initialize SDL
   SDL_Init(SDL_INIT_VIDEO);
   IMG_Init(IMG_INIT_PNG);
+  TTF_Init();
 
   COIWindow* window = malloc(sizeof(COIWindow));
   window->_width = 640;
@@ -22,6 +23,8 @@ void COIWindowDestroy(COIWindow* window) {
   SDL_DestroyWindow(window->_screen);
 
   SDL_Quit();
+
+  TTF_Quit();
 
   if (window != NULL) {
     free(window);
