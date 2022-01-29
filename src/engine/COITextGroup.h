@@ -2,12 +2,15 @@
 #include <stdbool.h>
 #include "util.h"
 
+#ifndef COITEXTGROUP_H
+#define COITEXTGROUP_H
+
 typedef struct COIText {
   int _x;
   int _y;
   int _width;
   int _height;
-  SDL_Rect _drawRect;
+  SDL_Rect* _drawRect;
   SDL_Texture* _texture;
   char* _string;
   bool _visible;
@@ -23,3 +26,7 @@ typedef struct COITextGroup {
 COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* filename, SDL_Renderer* renderer);
 void COITextGroupDestroy(COITextGroup* group);
 
+COIText** COITextGroupGetTexts(COITextGroup* group);
+int COITextGroupGetTextCount(COITextGroup* group);
+
+#endif

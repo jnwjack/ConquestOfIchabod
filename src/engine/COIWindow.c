@@ -62,6 +62,20 @@ void COIWindowLoop(COIWindow* window) {
 	  SDL_RenderCopy(window->_renderer, sprite->_texture, NULL, sprite->_drawRect);
 	}
       }
+
+      // Go through each text group and display text objects
+      COIText** texts;
+      COIText* text;
+      for (i = 0; i < COIBoardGetTextGroupCount(window->_currentBoard); i++) {
+	int j;
+	texts = COIBoardGetTexts(window->_currentBoard, i);
+	for (j = 0; j < COIBoardGetTextCount(window->_currentBoard, i); j++) {
+	  text = texts[j];
+	  if (text->_visible) {
+	    SDL_RenderCopy(window->_renderer, text->_texture, NULL, text->_drawRect);
+	  }
+	}
+      }
       
       SDL_RenderPresent(window->_renderer);
       window->_currentBoard->_shouldDraw = false;

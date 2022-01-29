@@ -10,13 +10,15 @@ int main(int argc, char** argv) {
   COILoop threadTownLoop = &threadTown;
   void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
 
+  COITextGroup* mediumGroup = COITextGroupCreate(25, 255, 255, 255, "src/armory/text.dat", COIWindowGetRenderer(window));
 
-  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700);
+  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, 0);
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
 
-  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480);
+  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, 1);
+  COIBoardAddTextGroup(armoryBoard, mediumGroup, 0);
   COILoop armoryLoop = &armory;
-  COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/spritemaps/armory.dat");
+  COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
 
   // Modify threadtown context
   COIBoard** armoryBoardPtr = (COIBoard**) (context + sizeof(int));
@@ -31,6 +33,7 @@ int main(int argc, char** argv) {
   // Only need to free the int, other pointers in context get handled elsewhere
   int* contextIntPtr = (int*) (context);
   free(contextIntPtr);
+  COITextGroupDestroy(mediumGroup);
   COIAssetLoaderDestroy(loader);
   COIBoardDestroy(board);
   COIBoardDestroy(armoryBoard);

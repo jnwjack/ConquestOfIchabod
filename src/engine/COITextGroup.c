@@ -3,20 +3,27 @@
 COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* filename, SDL_Renderer* renderer) {
   COITextGroup* group = malloc(sizeof(COITextGroup));
   group->_font = TTF_OpenFont("src/engine/etc/font.ttf", fontSize);
-  group->_color = { r, g, b };
+  if (group->_font == NULL) {
+    printf("bad :(\n");
+  }
+  group->_color.r = r;
+  group->_color.g = g;
+  group->_color.b = b;
+
 
   FILE* fp;
 
   fp = fopen(filename, "r");
   if (fp == NULL) {
-    return;
+    return NULL;
   }
 
   group->_textCount = countLines(filename);
   group->_texts = malloc(group->_textCount * sizeof(COIText*));
 
   size_t len = 0;
-  char* line, textString;
+  char* line;
+  char* textString;
   int i;
   SDL_Surface* surface;
   COIText* text;
@@ -30,13 +37,20 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
     text->_y = atoi(strtok(NULL, " "));
     text->_width = 0;
     text->_height = 0;
-    
+
     text->_string = malloc(strlen(textString));
     strcpy(text->_string, textString);
     surface = TTF_RenderText_Solid(group->_font, text->_string, group->_color);
     text->_texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_QueryTexture(text->_texture, NULL, NULL, &text->_width, &text->_height);
-    text->_drawRect = { text->_x, text->_y, text->width, text->_height };
+    int w, h;
+    SDL_QueryTexture(text->_texture, NULL, NULL, &w, &h);
+    text->_drawRect = malloc(sizeof(SDL_Rect));
+    text->_drawRect->x = text->_x;
+    text->_drawRect->y = text->_y;
+    text->_drawRect->w = w;
+    text->_drawRect->h = h;
+    text->_width = w;
+    text->_height = h;
     text->_visible = false;
     group->_texts[i] = text;
         
@@ -44,6 +58,8 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
         
     i++;
   }
+
+  return group;
 }
 
 void COITextGroupDestroy(COITextGroup* group) {
@@ -60,9 +76,18 @@ void COITextGroupDestroy(COITextGroup* group) {
     }
 
     free(text->_string);
+    free(text->_drawRect);
     SDL_DestroyTexture(text->_texture);
     free(text);
   }
 
   TTF_CloseFont(group->_font);
+}
+
+COIText** COITextGroupGetTexts(COITextGroup* group) {
+  return group->_texts;
+}
+
+int COITextGroupGetTextCount(COITextGroup* group) {
+  return group->_textCount;
 }
