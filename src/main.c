@@ -26,13 +26,26 @@ int main(int argc, char** argv) {
   COIWindow** windowPtr = (COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
   *windowPtr = window;
   COIBoardSetContext(board, context);
+
+  // Armory context
+  void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
+  *(int*)armoryContext = 0;
+  *(COIBoard**) (armoryContext + sizeof(int)) = board;
+  *(COIWindow**) (armoryContext  + sizeof(int) + sizeof(COIBoard*)) = window;
+  COIBoardSetContext(armoryBoard, armoryContext);
+  
   
   COIWindowSetBoard(window, board, threadTownLoop);
   COIWindowLoop(window);
 
+  // Cleanup
+
   // Only need to free the int, other pointers in context get handled elsewhere
   int* contextIntPtr = (int*) (context);
   free(contextIntPtr);
+  contextIntPtr = (int*) (armoryContext);
+  free(contextIntPtr);
+  
   COITextGroupDestroy(mediumGroup);
   COIAssetLoaderDestroy(loader);
   COIBoardDestroy(board);

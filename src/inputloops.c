@@ -21,7 +21,36 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
 }
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {
+  int* pointer = (int*) context;
+  COISprite* pointerSprite = board->_sprites[board->_spriteCount - 1];
+  bool selection = false;
+  switch (event->type) {
+    case SDL_KEYDOWN:
+      switch (event->key.keysym.sym) {
+        case SDLK_UP:
+	  *pointer = (*pointer - 1) < 0 ? 2 : (*pointer - 1);
+	  break;
+        case SDLK_DOWN:
+	  *pointer = (*pointer + 1) % 3;
+	  break;
+        case SDLK_SPACE:
+	  selection = true;
+      }
+  }
 
+  if (selection && *pointer == 2) {
+    COIBoard* threadTownBoard = *(COIBoard**) (context + sizeof(int));
+    COIWindow* window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
+    
+    // Re-adjust player sprite in threadtown
+    COISprite* player = threadTownBoard->_sprites[threadTownBoard->_spriteCount - 1];
+    COIBoardMoveSprite(threadTownBoard, player, 0, 30);
+    COIWindowSetBoard(window, threadTownBoard, &threadTown);
+    return;
+  }
+
+  int newPointerY = 50 + 40 * (*pointer);
+  COIBoardMoveSprite(board, pointerSprite, 0, newPointerY - pointerSprite->_y);
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
@@ -29,7 +58,6 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   int* direction = (int*) context;
 
   int playerCenterX, playerCenterY;
-
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
