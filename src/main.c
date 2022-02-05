@@ -1,5 +1,6 @@
 // Should have a better system for includes
 #include "engine/COIWindow.h"
+#include "engine/COIMenu.h"
 #include "inputloops.h"
 
 
@@ -19,6 +20,13 @@ int main(int argc, char** argv) {
   COIBoardAddTextGroup(armoryBoard, mediumGroup, 0);
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
+  COISprite** armorySprites = COIBoardGetSprites(armoryBoard);
+  COIMenu* menu = COIMenuCreate(mediumGroup, armorySprites[0]);
+  int indices[7] = { 0, 1, 2, 0, 1, 2, 1 };
+  COIMenuSetTexts(menu, indices, 7);
+  COIMenuSetVisible(menu);
+  
+  
 
   // Modify threadtown context
   COIBoard** armoryBoardPtr = (COIBoard**) (context + sizeof(int));
@@ -28,10 +36,11 @@ int main(int argc, char** argv) {
   COIBoardSetContext(board, context);
 
   // Armory context
-  void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
+  void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*));
   *(int*)armoryContext = 0;
   *(COIBoard**) (armoryContext + sizeof(int)) = board;
   *(COIWindow**) (armoryContext  + sizeof(int) + sizeof(COIBoard*)) = window;
+  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*)) = menu;
   COIBoardSetContext(armoryBoard, armoryContext);
   
   
@@ -50,6 +59,7 @@ int main(int argc, char** argv) {
   COIAssetLoaderDestroy(loader);
   COIBoardDestroy(board);
   COIBoardDestroy(armoryBoard);
+  COIMenuDestroy(menu);
   COIWindowDestroy(window);
 
   return 0;

@@ -112,7 +112,8 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
     }
   }
 
-  COIText** texts;
+  // User handles text visibility
+  /*COIText** texts;
   COIText* text;
   for (i = 0; i < board->_textGroupCount; i++) {
     texts = COITextGroupGetTexts(board->_textGroups[i]);
@@ -128,7 +129,7 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
 	text->_visible = false;
       }
     }
-  }
+    }*/
 }
 
 bool COIBoardShiftFrameX(COIBoard* board, int stride) {

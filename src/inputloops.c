@@ -24,21 +24,25 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   int* pointer = (int*) context;
   COISprite* pointerSprite = board->_sprites[board->_spriteCount - 1];
   bool selection = false;
+  COIMenu** menuPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
+  COIMenu* menu = *(menuPtr);
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_UP:
-	  *pointer = (*pointer - 1) < 0 ? 2 : (*pointer - 1);
+	  COIMenuIncrement(menu, -1);
+	  //menu->_current = (menu->_current - 1) < 0 ? 2 : (menu->_current - 1);
 	  break;
         case SDLK_DOWN:
-	  *pointer = (*pointer + 1) % 3;
+	  COIMenuIncrement(menu, 1);
+	  //menu->_current = (menu->_current + 1) % menu->_visibleTextCount;
 	  break;
         case SDLK_SPACE:
 	  selection = true;
       }
   }
 
-  if (selection && *pointer == 2) {
+  if (selection && menu->_current == 2) {
     COIBoard* threadTownBoard = *(COIBoard**) (context + sizeof(int));
     COIWindow* window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
     
@@ -49,7 +53,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     return;
   }
 
-  int newPointerY = 50 + 40 * (*pointer);
+  int newPointerY = 50 + 40 * menu->_current;
   COIBoardMoveSprite(board, pointerSprite, 0, newPointerY - pointerSprite->_y);
 }
 
@@ -137,6 +141,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       board = *(COIBoard**) (context + sizeof(int));
       window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
       COIWindowSetBoard(window, board, &armory);
+      *direction = MOVING_NONE;
       
       break;
   }

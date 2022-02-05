@@ -46,7 +46,7 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board);
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
 void COIBoardSetContext(COIBoard* board, void* context);
 void COIBoardAddTextGroup(COIBoard* board, COITextGroup* group, int index);
-COIText** COIBoardGetTexts(COIBoard* board, int index;);
+COIText** COIBoardGetTexts(COIBoard* board, int index);
 int COIBoardGetTextCount(COIBoard* board, int index);
 int COIBoardGetTextGroupCount(COIBoard* board);
 

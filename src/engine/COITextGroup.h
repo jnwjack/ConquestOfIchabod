@@ -20,6 +20,7 @@ typedef struct COITextGroup {
   TTF_Font* _font;
   SDL_Color _color;
   int _textCount;
+  int _fontSize;
   COIText** _texts;
 }COITextGroup;
 
@@ -28,5 +29,6 @@ void COITextGroupDestroy(COITextGroup* group);
 
 COIText** COITextGroupGetTexts(COITextGroup* group);
 int COITextGroupGetTextCount(COITextGroup* group);
+void COITextSetPos(COIText* text, int x, int y);
 
 #endif

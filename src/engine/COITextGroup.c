@@ -4,11 +4,12 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
   COITextGroup* group = malloc(sizeof(COITextGroup));
   group->_font = TTF_OpenFont("src/engine/etc/font.ttf", fontSize);
   if (group->_font == NULL) {
-    printf("bad :(\n");
+    printf("Error loading font");
   }
   group->_color.r = r;
   group->_color.g = g;
   group->_color.b = b;
+  group->_fontSize = fontSize;
 
 
   FILE* fp;
@@ -33,8 +34,8 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
     text = malloc(sizeof(COIText));
     
     textString = strtok(line, " ");
-    text->_x = atoi(strtok(NULL, " "));
-    text->_y = atoi(strtok(NULL, " "));
+    text->_x = 0;
+    text->_y = 0;
     text->_width = 0;
     text->_height = 0;
 
@@ -90,4 +91,12 @@ COIText** COITextGroupGetTexts(COITextGroup* group) {
 
 int COITextGroupGetTextCount(COITextGroup* group) {
   return group->_textCount;
+}
+
+void COITextSetPos(COIText* text, int x, int y) {
+  text->_x = x;
+  text->_y = y;
+
+  text->_drawRect->x = x;
+  text->_drawRect->y = y;
 }

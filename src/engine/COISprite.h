@@ -19,6 +19,8 @@ typedef struct COISprite {
   SDL_Texture* _texture;
   int _sheetCount;
   bool _moving;
+  // true if COIBoard manages visibility of sprite
+  bool _autoHandle;
   COIExtraCollision* _extraCollision;
 }COISprite;
 

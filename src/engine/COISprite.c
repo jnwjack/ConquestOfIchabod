@@ -16,6 +16,7 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture) {
   sprite->_srcRect = NULL;
   sprite->_sheetCount = 0;
   sprite->_moving = false;
+  sprite->_autoHandle = true;
   sprite->_extraCollision = NULL;
 
   return sprite;
