@@ -21,9 +21,10 @@ int main(int argc, char** argv) {
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
   COISprite** armorySprites = COIBoardGetSprites(armoryBoard);
-  COIMenu* menu = COIMenuCreate(mediumGroup, armorySprites[0]);
-  int indices[7] = { 0, 1, 2, 0, 1, 2, 1 };
-  COIMenuSetTexts(menu, indices, 7);
+  COIMenu* menu = COIMenuCreate(mediumGroup, armorySprites[0], armorySprites[1]);
+  int indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  //int indices[3] = { 0, 1, 2 };
+  COIMenuSetTexts(menu, indices, 8);
   COIMenuSetVisible(menu);
   
   

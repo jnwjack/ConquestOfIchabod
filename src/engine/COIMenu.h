@@ -6,12 +6,13 @@
 #ifndef COIMENU_H
 #define COIMENU_H
 
-#define COI_MENU_OFFSET_X 60
+#define COI_MENU_OFFSET_X 100
 #define COI_MENU_OFFSET_Y 10
-#define COI_MENU_PADDING 20
+#define COI_MENU_PADDING 10
 
 typedef struct COIMenu {
   COISprite* _frame;
+  COISprite* _pointer;
   COITextGroup* _group;
   int _x;
   int _y;
@@ -27,7 +28,8 @@ typedef struct COIMenu {
 }COIMenu;
 
 COIMenu* COIMenuCreate(COITextGroup* group,
-		       COISprite* frame);
+		       COISprite* frame,
+		       COISprite* pointer);
 void COIMenuDestroy(COIMenu* menu);
 
 void COIMenuSetVisible(COIMenu* menu);

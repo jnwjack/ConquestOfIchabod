@@ -1,10 +1,12 @@
 #include "COIMenu.h"
 
 COIMenu* COIMenuCreate(COITextGroup* group,
-		       COISprite* frame) {
+		       COISprite* frame,
+		       COISprite* pointer) {
   COIMenu* menu = malloc(sizeof(COIMenu));
   menu->_group = group;
   menu->_frame = frame;
+  menu->_pointer = pointer;
   menu->_x = frame->_x;
   menu->_y = frame->_y;
   menu->_width = frame->_width;
@@ -12,7 +14,7 @@ COIMenu* COIMenuCreate(COITextGroup* group,
   menu->_textsCount = 0;
   menu->_texts = NULL;
   menu->_current = 0;
-  menu->_visibleTextCount = menu->_height / group->_fontSize;
+  menu->_visibleTextCount = (menu->_height - COI_MENU_OFFSET_Y) / (group->_fontSize + COI_MENU_PADDING);
   menu->_lowerFrameBound = 0;
   menu->_upperFrameBound = menu->_visibleTextCount - 1;
   // Can't have upper bound greater than lower
@@ -25,6 +27,7 @@ COIMenu* COIMenuCreate(COITextGroup* group,
   /*menu->_frame->_x = x;
     menu->_frame->_y = y;*/
   menu->_frame->_autoHandle = false;
+  menu->_pointer->_autoHandle = false;
 
   return menu;
 }
@@ -43,6 +46,9 @@ void COIMenuDestroy(COIMenu* menu) {
 // Sets others to be false
 void COIMenuSetVisible(COIMenu* menu) {
   menu->_frame->_visible = true;
+  menu->_pointer->_visible = true;
+
+  
 
   // Corresponds to a slot between the upper and lower frame bounds
   int slot = 0;
@@ -61,7 +67,6 @@ void COIMenuSetVisible(COIMenu* menu) {
 		    //text->_y = menu->_y + COI_MENU_OFFSET_Y + (slot * menu->_group->_fontSize);
       slot++;
     } else {
-      printf("NOT VISIBLE\n");
       text->_visible = false;
     }
   }
@@ -69,6 +74,8 @@ void COIMenuSetVisible(COIMenu* menu) {
 
 // Sets all texts false
 void COIMenuSetInvisible(COIMenu* menu) {
+  menu->_frame->_visible = false;
+  menu->_pointer->_visible = false;
   int i;
   COIText* text;
   for (i = 0; i < menu->_textsCount; i++) {
@@ -90,7 +97,6 @@ void COIMenuSetTexts(COIMenu* menu, int indices[], int numIndices) {
     menu->_upperFrameBound = menu->_visibleTextCount - 1;
     
   }
-  printf("texts cont%i\n", menu->_visibleTextCount);
   COIText** texts = COITextGroupGetTexts(menu->_group);
   int i;
   for (i = 0; i < numIndices; i++) {
@@ -115,12 +121,14 @@ void COIMenuIncrement(COIMenu* menu, int step) {
   
   if (menu->_current > menu->_upperFrameBound) {
     menu->_upperFrameBound = menu->_current;
-    menu->_lowerFrameBound = menu->_current - menu->_visibleTextCount - 1;
+    menu->_lowerFrameBound = menu->_current - (menu->_visibleTextCount - 1);
     COIMenuSetVisible(menu);
   } else if (menu->_current < menu->_lowerFrameBound)  {
     menu->_lowerFrameBound = menu->_current;
-    menu->_upperFrameBound = menu->_current + menu->_visibleTextCount - 1;
+    menu->_upperFrameBound = menu->_current + (menu->_visibleTextCount - 1);
     COIMenuSetVisible(menu);
   }
 
+  int pointerLocation = menu->_current - menu->_lowerFrameBound;
+  menu->_pointer->_y = menu->_y + COI_MENU_OFFSET_Y + (pointerLocation * menu->_pointer->_height);
 }

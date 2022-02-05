@@ -52,9 +52,10 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIWindowSetBoard(window, threadTownBoard, &threadTown);
     return;
   }
-
-  int newPointerY = 50 + 40 * menu->_current;
-  COIBoardMoveSprite(board, pointerSprite, 0, newPointerY - pointerSprite->_y);
+  board->_shouldDraw = true;
+  //printf("pointerSprite in inputloop:%i\n", pointerSprite->_y);
+  //int newPointerY = 50 + 40 * menu->_current;
+  //COIBoardMoveSprite(board, pointerSprite, 0, newPointerY - pointerSprite->_y);
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
