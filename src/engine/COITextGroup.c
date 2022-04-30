@@ -25,7 +25,7 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
   size_t len = 0;
   char* line;
   char* textString;
-  int i;
+  int i = 0;
   SDL_Surface* surface;
   COIText* text;
   while (getline(&line, &len, fp) != -1) {
