@@ -42,6 +42,12 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       }
   }
 
+  // Buy
+  if (selection && menu->_current == 0) {
+
+  }
+  
+  // Exit
   if (selection && menu->_current == 2) {
     COIBoard* threadTownBoard = *(COIBoard**) (context + sizeof(int));
     COIWindow* window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));

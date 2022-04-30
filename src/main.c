@@ -21,12 +21,19 @@ int main(int argc, char** argv) {
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
   COISprite** armorySprites = COIBoardGetSprites(armoryBoard);
+
+  // First level menu for armory
   COIMenu* menu = COIMenuCreate(mediumGroup, armorySprites[0], armorySprites[1]);
-  int indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  //int indices[3] = { 0, 1, 2 };
-  COIMenuSetTexts(menu, indices, 8);
+  //int indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  int indices[3] = { 0, 1, 2 };
+  COIMenuSetTexts(menu, indices, 3);
   COIMenuSetVisible(menu);
-  
+
+  // Second level menu for armory
+  int subMenuIndices[5] = { 3, 4, 5, 6, 7 };
+  COIMenu* subMenu = COIMenuCreate(mediumGroup, armorySprites[2], armorySprites[1]);
+  COIMenuSetTexts(subMenu, subMenuIndices, 5);
+  COIMenuSetVisible(subMenu);
   
 
   // Modify threadtown context
@@ -42,6 +49,7 @@ int main(int argc, char** argv) {
   *(COIBoard**) (armoryContext + sizeof(int)) = board;
   *(COIWindow**) (armoryContext  + sizeof(int) + sizeof(COIBoard*)) = window;
   *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*)) = menu;
+  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow**)) = subMenu;
   COIBoardSetContext(armoryBoard, armoryContext);
   
   
@@ -61,6 +69,7 @@ int main(int argc, char** argv) {
   COIBoardDestroy(board);
   COIBoardDestroy(armoryBoard);
   COIMenuDestroy(menu);
+  COIMenuDestroy(subMenu);
   COIWindowDestroy(window);
 
   return 0;
