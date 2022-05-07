@@ -24,17 +24,26 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   int* pointer = (int*) context;
   COISprite* pointerSprite = board->_sprites[board->_spriteCount - 1];
   bool selection = false;
+  
   COIMenu** menuPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
   COIMenu* menu = *(menuPtr);
+
+  COIMenu** subMenuPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*));
+  COIMenu* subMenu = *(subMenuPtr);
+
+  COIMenu** currentPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*));
+  COIMenu* currentMenu = *(currentPtr);
+  //printf("thing: %i\n", currentMenu->_textsCount);
+
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_UP:
-	  COIMenuIncrement(menu, -1);
+	  COIMenuIncrement(currentMenu, -1);
 	  //menu->_current = (menu->_current - 1) < 0 ? 2 : (menu->_current - 1);
 	  break;
         case SDLK_DOWN:
-	  COIMenuIncrement(menu, 1);
+	  COIMenuIncrement(currentMenu, 1);
 	  //menu->_current = (menu->_current + 1) % menu->_visibleTextCount;
 	  break;
         case SDLK_SPACE:
@@ -44,7 +53,9 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 
   // Buy
   if (selection && menu->_current == 0) {
-
+    COIMenuSetVisible(subMenu);
+    *currentPtr = subMenu;
+    printf("thing: %i\n", currentMenu->_textsCount);
   }
   
   // Exit

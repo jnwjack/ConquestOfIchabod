@@ -12,7 +12,6 @@ int main(int argc, char** argv) {
   void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
 
   COITextGroup* mediumGroup = COITextGroupCreate(25, 255, 255, 255, "src/armory/text.dat", COIWindowGetRenderer(window));
-
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, 0);
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
 
@@ -31,9 +30,9 @@ int main(int argc, char** argv) {
 
   // Second level menu for armory
   int subMenuIndices[5] = { 3, 4, 5, 6, 7 };
-  COIMenu* subMenu = COIMenuCreate(mediumGroup, armorySprites[2], armorySprites[1]);
+  COIMenu* subMenu = COIMenuCreate(mediumGroup, armorySprites[2], armorySprites[3]);
   COIMenuSetTexts(subMenu, subMenuIndices, 5);
-  COIMenuSetVisible(subMenu);
+  COIMenuSetInvisible(subMenu);
   
 
   // Modify threadtown context
@@ -44,20 +43,22 @@ int main(int argc, char** argv) {
   COIBoardSetContext(board, context);
 
   // Armory context
-  void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*));
+  void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*) + sizeof(COIMenu*));
   *(int*)armoryContext = 0;
   *(COIBoard**) (armoryContext + sizeof(int)) = board;
   *(COIWindow**) (armoryContext  + sizeof(int) + sizeof(COIBoard*)) = window;
   *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*)) = menu;
-  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow**)) = subMenu;
-  COIBoardSetContext(armoryBoard, armoryContext);
-  
+  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*)) = subMenu;
+  printf("submenu: %i\n", subMenu->_textsCount);
+  // currently selected menu
+  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + 2 * sizeof(COIMenu*)) = menu;
+  COIBoardSetContext(armoryBoard, armoryContext);  
   
   COIWindowSetBoard(window, board, threadTownLoop);
   COIWindowLoop(window);
 
-  // Cleanup
 
+  // Cleanup
   // Only need to free the int, other pointers in context get handled elsewhere
   int* contextIntPtr = (int*) (context);
   free(contextIntPtr);

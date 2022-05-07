@@ -48,8 +48,6 @@ void COIMenuSetVisible(COIMenu* menu) {
   menu->_frame->_visible = true;
   menu->_pointer->_visible = true;
 
-  
-
   // Corresponds to a slot between the upper and lower frame bounds
   int slot = 0;
   

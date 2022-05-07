@@ -104,11 +104,15 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
     sprite = board->_sprites[i];
     if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
 	&& ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
-      sprite->_visible = true;
+      if (sprite->_autoHandle) {
+	sprite->_visible = true;
+      }
       sprite->_drawRect->x = sprite->_x - board->_frameX;
       sprite->_drawRect->y = sprite->_y - board->_frameY;
     } else {
-      sprite->_visible = false;
+      if (sprite->_autoHandle) {
+	sprite->_visible = false;
+      }
     }
   }
 
