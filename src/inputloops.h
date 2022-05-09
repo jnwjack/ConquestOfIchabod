@@ -2,6 +2,7 @@
 #include "engine/COIWindow.h"
 #include "collisions.h"
 #include "engine/COIMenu.h"
+#include "armory/Armory.h"
 #include <stdbool.h>
 
 #define MOVING_NONE 0

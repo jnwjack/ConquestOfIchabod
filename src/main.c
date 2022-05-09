@@ -2,6 +2,7 @@
 #include "engine/COIWindow.h"
 #include "engine/COIMenu.h"
 #include "inputloops.h"
+#include "armory/Armory.h"
 
 
 int main(int argc, char** argv) {
@@ -43,7 +44,7 @@ int main(int argc, char** argv) {
   COIBoardSetContext(board, context);
 
   // Armory context
-  void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*) + sizeof(COIMenu*));
+  /*void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*) + sizeof(COIMenu*));
   *(int*)armoryContext = 0;
   *(COIBoard**) (armoryContext + sizeof(int)) = board;
   *(COIWindow**) (armoryContext  + sizeof(int) + sizeof(COIBoard*)) = window;
@@ -51,8 +52,18 @@ int main(int argc, char** argv) {
   *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*)) = subMenu;
   printf("submenu: %i\n", subMenu->_textsCount);
   // currently selected menu
-  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + 2 * sizeof(COIMenu*)) = menu;
-  COIBoardSetContext(armoryBoard, armoryContext);  
+  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + 2 * sizeof(COIMenu*)) = menu;*/
+
+  ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
+  armoryContext->pointerLocation = 0;
+  armoryContext->board = board;
+  armoryContext->window = window;
+  armoryContext->menu = menu;
+  armoryContext->buyMenu = subMenu;
+  armoryContext->currentMenu = menu;
+  
+  COIBoardSetContext(armoryBoard, (void*)armoryContext);
+
   
   COIWindowSetBoard(window, board, threadTownLoop);
   COIWindowLoop(window);
@@ -62,8 +73,9 @@ int main(int argc, char** argv) {
   // Only need to free the int, other pointers in context get handled elsewhere
   int* contextIntPtr = (int*) (context);
   free(contextIntPtr);
-  contextIntPtr = (int*) (armoryContext);
-  free(contextIntPtr);
+  /*contextIntPtr = (int*) (armoryContext);
+    free(contextIntPtr);*/
+  free(armoryContext);
   
   COITextGroupDestroy(mediumGroup);
   COIAssetLoaderDestroy(loader);

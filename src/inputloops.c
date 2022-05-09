@@ -21,10 +21,11 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
 }
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {
-  int* pointer = (int*) context;
-  COISprite* pointerSprite = board->_sprites[board->_spriteCount - 1];
-  bool selection = false;
+  ArmoryContext* armoryContext = (ArmoryContext*)context;
   
+  
+  bool selection = false;
+  /*
   COIMenu** menuPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
   COIMenu* menu = *(menuPtr);
 
@@ -32,18 +33,18 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   COIMenu* subMenu = *(subMenuPtr);
 
   COIMenu** currentPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*));
-  COIMenu* currentMenu = *(currentPtr);
+  COIMenu* currentMenu = *(currentPtr);*/
   //printf("thing: %i\n", currentMenu->_textsCount);
 
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_UP:
-	  COIMenuIncrement(currentMenu, -1);
+	  COIMenuIncrement(armoryContext->currentMenu, -1);
 	  //menu->_current = (menu->_current - 1) < 0 ? 2 : (menu->_current - 1);
 	  break;
         case SDLK_DOWN:
-	  COIMenuIncrement(currentMenu, 1);
+	  COIMenuIncrement(armoryContext->currentMenu, 1);
 	  //menu->_current = (menu->_current + 1) % menu->_visibleTextCount;
 	  break;
         case SDLK_SPACE:
@@ -52,27 +53,28 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   }
 
   // Buy
-  if (selection && menu->_current == 0) {
-    COIMenuSetVisible(subMenu);
-    *currentPtr = subMenu;
-    printf("thing: %i\n", currentMenu->_textsCount);
+  if (selection && armoryContext->currentMenu->_current == 0) {
+    COIMenuSetVisible(armoryContext->buyMenu);
+    armoryContext->currentMenu = armoryContext->buyMenu;
   }
   
   // Exit
-  if (selection && menu->_current == 2) {
-    COIBoard* threadTownBoard = *(COIBoard**) (context + sizeof(int));
-    COIWindow* window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
+  if (selection && armoryContext->currentMenu->_current == 2) {
+    COIBoard* threadTownBoard = armoryContext->board;
+    COIWindow* window = armoryContext->window;
+
+    // Reset menus and pointer
+    COIMenuSetInvisible(armoryContext->buyMenu);
+    armoryContext->currentMenu = armoryContext->menu;
+    COIMenuIncrement(armoryContext->menu, -2);
     
-    // Re-adjust player sprite in threadtown
+    // Re-adjust player sprite in threadtown and change to threadtown
     COISprite* player = threadTownBoard->_sprites[threadTownBoard->_spriteCount - 1];
     COIBoardMoveSprite(threadTownBoard, player, 0, 30);
     COIWindowSetBoard(window, threadTownBoard, &threadTown);
     return;
   }
   board->_shouldDraw = true;
-  //printf("pointerSprite in inputloop:%i\n", pointerSprite->_y);
-  //int newPointerY = 50 + 40 * menu->_current;
-  //COIBoardMoveSprite(board, pointerSprite, 0, newPointerY - pointerSprite->_y);
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
