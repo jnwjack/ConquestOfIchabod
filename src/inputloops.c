@@ -22,34 +22,24 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {
   ArmoryContext* armoryContext = (ArmoryContext*)context;
-  
-  
+    
   bool selection = false;
-  /*
-  COIMenu** menuPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
-  COIMenu* menu = *(menuPtr);
-
-  COIMenu** subMenuPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*));
-  COIMenu* subMenu = *(subMenuPtr);
-
-  COIMenu** currentPtr = (context + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*));
-  COIMenu* currentMenu = *(currentPtr);*/
-  //printf("thing: %i\n", currentMenu->_textsCount);
-
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_UP:
 	  COIMenuIncrement(armoryContext->currentMenu, -1);
-	  //menu->_current = (menu->_current - 1) < 0 ? 2 : (menu->_current - 1);
 	  break;
         case SDLK_DOWN:
 	  COIMenuIncrement(armoryContext->currentMenu, 1);
-	  //menu->_current = (menu->_current + 1) % menu->_visibleTextCount;
 	  break;
         case SDLK_SPACE:
 	  selection = true;
       }
+  }
+
+  if (selection && armoryContext->currentMenu == armoryContext->buyMenu) {
+    
   }
 
   // Buy

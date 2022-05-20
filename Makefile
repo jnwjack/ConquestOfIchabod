@@ -11,4 +11,4 @@ build:
 	$(CC) $(SRCS) $(CFLAGS) $(LIBS) -o $(OUTPUT)
 
 clean:
-	rm -f *.o $(OUTPUT) *~ src/*~ src/engine/*~
+	rm -f *.o $(OUTPUT) *~ src/*~ src/engine/*~ src/.#* src/engine/.#*

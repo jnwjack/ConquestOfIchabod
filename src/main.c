@@ -43,17 +43,6 @@ int main(int argc, char** argv) {
   *windowPtr = window;
   COIBoardSetContext(board, context);
 
-  // Armory context
-  /*void* armoryContext = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*) + sizeof(COIMenu*) + sizeof(COIMenu*));
-  *(int*)armoryContext = 0;
-  *(COIBoard**) (armoryContext + sizeof(int)) = board;
-  *(COIWindow**) (armoryContext  + sizeof(int) + sizeof(COIBoard*)) = window;
-  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*)) = menu;
-  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + sizeof(COIMenu*)) = subMenu;
-  printf("submenu: %i\n", subMenu->_textsCount);
-  // currently selected menu
-  *(COIMenu**) (armoryContext + sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*) + 2 * sizeof(COIMenu*)) = menu;*/
-
   ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
   armoryContext->pointerLocation = 0;
   armoryContext->board = board;
@@ -61,6 +50,10 @@ int main(int argc, char** argv) {
   armoryContext->menu = menu;
   armoryContext->buyMenu = subMenu;
   armoryContext->currentMenu = menu;
+  armoryContext->numItems = 5;
+  for (int i = 0; i < armoryContext->numItems; i++) {
+    //    armoryContext->items[i].textIndex = 
+  }
   
   COIBoardSetContext(armoryBoard, (void*)armoryContext);
 
