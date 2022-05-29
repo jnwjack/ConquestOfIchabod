@@ -3,11 +3,15 @@
 #include "engine/COIMenu.h"
 #include "inputloops.h"
 #include "armory/Armory.h"
+#include "items.h"
 
 
 int main(int argc, char** argv) {
   COIWindow* window = COIWindowCreate();
-  
+
+  // Global item data
+  ItemList* itemList = loadItems();
+
   COIAssetLoader* loader = COIAssetLoaderCreate();
   COILoop threadTownLoop = &threadTown;
   void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
@@ -77,6 +81,7 @@ int main(int argc, char** argv) {
   COIMenuDestroy(menu);
   COIMenuDestroy(subMenu);
   COIWindowDestroy(window);
+  ItemListDestroy(itemList);
 
   return 0;
 }
