@@ -38,7 +38,6 @@ ItemList* loadItems() {
     }
 
     currentItem->strength = atoi(strtok(NULL, " "));
-    currentItem->price = atoi(strtok(NULL, " "));
     currentItem->slot = atoi(strtok(NULL, " "));
 
     i++;

@@ -48,16 +48,16 @@ int main(int argc, char** argv) {
   COIBoardSetContext(board, context);
 
   ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
+  armoryContext->sellItems = NULL;
   armoryContext->pointerLocation = 0;
   armoryContext->board = board;
   armoryContext->window = window;
   armoryContext->menu = menu;
   armoryContext->buyMenu = subMenu;
   armoryContext->currentMenu = menu;
-  armoryContext->numItems = 5;
-  for (int i = 0; i < armoryContext->numItems; i++) {
-    //    armoryContext->items[i].textIndex = 
-  }
+  printf("before buy\n");
+  armoryPopulateBuy(armoryContext);
+  printf("after buy\n");
   
   COIBoardSetContext(armoryBoard, (void*)armoryContext);
 
@@ -72,7 +72,8 @@ int main(int argc, char** argv) {
   free(contextIntPtr);
   /*contextIntPtr = (int*) (armoryContext);
     free(contextIntPtr);*/
-  free(armoryContext);
+
+  armoryDestroy(armoryContext);
   
   COITextGroupDestroy(mediumGroup);
   COIAssetLoaderDestroy(loader);
