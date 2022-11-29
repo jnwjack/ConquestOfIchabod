@@ -49,7 +49,7 @@ int COIBoardBGColor(COIBoard* board, int index) {
 }
 
 void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader,  SDL_Renderer* renderer, const char* filename) {
-  FILE* fp;
+  FILE* fp = NULL;
   
   fp = fopen(filename, "r");
   if (fp == NULL) {
@@ -61,14 +61,14 @@ void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader,  SDL_Rendere
   board->_spriteCount = spriteCount;
 
   size_t len = 0;
-  char* line;
+  char* line = NULL;
   int assetID;
   int x;
   int y;
   int w;
   int h;
   int i = 0;
-  COISprite* sprite;
+  COISprite* sprite = NULL;
   while (getline(&line, &len, fp) != -1) {
     line[strcspn(line, "\n")] = '\0';
 
@@ -99,7 +99,7 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
   int farEdgeX = board->_frameX + board->_frameWidth;
   int farEdgeY = board->_frameY + board->_frameHeight;
   int i;
-  COISprite* sprite;
+  COISprite* sprite = NULL;
   for (i = 0; i < board->_spriteCount; i++) {
     sprite = board->_sprites[i];
     if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)

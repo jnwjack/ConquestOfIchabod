@@ -2,3 +2,4 @@ SDL*
 *~
 *.o
 coi
+*.DS_STORE

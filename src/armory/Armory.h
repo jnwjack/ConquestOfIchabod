@@ -30,6 +30,7 @@ typedef struct ArmoryContext {
   int numSellItems;
 } ArmoryContext;
 
+void armoryDestroy(ArmoryContext* context);
 
 void armorySetItem(ArmoryItem* item, int itemID, int textID, int price, int stock);
 int* armoryGetTextIndices(ArmoryContext* context);

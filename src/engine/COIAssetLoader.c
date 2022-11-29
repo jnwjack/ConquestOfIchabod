@@ -1,8 +1,8 @@
 #include "COIAssetLoader.h"
 
 COIAssetLoader* COIAssetLoaderCreate() {
-  FILE* fp;
-  char* line;
+  FILE* fp = NULL;
+  char* line = NULL;
   size_t len = 0;
   const char* mappingFilename = "src/engine/etc/mapping.cfg";
   const char* collisionsFilename = "src/engine/etc/collisions.cfg";

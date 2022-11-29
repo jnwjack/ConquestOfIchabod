@@ -14,7 +14,7 @@ ItemList* loadItems() {
     free(list);
     return NULL;
   }
-  char* line;
+  char* line = NULL;
   size_t len = 0;
   char type;
   int i = 0;

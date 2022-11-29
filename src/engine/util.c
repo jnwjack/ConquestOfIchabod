@@ -1,7 +1,7 @@
 #include "util.h"
 
 int countLines(const char* filename) {
-  FILE* fp;
+  FILE* fp = NULL;
   char c;
   int n = 0;
 

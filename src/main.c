@@ -55,9 +55,7 @@ int main(int argc, char** argv) {
   armoryContext->menu = menu;
   armoryContext->buyMenu = subMenu;
   armoryContext->currentMenu = menu;
-  printf("before buy\n");
   armoryPopulateBuy(armoryContext);
-  printf("after buy\n");
   
   COIBoardSetContext(armoryBoard, (void*)armoryContext);
 

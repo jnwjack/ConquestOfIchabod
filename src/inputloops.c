@@ -2,7 +2,7 @@
 
 int testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
   int maxSpriteIndex = board->_spriteCount - 1;
-  COISprite* currentSprite;
+  COISprite* currentSprite = NULL;
   int i;
   int collisionResult;
   for (i = 0; i < maxSpriteIndex; i++) {
@@ -145,8 +145,8 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       return;
   }
   switch (collisionResult) {
-    COIBoard* board;
-    COIWindow* window;
+    COIBoard* board = NULL;
+    COIWindow* window = NULL;
     case ARMORY_DOOR:
       board = *(COIBoard**) (context + sizeof(int));
       window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));

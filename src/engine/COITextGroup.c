@@ -12,7 +12,7 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
   group->_fontSize = fontSize;
 
 
-  FILE* fp;
+  FILE* fp = NULL;
 
   fp = fopen(filename, "r");
   if (fp == NULL) {
@@ -23,11 +23,11 @@ COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* 
   group->_texts = malloc(group->_textCount * sizeof(COIText*));
 
   size_t len = 0;
-  char* line;
-  char* textString;
+  char* line = NULL;
+  char* textString = NULL;
   int i = 0;
-  SDL_Surface* surface;
-  COIText* text;
+  SDL_Surface* surface = NULL;
+  COIText* text = NULL;
   while (getline(&line, &len, fp) != -1) {
     line[strcspn(line, "\n")] = '\0';
     
@@ -69,7 +69,7 @@ void COITextGroupDestroy(COITextGroup* group) {
   }
   
   int i;
-  COIText* text;
+  COIText* text = NULL;
   for (i = 0; i < group->_textCount; i++) {
     text = group->_texts[i];
     if (text == NULL) {

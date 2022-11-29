@@ -64,8 +64,8 @@ void COIWindowLoop(COIWindow* window) {
       }
 
       // Go through each text group and display text objects
-      COIText** texts;
-      COIText* text;
+      COIText** texts = NULL;
+      COIText* text = NULL;
       for (i = 0; i < COIBoardGetTextGroupCount(window->_currentBoard); i++) {
 	int j;
 	texts = COIBoardGetTexts(window->_currentBoard, i);
