@@ -28,7 +28,7 @@ void armorySetTextIndices(ArmoryContext* context, int* indices) {
 // Initialize the "buy" menu items
 void armoryPopulateBuy(ArmoryContext* context) {
   context->numBuyItems = 5;
-  context->buyItems = malloc(sizeof(context->numBuyItems));
+  context->buyItems = malloc(context->numBuyItems * sizeof(ArmoryItem));
 
   
   // Hardcoded prices and stock values
