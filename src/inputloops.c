@@ -22,8 +22,8 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {
   ArmoryContext* armoryContext = (ArmoryContext*)context;
-    
   bool selection = false;
+  bool back = false;
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
@@ -35,11 +35,21 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 	  break;
         case SDLK_SPACE:
 	  selection = true;
+	  break;
+        case SDLK_LEFT:
+	  back = true;
+	  break;
       }
+      break;
+    default:
+      return;
   }
 
-  if (selection && armoryContext->currentMenu == armoryContext->buyMenu) {
-    
+  // Return to first menu
+  if (back && armoryContext->currentMenu != armoryContext->menu) {
+    COIMenuSetInvisible(armoryContext->currentMenu);
+    COIMenuReset(armoryContext->currentMenu);
+    armoryContext->currentMenu = armoryContext->menu;
   }
 
   // Buy

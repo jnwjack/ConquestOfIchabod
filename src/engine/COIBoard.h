@@ -44,6 +44,7 @@ bool COIBoardShiftFrameX(COIBoard* board, int stride);
 bool COIBoardShiftFrameY(COIBoard* board, int stride);
 void COIBoardUpdateSpriteVisibility(COIBoard* board);
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
+void COIBoardQueueDraw(COIBoard* board); // Request draw for this board
 void COIBoardSetContext(COIBoard* board, void* context);
 void COIBoardAddTextGroup(COIBoard* board, COITextGroup* group, int index);
 COIText** COIBoardGetTexts(COIBoard* board, int index);

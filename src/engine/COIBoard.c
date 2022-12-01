@@ -170,6 +170,10 @@ void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y) {
   }
 }
 
+void COIBoardQueueDraw(COIBoard* board) {
+  board->_shouldDraw = true;
+}
+
 void COIBoardSetContext(COIBoard* board, void* context) {
   board->_context = context;
 }

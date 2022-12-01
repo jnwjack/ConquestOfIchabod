@@ -88,6 +88,7 @@ void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop) {
   board->_frameHeight = window->_height;
   window->_currentBoard = board;
   window->_loop = loop;
+  COIBoardQueueDraw(window->_currentBoard);
   SDL_SetRenderDrawColor(window->_renderer,
 			 COIBoardBGColor(board, INDEX_RED),
 			 COIBoardBGColor(board, INDEX_GREEN),
