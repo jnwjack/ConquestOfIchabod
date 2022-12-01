@@ -102,21 +102,7 @@ void COIMenuSetTexts(COIMenu* menu, int indices[], int numIndices) {
   }
 }
 
-void COIMenuIncrement(COIMenu* menu, int step) {
-  
-  int nextCurrent = menu->_current + step;
-  if (nextCurrent >= menu->_textsCount) {
-    menu->_current = 0;
-  } else if (nextCurrent < 0) {
-    menu->_current = menu->_textsCount - 1;
-  } else {
-    menu->_current = nextCurrent;
-  }
-
-  //nextCurrent = nextCurrent < 0 ? menu->_textsCount + step : nextCurrent % menu->_textsCount;
-
-  //menu->_current = nextCurrent;
-  
+void COIMenuAdjustFrame(COIMenu* menu) {
   if (menu->_current > menu->_upperFrameBound) {
     menu->_upperFrameBound = menu->_current;
     menu->_lowerFrameBound = menu->_current - (menu->_visibleTextCount - 1);
@@ -129,4 +115,26 @@ void COIMenuIncrement(COIMenu* menu, int step) {
 
   int pointerLocation = menu->_current - menu->_lowerFrameBound;
   menu->_pointer->_y = menu->_y + COI_MENU_OFFSET_Y + (pointerLocation * menu->_pointer->_height);
+}
+
+void COIMenuReset(COIMenu* menu) {
+  menu->_current = 0;
+  COIMenuAdjustFrame(menu);
+}
+
+void COIMenuIncrement(COIMenu* menu, int step) {
+  int nextCurrent = menu->_current + step;
+  if (nextCurrent >= menu->_textsCount) {
+    menu->_current = 0;
+  } else if (nextCurrent < 0) {
+    menu->_current = menu->_textsCount - 1;
+  } else {
+    menu->_current = nextCurrent;
+  }
+
+  //nextCurrent = nextCurrent < 0 ? menu->_textsCount + step : nextCurrent % menu->_textsCount;
+
+  //menu->_current = nextCurrent;
+
+  COIMenuAdjustFrame(menu);
 }

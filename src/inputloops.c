@@ -54,9 +54,11 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIWindow* window = armoryContext->window;
 
     // Reset menus and pointer
+    COIMenuReset(armoryContext->buyMenu);
+    COIMenuReset(armoryContext->menu);
     COIMenuSetInvisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->menu;
-    COIMenuIncrement(armoryContext->menu, -2);
+    //COIMenuIncrement(armoryContext->menu, -2);
     
     // Re-adjust player sprite in threadtown and change to threadtown
     COISprite* player = threadTownBoard->_sprites[threadTownBoard->_spriteCount - 1];

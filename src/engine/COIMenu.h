@@ -35,6 +35,8 @@ void COIMenuDestroy(COIMenu* menu);
 void COIMenuSetVisible(COIMenu* menu);
 void COIMenuSetInvisible(COIMenu* menu);
 void COIMenuSetTexts(COIMenu* menu, int indices[], int numIndices);
+void COIMenuAdjustFrame(COIMenu* menu);
+void COIMenuReset(COIMenu* menu);
 void COIMenuIncrement(COIMenu* menu, int step);
 
 #endif
