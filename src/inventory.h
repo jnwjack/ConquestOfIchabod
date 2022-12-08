@@ -1,6 +1,9 @@
 #include "items.h"
 
-#define BACKPACK_SIZE = 100
+#ifndef INVENTORY_H
+#define INVENTORY_H
+
+#define BACKPACK_SIZE 100
 
 typedef struct Inventory {
   Item* head;
@@ -16,3 +19,5 @@ Inventory* InventoryCreate() {
   inventory->backpack = malloc(sizeof(Item*) * BACKPACK_SIZE);
   return inventory;
 }
+
+#endif

@@ -1,3 +1,4 @@
+
 #include "items.h"
 #include "engine/util.h"
 
@@ -51,6 +52,14 @@ ItemList* loadItems() {
   return list;
 }
 
+Item* ItemListGetItem(ItemList* list, int index) {
+  if (index >= list->numItems) {
+    printf("Index %i out of ItemList range\n", index);
+    exit(1);
+  }
+  return &list->items[index];
+}
+
 void ItemListDestroy(ItemList* list) {
   if (list == NULL) {
     return;
@@ -59,3 +68,4 @@ void ItemListDestroy(ItemList* list) {
   free(list->items);
   free(list);
 }
+

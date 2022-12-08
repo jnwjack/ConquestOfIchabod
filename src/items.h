@@ -40,6 +40,7 @@ typedef struct ItemList {
 
 // Load global item list, we'll index to this from other places (armory, etc.)
 ItemList* loadItems();
+Item* ItemListGetItem(ItemList* list, int index);
 void ItemListDestroy(ItemList* list);
 
 #endif
