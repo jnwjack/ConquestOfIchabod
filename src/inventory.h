@@ -12,12 +12,9 @@ typedef struct Inventory {
   Item* weapon;
   Item* offHand;
   Item** backpack;
+  int numBackpackItems;
 } Inventory;
 
-Inventory* InventoryCreate() {
-  Inventory* inventory = malloc(sizeof(Inventory));
-  inventory->backpack = malloc(sizeof(Item*) * BACKPACK_SIZE);
-  return inventory;
-}
+Inventory* inventoryCreate();
 
 #endif

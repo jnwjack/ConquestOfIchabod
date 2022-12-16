@@ -29,6 +29,7 @@ typedef enum {
 
 typedef struct Item {
   ItemType type;
+  int id;
   int strength;
   int slot;
 } Item;

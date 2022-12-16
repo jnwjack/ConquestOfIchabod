@@ -40,6 +40,7 @@ ItemList* loadItems() {
 
     currentItem->strength = atoi(strtok(NULL, " "));
     currentItem->slot = atoi(strtok(NULL, " "));
+    currentItem->id = i;
 
     i++;
   }
