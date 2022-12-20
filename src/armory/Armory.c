@@ -7,6 +7,16 @@ void armorySetItem(ArmoryItem* item, int itemID, int stock) {
   item->price = _priceFromItemID(itemID);
 }
 
+// Update COIMenu text with items in ArmoryList
+void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems) {
+  int indices[numItems];
+  for (int i = 0; i < numItems; i++) {
+    indices[i] = items[i].textID;
+  }
+
+  COIMenuSetTexts(menu, indices, numItems);
+}
+  
 // Traverse array of items and get text indices
 int* armoryGetTextIndices(ArmoryContext* context) {
   int* textIndices = malloc(sizeof(int) * context->numBuyItems);
@@ -33,6 +43,8 @@ void armoryPopulateSell(ArmoryContext* context, Inventory* inventory) {
   for (int i = 0; i < inventory->numBackpackItems; i++) {
     armorySetItem(&context->sellItems[i], inventory->backpack[i]->id, 1);
   }
+
+  armoryUpdateMenuText(context->sellMenu, context->sellItems, context->numSellItems);
 }
 
 // Initialize the "buy" menu items
@@ -47,9 +59,40 @@ void armoryPopulateBuy(ArmoryContext* context) {
   armorySetItem(&context->buyItems[2], ITEM_ID_SHABBY_BOW, 1);
   armorySetItem(&context->buyItems[3], ITEM_ID_CRACKED_SHIELD, 1);
   armorySetItem(&context->buyItems[4], ITEM_ID_STRENGTH_POTION, 5);
+
+  armoryUpdateMenuText(context->buyMenu, context->buyItems, context->numBuyItems);
 }
 
 void armoryBuyMenu(ArmoryContext* context, int selected) {
+  ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
+  
+    // First level menu for armory
+  COIMenu* menu = COIMenuCreate(mediumGroup, armorySprites[0], armorySprites[1]);
+  //int indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  int indices[3] = { 0, 1, 2 };
+  COIMenuSetTexts(menu, indices, 3);
+  COIMenuSetVisible(menu);
+
+  // Second level menu for armory
+  int subMenuIndices[5] = { 3, 4, 5, 6, 7 };
+  COIMenu* subMenu = COIMenuCreate(mediumGroup, armorySprites[2], armorySprites[3]);
+  COIMenuSetTexts(subMenu, subMenuIndices, 5);
+  COIMenuSetInvisible(subMenu);
+  armoryContext->sellItems = NULL;
+  armoryContext->pointerLocation = 0;
+  armoryContext->board = board;
+  armoryContext->window = window;
+  armoryContext->menu = menu;
+  armoryContext->buyMenu = subMenu;
+  armoryContext->currentMenu = menu;
+  armoryPopulateBuy(armoryContext);
+
+}
+
+// Initialization/Destruction ----------------------------------
+
+ArmoryContext* armoryCreate() {
+
 }
 
 void armoryDestroy(ArmoryContext* context) {
@@ -61,6 +104,8 @@ void armoryDestroy(ArmoryContext* context) {
   }
   free(context);
 }
+
+//  ------------------------------------------------------------
 
 // Return the price for an item for this shop
 int _priceFromItemID(int item) {

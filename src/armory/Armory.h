@@ -34,12 +34,14 @@ typedef struct ArmoryContext {
   int numSellItems;
 } ArmoryContext;
 
+ArmoryContext* armoryCreate();
 void armoryDestroy(ArmoryContext* context);
 
 void armorySetItem(ArmoryItem* item, int itemID, int stock);
 int* armoryGetTextIndices(ArmoryContext* context);
 void armorySetTextIndices(ArmoryContext* context, int* indices);
 void armoryPopulateBuy(ArmoryContext* context);
+void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems);
 
 // Menu Behavior
 void armoryBuyMenu(ArmoryContext* context, int selected);
