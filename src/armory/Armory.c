@@ -64,35 +64,43 @@ void armoryPopulateBuy(ArmoryContext* context) {
 }
 
 void armoryBuyMenu(ArmoryContext* context, int selected) {
-  ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
-  
-    // First level menu for armory
-  COIMenu* menu = COIMenuCreate(mediumGroup, armorySprites[0], armorySprites[1]);
-  //int indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  int indices[3] = { 0, 1, 2 };
-  COIMenuSetTexts(menu, indices, 3);
-  COIMenuSetVisible(menu);
-
-  // Second level menu for armory
-  int subMenuIndices[5] = { 3, 4, 5, 6, 7 };
-  COIMenu* subMenu = COIMenuCreate(mediumGroup, armorySprites[2], armorySprites[3]);
-  COIMenuSetTexts(subMenu, subMenuIndices, 5);
-  COIMenuSetInvisible(subMenu);
-  armoryContext->sellItems = NULL;
-  armoryContext->pointerLocation = 0;
-  armoryContext->board = board;
-  armoryContext->window = window;
-  armoryContext->menu = menu;
-  armoryContext->buyMenu = subMenu;
-  armoryContext->currentMenu = menu;
-  armoryPopulateBuy(armoryContext);
-
 }
 
 // Initialization/Destruction ----------------------------------
 
-ArmoryContext* armoryCreate() {
+COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard) {
+  COITextGroup* mediumGroup = COITextGroupCreate(25, 255, 255, 255, "src/armory/text.dat", COIWindowGetRenderer(window));
+  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, 1);
+  COIBoardAddTextGroup(armoryBoard, mediumGroup, 0);
 
+  COILoop armoryLoop = &armory;
+  COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
+
+  COIBoardSetContext(armoryBoard, (void*)_armoryCreateContext(armoryBoard, outsideBoard, window, mediumGroup));
+}
+ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, COITextGroup* textGroup) {
+  ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
+  COISprite** armorySprites = COIBoardGetSprites(board);
+
+  // First level menu for armory
+  COIMenu* menu = COIMenuCreate(textGroup, armorySprites[0], armorySprites[1]);
+  int indices[3] = { TEXT_ID_BUY, TEXT_ID_SELL, TEXT_ID_EXIT };
+  COIMenuSetTexts(menu, indices, 3);
+  COIMenuSetVisible(menu);
+  armoryContext->menu = menu;
+
+  // Fill item list for buy menu
+  armoryContext->buyMenu = COIMenuCreate(textGroup, armorySprites[2], armorySprites[3]);
+  armoryPopulateBuy(armoryContext);
+  armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
+  COIMenuSetInvisible(armoryContext->buyMenu);
+  armoryContext->sellItems = NULL;
+  armoryContext->outsideBoard = outsideBoard;
+  armoryContext->currentMenu = menu;
+
+  armoryContext->window = window;
+
+  return armoryContext;
 }
 
 void armoryDestroy(ArmoryContext* context) {

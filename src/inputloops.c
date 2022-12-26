@@ -22,6 +22,7 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {
   ArmoryContext* armoryContext = (ArmoryContext*)context;
+
   bool selection = false;
   bool back = false;
   switch (event->type) {
@@ -59,8 +60,8 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   }
   
   // Exit
-  if (selection && armoryContext->currentMenu->_current == 2) {
-    COIBoard* threadTownBoard = armoryContext->board;
+  if (selection && armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 2) {
+    COIBoard* threadTownBoard = armoryContext->outsideBoard;
     COIWindow* window = armoryContext->window;
 
     // Reset menus and pointer
