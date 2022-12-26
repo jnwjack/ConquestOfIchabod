@@ -1,10 +1,14 @@
 #include "tests.h"
+#include <stdio.h>
 
 Inventory* createTestInventory(ItemList* items) {
   Inventory* inventory = inventoryCreate();
 
   inventory->weapon = ItemListGetItem(items, ITEM_ID_RUSTY_SWORD);
   inventory->offHand = ItemListGetItem(items, ITEM_ID_CRACKED_SHIELD);
+  inventory->head = ItemListGetItem(items, ITEM_ID_UNARMORED_HEAD);
+  inventory->body = ItemListGetItem(items, ITEM_ID_UNARMORED_BODY);
+  inventory->body = ItemListGetItem(items, ITEM_ID_UNARMORED_LEGS);
 
 
   inventory->numBackpackItems = 4;

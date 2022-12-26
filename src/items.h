@@ -19,6 +19,11 @@
 #define ITEM_ID_SHABBY_BOW 2
 #define ITEM_ID_CRACKED_SHIELD 3
 #define ITEM_ID_STRENGTH_POTION 4
+#define ITEM_ID_UNARMED 5
+#define ITEM_ID_UNARMORED_HEAD 6
+#define ITEM_ID_UNARMORED_BODY 7
+#define ITEM_ID_UNARMORED_LEGS 8
+#define ITEM_ID_UNARMED_OFF 9
 // ----------------------------
 
 typedef enum {

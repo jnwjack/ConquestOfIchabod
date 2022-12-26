@@ -4,6 +4,7 @@
 #include "inputloops.h"
 #include "armory/Armory.h"
 #include "items.h"
+#include "tests.h"
 
 
 int main(int argc, char** argv) {
@@ -11,6 +12,9 @@ int main(int argc, char** argv) {
 
   // Global item data
   ItemList* itemList = loadItems();
+
+  // Test inventory
+  Inventory* inventory = createTestInventory(itemList);
 
   COIAssetLoader* loader = COIAssetLoaderCreate();
   COILoop threadTownLoop = &threadTown;
@@ -20,7 +24,7 @@ int main(int argc, char** argv) {
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
 
 
-  COIBoard* armoryBoard = armoryCreateBoard(window, loader, board);
+  COIBoard* armoryBoard = armoryCreateBoard(window, loader, board, inventory);
 
   // Modify threadtown context
   COIBoard** armoryBoardPtr = (COIBoard**) (context + sizeof(int));

@@ -1,7 +1,7 @@
-#include "items.h"
-
 #ifndef INVENTORY_H
 #define INVENTORY_H
+
+#include "items.h"
 
 #define BACKPACK_SIZE 100
 

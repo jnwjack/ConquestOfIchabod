@@ -38,11 +38,12 @@ typedef struct ArmoryContext {
   ArmoryItem* sellItems;
   int numBuyItems;
   int numSellItems;
+  Inventory* inventory; // Player inventory
 } ArmoryContext;
 
 // Create board and associated context
 // main.c can access context through the returned board
-COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard);
+COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard, Inventory* inventory);
 
 void armoryDestroy(ArmoryContext* context);
 
@@ -50,6 +51,7 @@ void armorySetItem(ArmoryItem* item, int itemID, int stock);
 int* armoryGetTextIndices(ArmoryContext* context);
 void armorySetTextIndices(ArmoryContext* context, int* indices);
 void armoryPopulateBuy(ArmoryContext* context);
+void armoryPopulateSell(ArmoryContext* context);
 void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems);
 
 // Menu Behavior
@@ -59,6 +61,6 @@ void armoryBuyMenu(ArmoryContext* context, int selected);
 // Private functions
 int _textIDFromItemID(int item);
 int _priceFromItemID(int item);
-ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, COITextGroup* textGroup);
+ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, COITextGroup* textGroup, Inventory* inventory);
 
 #endif

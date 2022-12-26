@@ -58,6 +58,12 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIMenuSetVisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->buyMenu;
   }
+
+  // Sell
+  if (selection && armoryContext->currentMenu->_current == 1) {
+    COIMenuSetVisible(armoryContext->sellMenu);
+    armoryContext->currentMenu = armoryContext->sellMenu;
+  }
   
   // Exit
   if (selection && armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 2) {

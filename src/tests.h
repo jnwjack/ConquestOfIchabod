@@ -3,6 +3,6 @@
 #ifndef TESTS_H
 #define TESTS_H
 
-Inventory* createTestInventory();
+Inventory* createTestInventory(ItemList* items);
 
 #endif

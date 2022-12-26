@@ -58,6 +58,7 @@ Item* ItemListGetItem(ItemList* list, int index) {
     printf("Index %i out of ItemList range\n", index);
     exit(1);
   }
+
   return &list->items[index];
 }
 
