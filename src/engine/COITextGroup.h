@@ -24,6 +24,13 @@ typedef struct COITextGroup {
   COIText** _texts;
 }COITextGroup;
 
+typedef struct COITextType {
+  TTF_Font* font;
+  SDL_Color color;
+  int fontSize;
+  SDL_Renderer* renderer;
+}
+
 COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* filename, SDL_Renderer* renderer);
 void COITextGroupDestroy(COITextGroup* group);
 

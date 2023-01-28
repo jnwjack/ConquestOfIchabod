@@ -46,6 +46,8 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       return;
   }
 
+  board->_shouldDraw = true;
+
   // Return to first menu
   if (back && armoryContext->currentMenu != armoryContext->menu) {
     COIMenuSetInvisible(armoryContext->currentMenu);
@@ -53,20 +55,24 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     armoryContext->currentMenu = armoryContext->menu;
   }
 
+  if (!selection) {
+    return;
+  }
+
   // Buy
-  if (selection && armoryContext->currentMenu->_current == 0) {
+  if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 0) {
     COIMenuSetVisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->buyMenu;
   }
 
   // Sell
-  if (selection && armoryContext->currentMenu->_current == 1) {
+  if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 1) {
     COIMenuSetVisible(armoryContext->sellMenu);
     armoryContext->currentMenu = armoryContext->sellMenu;
   }
   
   // Exit
-  if (selection && armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 2) {
+  if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 2) {
     COIBoard* threadTownBoard = armoryContext->outsideBoard;
     COIWindow* window = armoryContext->window;
 
@@ -83,7 +89,6 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIWindowSetBoard(window, threadTownBoard, &threadTown);
     return;
   }
-  board->_shouldDraw = true;
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
