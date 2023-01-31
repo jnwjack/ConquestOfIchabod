@@ -1,10 +1,10 @@
+#ifndef COIMENU_H
+#define COIMENU_H
+
 #include "COISprite.h"
 #include "COITextGroup.h"
 #include <stdbool.h>
 #include <stdlib.h>
-
-#ifndef COIMENU_H
-#define COIMENU_H
 
 #define COI_MENU_OFFSET_X 100
 #define COI_MENU_OFFSET_Y 10

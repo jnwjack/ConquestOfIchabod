@@ -1,31 +1,35 @@
 #include "COIChar.h"
 
 COIChar* COICharCreate(char c, int x, int y, COITextType* textType) {
-  COIChar* obj = malloc(sizeof(COIChar*));
+  COIChar* obj = malloc(sizeof(COIChar));
 
   obj->value = c;
   obj->x = x;
   obj->y = y;
-  obj->_drawRect = malloc(sizeof(SDL_Rect));
-  obj->visible = false;
+  obj->drawRect = malloc(sizeof(SDL_Rect));
+  obj->visible = true;
+  obj->next = NULL;
   
   char str[2];
   str[0] = obj->value;
   str[1] = '\0';
-  SDL_Surface* surface = TTF_RenderText_Solid(textType->font, &str, textType->color);
-  obj->_texture = SLD_CreateTextureFromSurface(textType->renderer, surface);
-  int w, h;
-  SDL_QueryTexture(obj->_texture, NULL, NULL, &w, &h);
-  obj->_drawRect->x = x;
-  obj->_drawRect->y = y;
-  obj->_drawRect->w = w;
-  obj->_drawRect->h = h;
+  SDL_Surface* surface = TTF_RenderText_Solid(textType->font, (const char*)&str, textType->color);
+  obj->texture = SDL_CreateTextureFromSurface(textType->renderer, surface);
+
+  SDL_QueryTexture(obj->texture, NULL, NULL, &obj->w, &obj->h);
+  obj->drawRect->x = x;
+  obj->drawRect->y = y;
+  obj->drawRect->w = obj->w;
+  obj->drawRect->h = obj->h;
 
   return obj;
 }
 
 void COICharDestroy(COIChar* coiChar) {
-  free(coiChar->_drawRect);
-  SDL_DestroyTexture(coiChar->_texture);
+  free(coiChar->drawRect);
+  if (coiChar->next != NULL) {
+    COICharDestroy(coiChar->next);
+  }
+  SDL_DestroyTexture(coiChar->texture);
   free(coiChar);
 }

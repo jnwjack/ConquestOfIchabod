@@ -1,11 +1,11 @@
+#ifndef ASSET_LOADER_H
+#define ASSET_LOADER_H
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
 #include "util.h"
 #include "COIExtraCollision.h"
-
-#ifndef ASSET_LOADER_H
-#define ASSET_LOADER_H
 
 typedef struct COIAssetLoader {
   SDL_Surface** _assets;

@@ -1,9 +1,9 @@
+#ifndef COISPRITE_H
+#define COISPRITE_H
+
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include "COIExtraCollision.h"
-
-#ifndef COISPRITE_H
-#define COISPRITE_H
 
 #define COI_NO_COLLISION 0
 #define COI_COLLISION 1

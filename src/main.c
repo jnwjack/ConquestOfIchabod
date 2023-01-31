@@ -1,6 +1,6 @@
 // Should have a better system for includes
-#include "engine/COIWindow.h"
 #include "engine/COIMenu.h"
+#include "engine/COIWindow.h"
 #include "inputloops.h"
 #include "armory/Armory.h"
 #include "items.h"
@@ -23,6 +23,10 @@ int main(int argc, char** argv) {
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, 0);
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
 
+  // Testing new strings
+  COITextType* testType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
+  COIString* test = COIStringCreate("Turtle", 300, 300, testType);
+  COIBoardSetStrings(board, &test, 1);
 
   COIBoard* armoryBoard = armoryCreateBoard(window, loader, board, inventory);
 
@@ -45,10 +49,15 @@ int main(int argc, char** argv) {
   armoryDestroy(armoryBoard->_context);
   
   COIAssetLoaderDestroy(loader);
+  // Test string
+  COITextTypeDestroy(testType);
+  COIStringDestroy(test);
   COIBoardDestroy(board);
   COIBoardDestroy(armoryBoard);
   COIWindowDestroy(window);
   ItemListDestroy(itemList);
+
+  
 
   return 0;
 }

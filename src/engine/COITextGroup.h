@@ -1,9 +1,9 @@
+#ifndef COITEXTGROUP_H
+#define COITEXTGROUP_H
+
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 #include "util.h"
-
-#ifndef COITEXTGROUP_H
-#define COITEXTGROUP_H
 
 typedef struct COIText {
   int _x;
@@ -29,9 +29,11 @@ typedef struct COITextType {
   SDL_Color color;
   int fontSize;
   SDL_Renderer* renderer;
-}
+}COITextType;
 
+COITextType* COITextTypeCreate(int fontSize, int r, int g, int b, SDL_Renderer* renderer);
 COITextGroup* COITextGroupCreate(int fontSize, int r, int g, int b, const char* filename, SDL_Renderer* renderer);
+void COITextTypeDestroy(COITextType* type);
 void COITextGroupDestroy(COITextGroup* group);
 
 COIText** COITextGroupGetTexts(COITextGroup* group);

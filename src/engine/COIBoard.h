@@ -1,6 +1,6 @@
+#include "COIString.h"
 #include "COISprite.h"
 #include "COIAssetLoader.h"
-#include "COITextGroup.h"
 #include "util.h"
 #include <stdbool.h>
 
@@ -31,6 +31,10 @@ typedef struct COIBoard {
 
   COITextGroup** _textGroups;
   int _textGroupCount;
+
+  // New method of handling strings
+  COIString** strings;
+  int stringCount;
 }COIBoard;
 
 COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, int numTextGroups);
@@ -50,5 +54,6 @@ void COIBoardAddTextGroup(COIBoard* board, COITextGroup* group, int index);
 COIText** COIBoardGetTexts(COIBoard* board, int index);
 int COIBoardGetTextCount(COIBoard* board, int index);
 int COIBoardGetTextGroupCount(COIBoard* board);
+void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
 
 #endif

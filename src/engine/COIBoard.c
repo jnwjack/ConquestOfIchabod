@@ -22,6 +22,8 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, int numTextGr
   } else {
     board->_textGroups = NULL;
   }
+  board->strings = NULL;
+  board->stringCount = 0;
   
   return board;
 }
@@ -29,6 +31,9 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, int numTextGr
 void COIBoardDestroy(COIBoard* board) {
   if (board == NULL){
     return;
+  }
+  if (board->strings != NULL) {
+    free(board->strings);
   }
   if (board->_sprites != NULL) {
     int i;
@@ -192,5 +197,20 @@ int COIBoardGetTextCount(COIBoard* board, int index) {
 
 int COIBoardGetTextGroupCount(COIBoard* board) {
   return board->_textGroupCount;
+}
+
+void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
+  if (board->strings != NULL) {
+    free(board->strings);
+  }
+
+  board->stringCount = count;
+  board->strings = malloc(sizeof(COIString*) * board->stringCount);
+  for (int i = 0; i < board->stringCount; i++) {
+    board->strings[i] = strings[i];
+  }
+  
+  /*  board->strings = strings;
+      board->stringCount = count;*/
 }
 

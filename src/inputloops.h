@@ -1,10 +1,10 @@
 #ifndef INPUTLOOPS_H
 #define INPUTLOOPS_H
 
+#include "engine/COIMenu.h"
 #include "engine/COIBoard.h"
 #include "engine/COIWindow.h"
 #include "collisions.h"
-#include "engine/COIMenu.h"
 #include "armory/Armory.h"
 #include <stdbool.h>
 
