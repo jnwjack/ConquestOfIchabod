@@ -1,38 +1,40 @@
 #include "Armory.h"
 
-void armorySetItem(ArmoryItem* item, int itemID, int stock) {
-  item->textID = _textIDFromItemID(itemID);
+void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock) {
   item->itemID = itemID;
+  if (item->string != NULL) {
+    COIStringDestroy(item->string);
+  }
+  item->string = COIStringCreate(_stringFromItemID(itemID), 0, 0, context->textType);
   item->stock = stock;
   item->price = _priceFromItemID(itemID);
 }
 
 // Update COIMenu text with items in ArmoryList
 void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems) {
-  int indices[numItems];
+  COIString* stringPointers[numItems];
+  
   for (int i = 0; i < numItems; i++) {
-    indices[i] = items[i].textID;
+    stringPointers[i] = items[i].string;
   }
 
-  COIMenuSetTexts(menu, indices, numItems);
+  COIMenuSetTexts(menu, stringPointers, numItems);
 }
-  
-// Traverse array of items and get text indices
-int* armoryGetTextIndices(ArmoryContext* context) {
-  int* textIndices = malloc(sizeof(int) * context->numBuyItems);
-  
-  int i;
-  for (i = 0; i < context->numBuyItems; i++) {
-    textIndices[i] = context->buyItems[i].textID;
+
+// Send strings to board so the board can draw them
+void armoryUpdateBoardText(COIBoard* board) {
+  ArmoryContext* context = (ArmoryContext*)board->context;
+  COIString* strings[3 + context->numBuyItems + context->numSellItems];
+  for (int i = 0; i < 3; i++) {
+    strings[i] = context->mainStrings[i];
   }
-
-  return textIndices;
-}
-
-void armorySetTextIndices(ArmoryContext* context, int* indices) {
   for (int i = 0; i < context->numBuyItems; i++) {
-    context->buyItems[i].textID = indices[i];
+    strings[3+i] = context->buyItems[i].string;
   }
+  for (int i = 0; i < context->numSellItems; i++) {
+    strings[3+context->numBuyItems+i] = context->sellItems[i].string;
+  }
+  COIBoardSetStrings(board, strings, 3 + context->numBuyItems + context->numSellItems);
 }
 
 // Initalize the "sell" menu items from items in the player's inventory
@@ -43,7 +45,8 @@ void armoryPopulateSell(ArmoryContext* context) {
   context->sellItems = malloc(context->numSellItems * sizeof(ArmoryItem));
 
   for (int i = 0; i < inventory->numBackpackItems; i++) {
-    armorySetItem(&context->sellItems[i], inventory->backpack[i]->id, 1);
+    context->sellItems[i].string = NULL;
+    armorySetItem(context, &context->sellItems[i], inventory->backpack[i]->id, 1);
   }
 
   armoryUpdateMenuText(context->sellMenu, context->sellItems, context->numSellItems);
@@ -54,13 +57,16 @@ void armoryPopulateBuy(ArmoryContext* context) {
   context->numBuyItems = 5;
   context->buyItems = malloc(context->numBuyItems * sizeof(ArmoryItem));
 
+  for (int i = 0; i < context->numBuyItems; i++) {
+    context->buyItems[i].string = NULL;
+  }
   
   // Hardcoded prices and stock values
-  armorySetItem(&context->buyItems[0], ITEM_ID_RUSTY_SWORD, 1);
-  armorySetItem(&context->buyItems[1], ITEM_ID_RUSTY_BATTLEAXE, 1);
-  armorySetItem(&context->buyItems[2], ITEM_ID_SHABBY_BOW, 1);
-  armorySetItem(&context->buyItems[3], ITEM_ID_CRACKED_SHIELD, 1);
-  armorySetItem(&context->buyItems[4], ITEM_ID_STRENGTH_POTION, 5);
+  armorySetItem(context, &context->buyItems[0], ITEM_ID_RUSTY_SWORD, 1);
+  armorySetItem(context, &context->buyItems[1], ITEM_ID_RUSTY_BATTLEAXE, 1);
+  armorySetItem(context, &context->buyItems[2], ITEM_ID_SHABBY_BOW, 1);
+  armorySetItem(context, &context->buyItems[3], ITEM_ID_CRACKED_SHIELD, 1);
+  armorySetItem(context, &context->buyItems[4], ITEM_ID_STRENGTH_POTION, 5);
 
   armoryUpdateMenuText(context->buyMenu, context->buyItems, context->numBuyItems);
 }
@@ -71,39 +77,45 @@ void armoryBuyMenu(ArmoryContext* context, int selected) {
 // Initialization/Destruction ----------------------------------
 
 COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard, Inventory* inventory) {
-  COITextGroup* mediumGroup = COITextGroupCreate(25, 255, 255, 255, "src/armory/text.dat", COIWindowGetRenderer(window));
-  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, 1);
-  COIBoardAddTextGroup(armoryBoard, mediumGroup, 0);
+  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480);
 
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
 
-  COIBoardSetContext(armoryBoard, (void*)_armoryCreateContext(armoryBoard, outsideBoard, window, mediumGroup, inventory));
+  COIBoardSetContext(armoryBoard, (void*)_armoryCreateContext(armoryBoard, outsideBoard, window, inventory));
+
+  armoryUpdateBoardText(armoryBoard);
+
+  return armoryBoard;
 }
-ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, COITextGroup* textGroup, Inventory* inventory) {
+
+ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory) {
   ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
   COISprite** armorySprites = COIBoardGetSprites(board);
 
+  armoryContext->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
+  armoryContext->mainStrings[0] = COIStringCreate("Buy", 0, 0, armoryContext->textType);
+  armoryContext->mainStrings[1] = COIStringCreate("Sell", 0, 0, armoryContext->textType);
+  armoryContext->mainStrings[2] = COIStringCreate("Exit", 0, 0, armoryContext->textType);
   
   // First level menu for armory
-  COIMenu* menu = COIMenuCreate(textGroup, armorySprites[0], armorySprites[1]);
-  int indices[3] = { TEXT_ID_BUY, TEXT_ID_SELL, TEXT_ID_EXIT };
-  COIMenuSetTexts(menu, indices, 3);
+  COIMenu* menu = COIMenuCreate(armorySprites[0], armorySprites[1]);
+  COIMenuSetTexts(menu, armoryContext->mainStrings, 3);
   COIMenuSetVisible(menu);
   armoryContext->menu = menu;
 
   // Fill item list for buy menu
-  armoryContext->buyMenu = COIMenuCreate(textGroup, armorySprites[2], armorySprites[3]);
+  armoryContext->buyMenu = COIMenuCreate(armorySprites[2], armorySprites[3]);
   armoryPopulateBuy(armoryContext);
   armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
   COIMenuSetInvisible(armoryContext->buyMenu);
-
   
   // Fill item list for sell menu
-  armoryContext->sellMenu = COIMenuCreate(textGroup, armorySprites[2], armorySprites[3]);
+  armoryContext->sellMenu = COIMenuCreate(armorySprites[2], armorySprites[3]);
   armoryContext->inventory = inventory;
   armoryPopulateSell(armoryContext);
   COIMenuSetInvisible(armoryContext->sellMenu);
+
   armoryContext->outsideBoard = outsideBoard;
   armoryContext->currentMenu = menu;
   
@@ -114,11 +126,20 @@ ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COI
 
 void armoryDestroy(ArmoryContext* context) {
   if (context->buyItems != NULL) {
+    for (int i = 0; i < context->numBuyItems; i++) {
+      COIStringDestroy(context->buyItems[i].string);
+    }
     free(context->buyItems);
   }
   if (context->sellItems != NULL) {
+    for (int i = 0; i < context->numSellItems; i++) {
+      COIStringDestroy(context->sellItems[i].string);
+    }
     free(context->sellItems);
   }
+  COIStringDestroy(context->mainStrings[0]);
+  COIStringDestroy(context->mainStrings[1]);
+  COIStringDestroy(context->mainStrings[2]);
   free(context);
 }
 
@@ -148,27 +169,6 @@ int _priceFromItemID(int item) {
   }
 }
 
-// Given an item ID, return the proper text as defined in armory/text.dat
-// We may want to re-implement this in a more global way (e.g. text.dat for all items)
-int _textIDFromItemID(int item) {
-  switch (item) {
-  case ITEM_ID_RUSTY_SWORD:
-    return 3;
-    break;
-  case ITEM_ID_RUSTY_BATTLEAXE:
-    return 4;
-    break;
-  case ITEM_ID_SHABBY_BOW:
-    return 5;
-    break;
-  case ITEM_ID_CRACKED_SHIELD:
-    return 6;
-    break;
-  case ITEM_ID_STRENGTH_POTION:
-    return 7;
-    break;
-  default:
-    printf("Error: No valid text ID\n");
-    return -1;
-  }
+char* _stringFromItemID(int item) {
+  return "test";
 }

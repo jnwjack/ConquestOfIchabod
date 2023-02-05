@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
   COILoop threadTownLoop = &threadTown;
   void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
 
-  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, 0);
+  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700);
   COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
 
   // Testing new strings
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   int* contextIntPtr = (int*) (context);
   free(contextIntPtr);
   
-  armoryDestroy(armoryBoard->_context);
+  armoryDestroy(armoryBoard->context);
   
   COIAssetLoaderDestroy(loader);
   // Test string

@@ -33,3 +33,10 @@ void COICharDestroy(COIChar* coiChar) {
   SDL_DestroyTexture(coiChar->texture);
   free(coiChar);
 }
+
+void COICharSetPos(COIChar* coiChar, int x, int y) {
+  coiChar->x = x;
+  coiChar->y = y;
+  coiChar->drawRect->x = x;
+  coiChar->drawRect->y = y;
+}

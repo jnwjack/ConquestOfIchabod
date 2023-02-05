@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-#include "COITextGroup.h"
+#include "COITextType.h"
 
 typedef struct COIChar {
   SDL_Rect* drawRect;
@@ -21,6 +21,7 @@ typedef struct COIChar {
 COIChar* COICharCreate(char c, int x, int y, COITextType* textType);
 void COICharDestroy(COIChar* coiChar);
 
+void COICharSetPos(COIChar* coiChar, int x, int y);
 
 
 #endif

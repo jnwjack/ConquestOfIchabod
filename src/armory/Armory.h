@@ -18,7 +18,7 @@
 
 typedef struct ArmoryItem {
   int itemID;
-  int textID;
+  COIString* string;
   int stock;
   int price;
 } ArmoryItem;
@@ -39,6 +39,8 @@ typedef struct ArmoryContext {
   int numBuyItems;
   int numSellItems;
   Inventory* inventory; // Player inventory
+  COITextType* textType;
+  COIString* mainStrings[3];
 } ArmoryContext;
 
 // Create board and associated context
@@ -47,12 +49,13 @@ COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard*
 
 void armoryDestroy(ArmoryContext* context);
 
-void armorySetItem(ArmoryItem* item, int itemID, int stock);
+void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock);
 int* armoryGetTextIndices(ArmoryContext* context);
 void armorySetTextIndices(ArmoryContext* context, int* indices);
 void armoryPopulateBuy(ArmoryContext* context);
 void armoryPopulateSell(ArmoryContext* context);
 void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems);
+void armoryUpdateBoardText(COIBoard* board);
 
 // Menu Behavior
 void armoryBuyMenu(ArmoryContext* context, int selected);
@@ -61,6 +64,7 @@ void armoryBuyMenu(ArmoryContext* context, int selected);
 // Private functions
 int _textIDFromItemID(int item);
 int _priceFromItemID(int item);
-ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, COITextGroup* textGroup, Inventory* inventory);
+ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory);
+char* _stringFromItemID(int item);
 
 #endif

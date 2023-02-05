@@ -1,6 +1,6 @@
 #include "COIBoard.h"
 
-COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, int numTextGroups) {
+COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h) {
   COIBoard* board = malloc(sizeof(COIBoard));
   board->_bgColor[INDEX_RED] = r;
   board->_bgColor[INDEX_GREEN] = g;
@@ -15,13 +15,7 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, int numTextGr
   board->_sprites = NULL;
   board->_spriteCount = 0;
   board->_shouldDraw = true;
-  board->_context = NULL;
-  board->_textGroupCount = numTextGroups;
-  if (numTextGroups > 0) {
-    board->_textGroups = malloc(numTextGroups * sizeof(COITextGroup*));
-  } else {
-    board->_textGroups = NULL;
-  }
+  board->context = NULL;
   board->strings = NULL;
   board->stringCount = 0;
   
@@ -43,9 +37,6 @@ void COIBoardDestroy(COIBoard* board) {
       }
     }
     free(board->_sprites);
-  }
-  if (board->_textGroups != NULL) {
-    free(board->_textGroups);
   }
 }
 
@@ -120,25 +111,6 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
       }
     }
   }
-
-  // User handles text visibility
-  /*COIText** texts;
-  COIText* text;
-  for (i = 0; i < board->_textGroupCount; i++) {
-    texts = COITextGroupGetTexts(board->_textGroups[i]);
-    int j;
-    for (j = 0; j < COITextGroupGetTextCount(board->_textGroups[i]); j++) {
-      text = texts[j];
-      if (((text->_x + text->_width) >= board->_frameX && text->_x <= farEdgeX)
-	&& ((text->_y + text->_height) >= board->_frameY && text->_y <= farEdgeY)){
-	text->_visible = true;
-	text->_drawRect->x = text->_x - board->_frameX;
-	text->_drawRect->y = text->_y - board->_frameY;
-      } else {
-	text->_visible = false;
-      }
-    }
-    }*/
 }
 
 bool COIBoardShiftFrameX(COIBoard* board, int stride) {
@@ -180,23 +152,7 @@ void COIBoardQueueDraw(COIBoard* board) {
 }
 
 void COIBoardSetContext(COIBoard* board, void* context) {
-  board->_context = context;
-}
-
-void COIBoardAddTextGroup(COIBoard* board, COITextGroup* group, int index) {
-  board->_textGroups[index] = group;
-}
-
-COIText** COIBoardGetTexts(COIBoard* board, int index) {
-  return COITextGroupGetTexts(board->_textGroups[index]);
-}
-
-int COIBoardGetTextCount(COIBoard* board, int index) {
-  return COITextGroupGetTextCount(board->_textGroups[index]);
-}
-
-int COIBoardGetTextGroupCount(COIBoard* board) {
-  return board->_textGroupCount;
+  board->context = context;
 }
 
 void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {

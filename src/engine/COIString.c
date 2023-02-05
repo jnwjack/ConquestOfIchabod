@@ -3,6 +3,8 @@
 COIString* COIStringCreate(char* string, int x, int y, COITextType* textType) {
   COIString* obj = malloc(sizeof(COIString));
 
+  obj->fontSize = textType->fontSize;
+
   // Store string as a linked list of COIChars
   COIChar* current = NULL;
   COIChar* prev = NULL;
@@ -39,6 +41,24 @@ void COIStringDraw(COIString* obj, SDL_Renderer* renderer) {
     if (current->visible) {
       SDL_RenderCopy(renderer, current->texture, NULL, current->drawRect);
     }
+    current = current->next;
+  }
+}
+
+void COIStringSetPos(COIString* obj, int x, int y) {
+  COIChar* current = obj->_head;
+  int offsetX = x;
+  while (current != NULL) {
+    COICharSetPos(current, offsetX, y);
+    offsetX += current->w;
+    current = current->next;
+  }
+}
+
+void COIStringSetVisible(COIString* obj, bool visible) {
+  COIChar* current = obj->_head;
+  while (current != NULL) {
+    current->visible = visible;
     current = current->next;
   }
 }

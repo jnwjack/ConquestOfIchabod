@@ -27,17 +27,14 @@ typedef struct COIBoard {
   COISprite** _sprites;
   int _spriteCount;
   int _shouldDraw;
-  void* _context;
-
-  COITextGroup** _textGroups;
-  int _textGroupCount;
+  void* context;
 
   // New method of handling strings
   COIString** strings;
   int stringCount;
 }COIBoard;
 
-COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, int numTextGroups);
+COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h);
 void COIBoardDestroy(COIBoard* board);
 
 int COIBoardBGColor(COIBoard* board, int index);
@@ -50,10 +47,6 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board);
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
 void COIBoardQueueDraw(COIBoard* board); // Request draw for this board
 void COIBoardSetContext(COIBoard* board, void* context);
-void COIBoardAddTextGroup(COIBoard* board, COITextGroup* group, int index);
-COIText** COIBoardGetTexts(COIBoard* board, int index);
-int COIBoardGetTextCount(COIBoard* board, int index);
-int COIBoardGetTextGroupCount(COIBoard* board);
 void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
 
 #endif

@@ -169,8 +169,8 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       return;
   }
   switch (collisionResult) {
-    COIBoard* board = NULL;
-    COIWindow* window = NULL;
+    COIBoard* board;
+    COIWindow* window;
     case ARMORY_DOOR:
       board = *(COIBoard**) (context + sizeof(int));
       window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
