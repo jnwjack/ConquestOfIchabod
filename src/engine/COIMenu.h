@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define COI_MENU_OFFSET_X 100
+#define COI_MENU_OFFSET_X 50
 #define COI_MENU_OFFSET_Y 10
 #define COI_MENU_PADDING 10
 

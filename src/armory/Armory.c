@@ -5,9 +5,12 @@ void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int sto
   if (item->string != NULL) {
     COIStringDestroy(item->string);
   }
-  item->string = COIStringCreate(_stringFromItemID(itemID), 0, 0, context->textType);
   item->stock = stock;
   item->price = _priceFromItemID(itemID);
+
+  char buf[50];
+  sprintf(buf, "%i - %s", item->price, _stringFromItemID(itemID));
+  item->string = COIStringCreate(buf, 0, 0, context->textType);
 }
 
 // Update COIMenu text with items in ArmoryList
@@ -170,5 +173,24 @@ int _priceFromItemID(int item) {
 }
 
 char* _stringFromItemID(int item) {
-  return "test";
+  switch (item) {
+  case ITEM_ID_RUSTY_SWORD:
+    return "Rusty Sword";
+    break;
+  case ITEM_ID_RUSTY_BATTLEAXE:
+    return "Rusty Battleaxe";
+    break;
+  case ITEM_ID_SHABBY_BOW:
+    return "Shabby Bow";
+    break;
+  case ITEM_ID_CRACKED_SHIELD:
+    return "Cracked Shield";
+    break;
+  case ITEM_ID_STRENGTH_POTION:
+    return "Strength Potion";
+    break;
+  default:
+    printf("Error: No valid text ID\n");
+    return "Error";
+  }
 }
