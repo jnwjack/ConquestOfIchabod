@@ -56,8 +56,7 @@ int main(int argc, char** argv) {
   COIBoardDestroy(armoryBoard);
   COIWindowDestroy(window);
   ItemListDestroy(itemList);
-
-  
+  inventoryDestroy(inventory);
 
   return 0;
 }

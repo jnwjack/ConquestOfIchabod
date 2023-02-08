@@ -7,14 +7,10 @@
 #include "../inventory.h"
 #include "../inputloops.h"
 
+#define MAX_STRING_SIZE 100
 
 // Can later replace this with charisma or something
 #define SELL_FACTOR 0.75
-
-// Text IDs for menu options
-#define TEXT_ID_BUY 0
-#define TEXT_ID_SELL 1
-#define TEXT_ID_EXIT 2
 
 typedef struct ArmoryItem {
   int itemID;
@@ -33,6 +29,8 @@ typedef struct ArmoryContext {
   COIMenu* buyMenu;
   COIMenu* sellMenu;
   COIMenu* currentMenu;
+  COIMenu* confirmMenu;
+  bool confirmActive;
   // List of items available for buying/selling in shop
   ArmoryItem* buyItems;
   ArmoryItem* sellItems;
@@ -41,6 +39,8 @@ typedef struct ArmoryContext {
   Inventory* inventory; // Player inventory
   COITextType* textType;
   COIString* mainStrings[3];
+  COIString* confirmStrings[2];
+  COIString* moneyString;
 } ArmoryContext;
 
 // Create board and associated context
@@ -56,10 +56,10 @@ void armoryPopulateBuy(ArmoryContext* context);
 void armoryPopulateSell(ArmoryContext* context);
 void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems);
 void armoryUpdateBoardText(COIBoard* board);
-
-// Menu Behavior
-void armoryBuyMenu(ArmoryContext* context, int selected);
-
+void armoryUpdateMoneyString(ArmoryContext* context);
+void armoryDisableConfirmMenu(ArmoryContext* context);
+void armoryEnableConfirmMenu(ArmoryContext* context);
+void armoryBuyItem(COIBoard* board);
 
 // Private functions
 int _textIDFromItemID(int item);

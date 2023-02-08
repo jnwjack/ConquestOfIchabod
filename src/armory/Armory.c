@@ -8,7 +8,7 @@ void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int sto
   item->stock = stock;
   item->price = _priceFromItemID(itemID);
 
-  char buf[50];
+  char buf[MAX_STRING_SIZE];
   sprintf(buf, "%i - %s", item->price, _stringFromItemID(itemID));
   item->string = COIStringCreate(buf, 0, 0, context->textType);
 }
@@ -27,23 +27,42 @@ void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems) {
 // Send strings to board so the board can draw them
 void armoryUpdateBoardText(COIBoard* board) {
   ArmoryContext* context = (ArmoryContext*)board->context;
-  COIString* strings[3 + context->numBuyItems + context->numSellItems];
+  COIString* strings[6 + context->numBuyItems + context->numSellItems];
   for (int i = 0; i < 3; i++) {
     strings[i] = context->mainStrings[i];
   }
+  for (int i = 0; i < 2; i++) {
+    strings[3+i] = context->confirmStrings[i];
+  }
   for (int i = 0; i < context->numBuyItems; i++) {
-    strings[3+i] = context->buyItems[i].string;
+    strings[5+i] = context->buyItems[i].string;
   }
   for (int i = 0; i < context->numSellItems; i++) {
-    strings[3+context->numBuyItems+i] = context->sellItems[i].string;
+    strings[5+context->numBuyItems+i] = context->sellItems[i].string;
   }
-  COIBoardSetStrings(board, strings, 3 + context->numBuyItems + context->numSellItems);
+  strings[5+context->numBuyItems+context->numSellItems] = context->moneyString;
+  
+  COIBoardSetStrings(board, strings, 6 + context->numBuyItems + context->numSellItems);
+}
+
+// Read money value from Inventory and update COIString
+void armoryUpdateMoneyString(ArmoryContext* context) {
+  if (context->moneyString != NULL) {
+    COIStringDestroy(context->moneyString);
+  }
+  char buf[MAX_STRING_SIZE];
+  sprintf(buf, "Gold: %i", context->inventory->money);
+  // Hardcoded, but we can base it off the box's position in the future
+  context->moneyString = COIStringCreate(buf, 70, 250 + COI_MENU_OFFSET_Y, context->textType);
 }
 
 // Initalize the "sell" menu items from items in the player's inventory
 void armoryPopulateSell(ArmoryContext* context) {
   Inventory* inventory = context->inventory;
-  
+
+  if(context->sellItems != NULL) {
+    free(context->sellItems);
+  }
   context->numSellItems = inventory->numBackpackItems;
   context->sellItems = malloc(context->numSellItems * sizeof(ArmoryItem));
 
@@ -57,6 +76,10 @@ void armoryPopulateSell(ArmoryContext* context) {
 
 // Initialize the "buy" menu items
 void armoryPopulateBuy(ArmoryContext* context) {
+  if(context->sellItems != NULL) {
+    free(context->sellItems);
+  }
+  
   context->numBuyItems = 5;
   context->buyItems = malloc(context->numBuyItems * sizeof(ArmoryItem));
 
@@ -74,7 +97,29 @@ void armoryPopulateBuy(ArmoryContext* context) {
   armoryUpdateMenuText(context->buyMenu, context->buyItems, context->numBuyItems);
 }
 
-void armoryBuyMenu(ArmoryContext* context, int selected) {
+void armoryBuyItem(COIBoard* board) {
+  ArmoryContext* context = (ArmoryContext*)board->context;
+  ArmoryItem item = context->buyItems[context->buyMenu->_current];
+  if (context->inventory->money >= item.price && inventoryAddItem(context->inventory, item.itemID)) {
+    context->inventory->money -= item.price;
+    armoryPopulateSell(context);
+    armoryUpdateMoneyString(context);
+    COIMenuSetInvisible(context->sellMenu);
+    COIMenuSetVisible(context->buyMenu);
+    armoryUpdateBoardText(board);
+  }
+  armoryDisableConfirmMenu(context);
+}
+
+void armoryDisableConfirmMenu(ArmoryContext* context) {
+  COIMenuReset(context->confirmMenu);
+  COIMenuSetInvisible(context->confirmMenu);
+  context->confirmActive = false;
+}
+
+void armoryEnableConfirmMenu(ArmoryContext* context) {
+  COIMenuSetVisible(context->confirmMenu);
+  context->confirmActive = true;
 }
 
 // Initialization/Destruction ----------------------------------
@@ -95,6 +140,9 @@ COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard*
 ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory) {
   ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
   COISprite** armorySprites = COIBoardGetSprites(board);
+
+  armoryContext->sellItems = NULL;
+  armoryContext->buyItems = NULL;
 
   armoryContext->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
   armoryContext->mainStrings[0] = COIStringCreate("Buy", 0, 0, armoryContext->textType);
@@ -118,6 +166,19 @@ ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COI
   armoryContext->inventory = inventory;
   armoryPopulateSell(armoryContext);
   COIMenuSetInvisible(armoryContext->sellMenu);
+
+  // Menu that asks for confirmation when buying/selling
+  armoryContext->confirmMenu = COIMenuCreate(armorySprites[5], armorySprites[6]);
+  armoryContext->confirmStrings[0] = COIStringCreate("No", 0, 0, armoryContext->textType);
+  armoryContext->confirmStrings[1] = COIStringCreate("Yes", 0, 0, armoryContext->textType);
+  COIMenuSetTexts(armoryContext->confirmMenu, armoryContext->confirmStrings, 2);
+  COIMenuSetInvisible(armoryContext->confirmMenu);
+  armoryContext->confirmActive = false;
+
+  // Display money
+  armoryContext->moneyString = NULL;
+  armoryUpdateMoneyString(armoryContext);
+
 
   armoryContext->outsideBoard = outsideBoard;
   armoryContext->currentMenu = menu;
@@ -143,6 +204,10 @@ void armoryDestroy(ArmoryContext* context) {
   COIStringDestroy(context->mainStrings[0]);
   COIStringDestroy(context->mainStrings[1]);
   COIStringDestroy(context->mainStrings[2]);
+  COIStringDestroy(context->moneyString);
+  COIMenuDestroy(context->buyMenu);
+  COIMenuDestroy(context->sellMenu);
+  COIMenuDestroy(context->confirmMenu);
   free(context);
 }
 

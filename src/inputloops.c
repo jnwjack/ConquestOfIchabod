@@ -25,14 +25,15 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 
   bool selection = false;
   bool back = false;
+  COIMenu* focusedMenu = armoryContext->confirmActive ? armoryContext->confirmMenu : armoryContext->currentMenu;
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_UP:
-	  COIMenuIncrement(armoryContext->currentMenu, -1);
+	  COIMenuIncrement(focusedMenu, -1);
 	  break;
         case SDLK_DOWN:
-	  COIMenuIncrement(armoryContext->currentMenu, 1);
+	  COIMenuIncrement(focusedMenu, 1);
 	  break;
         case SDLK_SPACE:
 	  selection = true;
@@ -57,6 +58,24 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 
   if (!selection) {
     return;
+  }
+
+  // If confirm menu active
+  if (armoryContext->confirmActive) {
+    switch (armoryContext->confirmMenu->_current) {
+    case 0:
+      armoryDisableConfirmMenu(armoryContext);
+      break;
+    case 1:
+      armoryBuyItem(board);
+      break;
+    }
+    return;
+  }
+
+  // Behavior for buy and sell menus
+  if (armoryContext->currentMenu != armoryContext->menu) {
+    armoryEnableConfirmMenu(armoryContext);
   }
 
   // Buy
