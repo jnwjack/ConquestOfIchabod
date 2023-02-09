@@ -54,6 +54,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIMenuSetInvisible(armoryContext->currentMenu);
     COIMenuReset(armoryContext->currentMenu);
     armoryContext->currentMenu = armoryContext->menu;
+    return;
   }
 
   if (!selection) {
@@ -67,7 +68,11 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       armoryDisableConfirmMenu(armoryContext);
       break;
     case 1:
-      armoryBuyItem(board);
+      if (armoryContext->currentMenu == armoryContext->buyMenu) {
+	armoryBuyItem(board);
+      } else {
+	armorySellItem(board);
+      }
       break;
     }
     return;

@@ -60,6 +60,7 @@ void armoryUpdateMoneyString(ArmoryContext* context);
 void armoryDisableConfirmMenu(ArmoryContext* context);
 void armoryEnableConfirmMenu(ArmoryContext* context);
 void armoryBuyItem(COIBoard* board);
+void armorySellItem(COIBoard* board);
 
 // Private functions
 int _textIDFromItemID(int item);

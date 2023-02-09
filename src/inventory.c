@@ -21,3 +21,23 @@ bool inventoryAddItem(Inventory* inventory, int itemID) {
   return true;
 }
 
+bool inventoryRemoveItem(Inventory* inventory, int index) {
+  if (inventory->numBackpackItems == 0) {
+    return false;
+  }
+  // Rebuild backpack
+  Item** newBackpack = malloc(sizeof(Item*) * BACKPACK_SIZE);
+  int indexInNewBackpack = 0;
+  for (int i = 0; i < inventory->numBackpackItems; i++) {
+    if (i != index) {
+      newBackpack[indexInNewBackpack] = inventory->backpack[i];
+      indexInNewBackpack++;
+    }
+  }
+
+  free(inventory->backpack);
+  inventory->backpack = newBackpack;
+  inventory->numBackpackItems--;
+  return true;
+}
+

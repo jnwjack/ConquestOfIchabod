@@ -111,6 +111,21 @@ void armoryBuyItem(COIBoard* board) {
   armoryDisableConfirmMenu(context);
 }
 
+void armorySellItem(COIBoard* board) {
+  ArmoryContext* context = (ArmoryContext*)board->context;
+  int itemIndex = context->sellMenu->_current;
+  ArmoryItem item = context->sellItems[itemIndex];
+  if (inventoryRemoveItem(context->inventory, itemIndex)) {
+    context->inventory->money = MIN(MAX_MONEY, context->inventory->money + item.price);
+    armoryPopulateSell(context);
+    armoryUpdateMoneyString(context);
+    COIMenuSetInvisible(context->buyMenu);
+    COIMenuSetVisible(context->sellMenu);
+    armoryUpdateBoardText(board);
+  }
+  armoryDisableConfirmMenu(context);
+}
+
 void armoryDisableConfirmMenu(ArmoryContext* context) {
   COIMenuReset(context->confirmMenu);
   COIMenuSetInvisible(context->confirmMenu);

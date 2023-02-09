@@ -115,7 +115,8 @@ void COIMenuAdjustFrame(COIMenu* menu) {
   }
 
   int pointerLocation = menu->_current - menu->_lowerFrameBound;
-  menu->_pointer->_y = menu->_y + COI_MENU_OFFSET_Y + (pointerLocation * menu->_pointer->_height);
+  menu->_pointer->_y = menu->_y + COI_MENU_OFFSET_Y + (pointerLocation * (menu->_pointer->_height + COI_MENU_PADDING));
+  menu->_pointer->_y = (menu->_y + COI_MENU_OFFSET_Y) + (menu->_fontSize / 2) + (pointerLocation * (menu->_fontSize + COI_MENU_PADDING)) - (menu->_pointer->_height / 2);
 }
 
 void COIMenuReset(COIMenu* menu) {

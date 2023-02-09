@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #define BACKPACK_SIZE 100
+#define MAX_MONEY 9999
 
 typedef struct Inventory {
   ItemList* items;
@@ -23,5 +24,6 @@ typedef struct Inventory {
 Inventory* inventoryCreate(ItemList* items);
 void inventoryDestroy(Inventory* inventory);
 bool inventoryAddItem(Inventory* inventory, int itemID);
+bool inventoryRemoveItem(Inventory* inventory, int index);
 
 #endif
