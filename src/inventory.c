@@ -4,6 +4,7 @@ Inventory* inventoryCreate(ItemList* items) {
   Inventory* inventory = malloc(sizeof(Inventory));
   inventory->backpack = malloc(sizeof(Item*) * BACKPACK_SIZE);
   inventory->items = items;
+  inventory->numEquippedItems = 0;
   return inventory;
 }
 
@@ -39,5 +40,28 @@ bool inventoryRemoveItem(Inventory* inventory, int index) {
   inventory->backpack = newBackpack;
   inventory->numBackpackItems--;
   return true;
+}
+
+Item** inventoryGetEquippedItems(Inventory* inventory) {
+  Item** equippedItems = malloc(sizeof(Item*) * inventory->numEquippedItems);
+
+  int count = 0;
+  if (inventory->head->id != ITEM_ID_UNARMORED_HEAD) {
+    equippedItems[count++] = inventory->head;
+  }
+  if (inventory->body->id != ITEM_ID_UNARMORED_BODY) {
+    equippedItems[count++] = inventory->body;
+  }
+  if (inventory->legs->id != ITEM_ID_UNARMORED_LEGS) {
+    equippedItems[count++] = inventory->legs;
+  }
+  if (inventory->weapon->id != ITEM_ID_UNARMED) {
+    equippedItems[count++] = inventory->weapon;
+  }
+  if (inventory->offHand->id != ITEM_ID_UNARMED_OFF) {
+    equippedItems[count++] = inventory->offHand;
+  }
+
+  return equippedItems;
 }
 

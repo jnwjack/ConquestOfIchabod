@@ -14,6 +14,7 @@
 
 typedef struct ArmoryItem {
   int itemID;
+  int slot;
   COIString* string;
   int stock;
   int price;
@@ -49,7 +50,7 @@ COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard*
 
 void armoryDestroy(ArmoryContext* context);
 
-void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock);
+void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock, bool sell, int slot);
 int* armoryGetTextIndices(ArmoryContext* context);
 void armorySetTextIndices(ArmoryContext* context, int* indices);
 void armoryPopulateBuy(ArmoryContext* context);

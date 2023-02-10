@@ -8,10 +8,10 @@ Inventory* createTestInventory(ItemList* items) {
   inventory->offHand = ItemListGetItem(items, ITEM_ID_CRACKED_SHIELD);
   inventory->head = ItemListGetItem(items, ITEM_ID_UNARMORED_HEAD);
   inventory->body = ItemListGetItem(items, ITEM_ID_UNARMORED_BODY);
-  inventory->body = ItemListGetItem(items, ITEM_ID_UNARMORED_LEGS);
-
+  inventory->legs = ItemListGetItem(items, ITEM_ID_UNARMORED_LEGS);
 
   inventory->numBackpackItems = 4;
+  inventory->numEquippedItems = 2;
   
   inventory->backpack[0] = ItemListGetItem(items, ITEM_ID_STRENGTH_POTION);
   inventory->backpack[1] = ItemListGetItem(items, ITEM_ID_SHABBY_BOW);

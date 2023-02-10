@@ -1,15 +1,20 @@
 #include "Armory.h"
 
-void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock) {
+void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock, bool sell, int slot) {
   item->itemID = itemID;
   if (item->string != NULL) {
     COIStringDestroy(item->string);
   }
   item->stock = stock;
-  item->price = _priceFromItemID(itemID);
+  item->price = sell ? _priceFromItemID(itemID) * SELL_FACTOR : _priceFromItemID(itemID);
 
   char buf[MAX_STRING_SIZE];
-  sprintf(buf, "%i - %s", item->price, _stringFromItemID(itemID));
+  if (slot != ITEM_SLOT_NA) {
+    // This is an equipped item
+    sprintf(buf, "%i - %s(E)", item->price, _stringFromItemID(itemID));
+  } else {
+    sprintf(buf, "%i - %s", item->price, _stringFromItemID(itemID));
+  }
   item->string = COIStringCreate(buf, 0, 0, context->textType);
 }
 
@@ -63,13 +68,22 @@ void armoryPopulateSell(ArmoryContext* context) {
   if(context->sellItems != NULL) {
     free(context->sellItems);
   }
-  context->numSellItems = inventory->numBackpackItems;
+  context->numSellItems = inventory->numBackpackItems + inventory->numEquippedItems;
   context->sellItems = malloc(context->numSellItems * sizeof(ArmoryItem));
 
   for (int i = 0; i < inventory->numBackpackItems; i++) {
     context->sellItems[i].string = NULL;
-    armorySetItem(context, &context->sellItems[i], inventory->backpack[i]->id, 1);
+    armorySetItem(context, &context->sellItems[i], inventory->backpack[i]->id, 1, true, ITEM_SLOT_NA);
   }
+
+  // Equipped items
+  Item** equipped = inventoryGetEquippedItems(inventory);
+  for (int i = 0; i < inventory->numEquippedItems; i++) {
+    int sellItemIndex = inventory->numBackpackItems + i;
+    context->sellItems[sellItemIndex].string = NULL;
+    armorySetItem(context, &context->sellItems[sellItemIndex], equipped[i]->id, 1, true, equipped[i]->slot);
+  }
+  free(equipped);
 
   armoryUpdateMenuText(context->sellMenu, context->sellItems, context->numSellItems);
 }
@@ -88,11 +102,11 @@ void armoryPopulateBuy(ArmoryContext* context) {
   }
   
   // Hardcoded prices and stock values
-  armorySetItem(context, &context->buyItems[0], ITEM_ID_RUSTY_SWORD, 1);
-  armorySetItem(context, &context->buyItems[1], ITEM_ID_RUSTY_BATTLEAXE, 1);
-  armorySetItem(context, &context->buyItems[2], ITEM_ID_SHABBY_BOW, 1);
-  armorySetItem(context, &context->buyItems[3], ITEM_ID_CRACKED_SHIELD, 1);
-  armorySetItem(context, &context->buyItems[4], ITEM_ID_STRENGTH_POTION, 5);
+  armorySetItem(context, &context->buyItems[0], ITEM_ID_RUSTY_SWORD, 1, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[1], ITEM_ID_RUSTY_BATTLEAXE, 1, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[2], ITEM_ID_SHABBY_BOW, 1, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[3], ITEM_ID_CRACKED_SHIELD, 1, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[4], ITEM_ID_STRENGTH_POTION, 5, false, ITEM_SLOT_NA);
 
   armoryUpdateMenuText(context->buyMenu, context->buyItems, context->numBuyItems);
 }
@@ -115,11 +129,13 @@ void armorySellItem(COIBoard* board) {
   ArmoryContext* context = (ArmoryContext*)board->context;
   int itemIndex = context->sellMenu->_current;
   ArmoryItem item = context->sellItems[itemIndex];
+  //bool successful = item.slot != ITEM_SLOT_NA : 
   if (inventoryRemoveItem(context->inventory, itemIndex)) {
     context->inventory->money = MIN(MAX_MONEY, context->inventory->money + item.price);
     armoryPopulateSell(context);
     armoryUpdateMoneyString(context);
     COIMenuSetInvisible(context->buyMenu);
+    COIMenuReset(context->sellMenu);
     COIMenuSetVisible(context->sellMenu);
     armoryUpdateBoardText(board);
   }

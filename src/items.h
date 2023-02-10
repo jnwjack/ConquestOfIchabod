@@ -4,12 +4,12 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-#define ITEM_SLOT_WEAPON 0;
-#define ITEM_SLOT_HEAD 1;
-#define ITEM_SLOT_BODY 2;
-#define ITEM_SLOT_LEGS 3;
-#define ITEM_SLOT_NA 4;
-#define ITEM_SLOT_OFFHAND 5;
+#define ITEM_SLOT_WEAPON 0
+#define ITEM_SLOT_HEAD 1
+#define ITEM_SLOT_BODY 2
+#define ITEM_SLOT_LEGS 3
+#define ITEM_SLOT_NA 4
+#define ITEM_SLOT_OFFHAND 5
 
 #define ITEMS_FILE "src/items.dat"
 
