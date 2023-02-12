@@ -25,7 +25,8 @@ typedef struct Inventory {
 Inventory* inventoryCreate(ItemList* items);
 void inventoryDestroy(Inventory* inventory);
 bool inventoryAddItem(Inventory* inventory, int itemID);
-bool inventoryRemoveItem(Inventory* inventory, int index);
+bool inventoryRemoveBackpackItem(Inventory* inventory, int index);
+bool inventoryRemoveEquippedItem(Inventory* inventory, int slot);
 Item** inventoryGetEquippedItems(Inventory* inventory);
 
 #endif

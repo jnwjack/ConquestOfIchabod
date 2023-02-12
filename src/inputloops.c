@@ -195,12 +195,14 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   switch (collisionResult) {
     COIBoard* board;
     COIWindow* window;
-    case ARMORY_DOOR:
-      board = *(COIBoard**) (context + sizeof(int));
-      window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-      COIWindowSetBoard(window, board, &armory);
-      *direction = MOVING_NONE;
-      
-      break;
+  case ARMORY_DOOR:
+    board = *(COIBoard**) (context + sizeof(int));
+    window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
+    COIWindowSetBoard(window, board, &armory);
+    *direction = MOVING_NONE;
+    break;
+  case BATTLE:
+    printf("battle start!\n");
+    break;
   }
 }

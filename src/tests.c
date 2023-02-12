@@ -1,5 +1,4 @@
 #include "tests.h"
-#include <stdio.h>
 
 Inventory* createTestInventory(ItemList* items) {
   Inventory* inventory = inventoryCreate(items);

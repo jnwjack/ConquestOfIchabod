@@ -7,6 +7,7 @@ void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int sto
   }
   item->stock = stock;
   item->price = sell ? _priceFromItemID(itemID) * SELL_FACTOR : _priceFromItemID(itemID);
+  item->slot = slot;
 
   char buf[MAX_STRING_SIZE];
   if (slot != ITEM_SLOT_NA) {
@@ -129,8 +130,16 @@ void armorySellItem(COIBoard* board) {
   ArmoryContext* context = (ArmoryContext*)board->context;
   int itemIndex = context->sellMenu->_current;
   ArmoryItem item = context->sellItems[itemIndex];
-  //bool successful = item.slot != ITEM_SLOT_NA : 
-  if (inventoryRemoveItem(context->inventory, itemIndex)) {
+  bool itemIsEquipped = item.slot != ITEM_SLOT_NA;
+  bool successful;
+  if (item.slot != ITEM_SLOT_NA) {
+    // Item is equipped
+    successful = inventoryRemoveEquippedItem(context->inventory, item.slot);
+  } else {
+    // Item is in backpack
+    successful = inventoryRemoveBackpackItem(context->inventory, itemIndex);
+  }
+  if (successful) {
     context->inventory->money = MIN(MAX_MONEY, context->inventory->money + item.price);
     armoryPopulateSell(context);
     armoryUpdateMoneyString(context);
