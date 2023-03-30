@@ -165,10 +165,10 @@ void armoryEnableConfirmMenu(ArmoryContext* context) {
 // Initialization/Destruction ----------------------------------
 
 COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard, Inventory* inventory) {
-  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480);
+  COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, loader);
 
   COILoop armoryLoop = &armory;
-  COIBoardLoadSpriteMap(armoryBoard, loader, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
+  COIBoardLoadSpriteMap(armoryBoard, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
 
   COIBoardSetContext(armoryBoard, (void*)_armoryCreateContext(armoryBoard, outsideBoard, window, inventory));
 

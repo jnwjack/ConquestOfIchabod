@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
   COILoop threadTownLoop = &threadTown;
   void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
 
-  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700);
-  COIBoardLoadSpriteMap(board, loader, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
+  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, loader);
+  COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
 
   // Testing new strings
   COITextType* testType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));

@@ -20,6 +20,12 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
   return COI_NO_COLLISION;
 }
 
+void battle(COIBoard* board, SDL_Event* event, void* context) {
+  switch (event->type) {
+   
+  }
+}
+
 void armory(COIBoard* board, SDL_Event* event, void* context) {
   ArmoryContext* armoryContext = (ArmoryContext*)context;
 
@@ -193,16 +199,19 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       return;
   }
   switch (collisionResult) {
-    COIBoard* board;
+    COIBoard* otherBoard;
     COIWindow* window;
   case ARMORY_DOOR:
-    board = *(COIBoard**) (context + sizeof(int));
+    otherBoard = *(COIBoard**) (context + sizeof(int));
     window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-    COIWindowSetBoard(window, board, &armory);
+    COIWindowSetBoard(window, otherBoard, &armory);
     *direction = MOVING_NONE;
     break;
   case BATTLE:
-    printf("battle start!\n");
+    window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
+    otherBoard = battleCreateBoard(window, board->loader, board);
+    COIWindowSetBoard(window, otherBoard, &battle);
+    *direction = MOVING_NONE;
     break;
   }
 }

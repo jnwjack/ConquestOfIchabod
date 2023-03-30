@@ -1,6 +1,6 @@
 #include "COIBoard.h"
 
-COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h) {
+COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoader* loader) {
   COIBoard* board = malloc(sizeof(COIBoard));
   board->_bgColor[INDEX_RED] = r;
   board->_bgColor[INDEX_GREEN] = g;
@@ -18,7 +18,8 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h) {
   board->context = NULL;
   board->strings = NULL;
   board->stringCount = 0;
-  
+  board->loader = loader;
+
   return board;
 }
 
@@ -44,7 +45,7 @@ int COIBoardBGColor(COIBoard* board, int index) {
   return board->_bgColor[index];
 }
 
-void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader,  SDL_Renderer* renderer, const char* filename) {
+void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* filename) {
   FILE* fp = NULL;
   
   fp = fopen(filename, "r");
@@ -74,10 +75,10 @@ void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader,  SDL_Rendere
     w = atoi(strtok(NULL, " "));
     h = atoi(strtok(NULL, " "));
 
-    SDL_Surface* asset = COIAssetLoaderGetAsset(loader, assetID);
+    SDL_Surface* asset = COIAssetLoaderGetAsset(board->loader, assetID);
     SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);
     sprite = COISpriteCreate(x, y, w, h, texture);
-    COISpriteSetExtraCollision(sprite, COIAssetLoaderGetCollision(loader, assetID));
+    COISpriteSetExtraCollision(sprite, COIAssetLoaderGetCollision(board->loader, assetID));
     board->_sprites[i] = sprite;
     i++;
   }

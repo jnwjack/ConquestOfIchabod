@@ -32,13 +32,16 @@ typedef struct COIBoard {
   // New method of handling strings
   COIString** strings;
   int stringCount;
+
+  // Used to load spritemap
+  COIAssetLoader* loader;
 }COIBoard;
 
-COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h);
+COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoader* loader);
 void COIBoardDestroy(COIBoard* board);
 
 int COIBoardBGColor(COIBoard* board, int index);
-void COIBoardLoadSpriteMap(COIBoard* board, COIAssetLoader* loader, SDL_Renderer* renderer, const char* filename);
+void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* filename);
 COISprite** COIBoardGetSprites(COIBoard* board);
 int COIBoardGetSpriteCount(COIBoard* board);
 bool COIBoardShiftFrameX(COIBoard* board, int stride);
