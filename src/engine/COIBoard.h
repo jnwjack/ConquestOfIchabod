@@ -23,9 +23,14 @@ typedef struct COIBoard {
   int _frameY;
   int _frameWidth;
   int _frameHeight;
-  
+
+  // Sprites loaded in via spritemap
   COISprite** _sprites;
+  // Sprites loaded in "on-the-fly"
+  COISprite** dynamicSprites;
   int _spriteCount;
+  int dynSpriteCount;
+  
   int _shouldDraw;
   void* context;
 
@@ -42,6 +47,7 @@ void COIBoardDestroy(COIBoard* board);
 
 int COIBoardBGColor(COIBoard* board, int index);
 void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* filename);
+void COIBoardSetDynamicSprites(COIBoard* board, COISprite** sprites, int count);
 COISprite** COIBoardGetSprites(COIBoard* board);
 int COIBoardGetSpriteCount(COIBoard* board);
 bool COIBoardShiftFrameX(COIBoard* board, int stride);

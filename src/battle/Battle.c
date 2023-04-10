@@ -19,7 +19,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard*
   COIMenuSetTexts(context->actionMenu, context->actionStrings, 5);
   COIMenuIncrement(context->actionMenu, 1);
   COIMenuSetVisible(context->actionMenu);
-  
 
   COIBoardSetStrings(board, context->actionStrings, 5);
 

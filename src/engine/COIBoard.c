@@ -14,6 +14,8 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
   board->_frameHeight = 0;
   board->_sprites = NULL;
   board->_spriteCount = 0;
+  board->dynamicSprites = NULL;
+  board->dynSpriteCount = 0;
   board->_shouldDraw = true;
   board->context = NULL;
   board->strings = NULL;
@@ -38,6 +40,12 @@ void COIBoardDestroy(COIBoard* board) {
       }
     }
     free(board->_sprites);
+  }
+  if (board->dynamicSprites != NULL) {
+    for (int i = 0; i < board->dynSpriteCount; i++) {
+      free(board->dynamicSprites[i]);
+    }
+    free(board->dynamicSprites);
   }
 }
 
@@ -82,6 +90,17 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
     board->_sprites[i] = sprite;
     i++;
   }
+}
+
+void COIBoardSetDynamicSprites(COIBoard* board, COISprite** sprites, int count) {
+  if (board->dynamicSprites != NULL) {
+    for (int i = 0; i < board->dynSpriteCount; i++) {
+      free(board->dynamicSprites[i]);
+    }
+    free(board->dynamicSprites);
+  }
+  board->dynamicSprites = sprites;
+  board->dynSpriteCount = count;
 }
 
 COISprite** COIBoardGetSprites(COIBoard* board) {
