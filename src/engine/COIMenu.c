@@ -19,6 +19,8 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer) {
   menu->_frame->_autoHandle = false;
   menu->_pointer->_autoHandle = false;
 
+  COIMenuAdjustFrame(menu);
+
   return menu;
 }
 
@@ -101,22 +103,24 @@ void COIMenuSetTexts(COIMenu* menu, COIString** strings, int numStrings) {
     menu->_visibleTextCount = menu->_stringCount;
     menu->_upperFrameBound = menu->_visibleTextCount - 1;
   }
+
+  // Font size may have changed. Readjust frame.
+  COIMenuAdjustFrame(menu);
 }
 
 void COIMenuAdjustFrame(COIMenu* menu) {
   if (menu->_current > menu->_upperFrameBound) {
     menu->_upperFrameBound = menu->_current;
     menu->_lowerFrameBound = menu->_current - (menu->_visibleTextCount - 1);
-    COIMenuSetVisible(menu);
   } else if (menu->_current < menu->_lowerFrameBound)  {
     menu->_lowerFrameBound = menu->_current;
     menu->_upperFrameBound = menu->_current + (menu->_visibleTextCount - 1);
-    COIMenuSetVisible(menu);
   }
 
   int pointerLocation = menu->_current - menu->_lowerFrameBound;
-  menu->_pointer->_y = menu->_y + COI_MENU_OFFSET_Y + (pointerLocation * (menu->_pointer->_height + COI_MENU_PADDING));
-  menu->_pointer->_y = (menu->_y + COI_MENU_OFFSET_Y) + (menu->_fontSize / 2) + (pointerLocation * (menu->_fontSize + COI_MENU_PADDING)) - (menu->_pointer->_height / 2);
+  int pointerY = (menu->_y + COI_MENU_OFFSET_Y) + (menu->_fontSize / 2) + (pointerLocation * (menu->_fontSize + COI_MENU_PADDING)) - (menu->_pointer->_height / 2);
+  int pointerX = (menu->_x + COI_MENU_OFFSET_X) - (menu->_pointer->_width + COI_MENU_PADDING);
+  COISpriteSetPos(menu->_pointer, pointerX, pointerY);
 }
 
 void COIMenuReset(COIMenu* menu) {

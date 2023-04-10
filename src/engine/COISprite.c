@@ -111,3 +111,11 @@ void COISpriteSetExtraCollision(COISprite* sprite, COIExtraCollision* collision)
   sprite->_extraCollision = collision;
 }
 
+void COISpriteSetPos(COISprite* sprite, int x, int y) {
+  sprite->_x = x;
+  sprite->_y = y;
+
+  sprite->_drawRect->x = x;
+  sprite->_drawRect->y = y;
+}
+

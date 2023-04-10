@@ -22,7 +22,6 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
 
 void battle(COIBoard* board, SDL_Event* event, void* context) {
   switch (event->type) {
-   
   }
 }
 

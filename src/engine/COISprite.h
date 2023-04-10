@@ -31,5 +31,6 @@ void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h);
 void COISpriteSheetIncrementIndex(COISprite* sprite);
 int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height);
 void COISpriteSetExtraCollision(COISprite* sprite, COIExtraCollision* collision);
+void COISpriteSetPos(COISprite* sprite, int x, int y);
 
 #endif
