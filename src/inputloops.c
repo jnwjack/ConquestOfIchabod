@@ -208,7 +208,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     break;
   case BATTLE:
     window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-    otherBoard = battleCreateBoard(window, board->loader, board);
+    otherBoard = battleCreateBoard(window, board->loader, board, ACTOR_SKELETON);
     COIWindowSetBoard(window, otherBoard, &battle);
     *direction = MOVING_NONE;
     break;

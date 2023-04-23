@@ -22,6 +22,13 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture) {
   return sprite;
 }
 
+COISprite* COISpriteCreateFromAssetID(int x, int y, int w, int h, COIAssetLoader* loader, int assetID, SDL_Renderer* renderer) {
+  SDL_Surface* asset = COIAssetLoaderGetAsset(loader, assetID);
+  SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);
+
+  return COISpriteCreate(x, y, w, h, texture);
+}
+
 void COISpriteDestroy(COISprite* sprite) {
   SDL_DestroyTexture(sprite->_texture);
   free(sprite->_drawRect);

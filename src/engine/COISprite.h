@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include "COIExtraCollision.h"
+#include "COIAssetLoader.h"
 
 #define COI_NO_COLLISION 0
 #define COI_COLLISION 1
@@ -25,6 +26,7 @@ typedef struct COISprite {
 }COISprite;
 
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture);
+COISprite* COISpriteCreateFromAssetID(int x, int y, int w, int h, COIAssetLoader* loader, int assetID, SDL_Renderer* renderer);
 void COISpriteDestroy(COISprite* sprite);
 void COISpriteSetSheetIndex(COISprite* sprite, int index);
 void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h);

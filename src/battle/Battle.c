@@ -1,6 +1,7 @@
 #include "Battle.h"
+#include "../actor.h"
 
-COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard) {
+COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard, int actorType) {
   COIBoard* board = COIBoardCreate(99, 91, 95, 225, 640, 480, loader);
   COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/battle/spritemap.dat");
 
@@ -20,9 +21,31 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard*
   COIMenuIncrement(context->actionMenu, 1);
   COIMenuSetVisible(context->actionMenu);
 
+  // Enemies, can later randomize number
+  context->numEnemies = 3;
+  int offsetX = 50, offsetY = 100;
+  context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
+  for (int i = 0; i < context->numEnemies; i++) {
+    context->enemies[i] = actorCreateOfType(actorType, offsetX, offsetY + 80*i, loader, window);
+  }
+
+  COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
+
   COIBoardSetStrings(board, context->actionStrings, 5);
 
   COIBoardSetContext(board, (void*)context);
 
   return board;
+}
+
+void battleDestroyBoard(COIBoard* board) {
+  BattleContext* context = (BattleContext*)board->context;
+  COIMenuDestroy(context->actionMenu);
+  COITextTypeDestroy(context->textType);
+  for (int i = 0; i < context->numEnemies; i++) {
+    free(context->enemies[i]);
+  }
+  free(context->enemies);
+  free(context);
+  COIBoardDestroy(board);
 }
