@@ -20,8 +20,56 @@ int testForCollision(COIBoard* board, COISprite* player, int changeX, int change
   return COI_NO_COLLISION;
 }
 
+bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
+  bool selection = false;
+  switch (event->key.keysym.sym) {
+    case SDLK_UP:
+      COIMenuIncrement(menu, -1);
+      COIMenuSetVisible(menu);
+      break;
+    case SDLK_DOWN:
+      COIMenuIncrement(menu, 1);
+      COIMenuSetVisible(menu);
+      break;
+    case SDLK_SPACE:
+      selection = true;
+      break;
+  }
+
+  return selection;
+}
+
 void battle(COIBoard* board, SDL_Event* event, void* context) {
+  BattleContext* battleContext = (BattleContext*)context;
+
+  bool selection = false;
+  COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
+    case SDL_KEYDOWN:
+      if (battleContext->actionMenuFocused) {
+	selection = handleMenuInput(battleContext->actionMenu, event);
+      } else {
+	switch (event->key.keysym.sym) {
+        case SDLK_UP:
+	  battleMovePointer(battleContext, -1);
+	  break;
+        case SDLK_DOWN:
+	  battleMovePointer(battleContext, 1);
+	  break;
+        case SDLK_SPACE:
+	  printf("handle select\n");
+	  break;
+	}
+      }
+      break;
+    default:
+      return;
+  }
+
+  board->_shouldDraw = true;
+
+  if (selection) {
+    battleHandleActionSelection(context);
   }
 }
 
@@ -36,9 +84,11 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       switch (event->key.keysym.sym) {
         case SDLK_UP:
 	  COIMenuIncrement(focusedMenu, -1);
+	  COIMenuSetVisible(focusedMenu);
 	  break;
         case SDLK_DOWN:
 	  COIMenuIncrement(focusedMenu, 1);
+	  COIMenuSetVisible(focusedMenu);
 	  break;
         case SDLK_SPACE:
 	  selection = true;

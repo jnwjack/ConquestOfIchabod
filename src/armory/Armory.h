@@ -7,8 +7,6 @@
 #include "../inventory.h"
 #include "../inputloops.h"
 
-#define MAX_STRING_SIZE 100
-
 // Can later replace this with charisma or something
 #define SELL_FACTOR 0.75
 

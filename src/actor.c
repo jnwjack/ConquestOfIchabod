@@ -13,7 +13,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   COISprite* sprite;
   switch(actorType) {
   case ACTOR_SKELETON:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 6, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 7, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite);
   }
 
@@ -28,4 +28,13 @@ COISprite** actorGetSpriteList(Actor** actors, int numActors) {
   }
 
   return sprites;
+}
+
+char* actorGetNameFromType(int actorType) {
+  switch (actorType) {
+  case ACTOR_SKELETON:
+    return "SKELETON";
+  default:
+    return "UNKNOWN";
+  }
 }

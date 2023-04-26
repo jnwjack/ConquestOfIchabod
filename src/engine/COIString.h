@@ -3,6 +3,8 @@
 
 #include "COIChar.h"
 
+#define MAX_STRING_SIZE 100
+
 typedef struct COIString {
   COIChar* _head;
   

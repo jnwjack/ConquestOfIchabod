@@ -53,11 +53,18 @@ void COIWindowLoop(COIWindow* window) {
       SDL_RenderClear(window->_renderer);
 
       COIBoardUpdateSpriteVisibility(window->_currentBoard);
-      int i;
       COISprite** sprites = COIBoardGetSprites(window->_currentBoard);
       COISprite* sprite;
-      for (i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
+      for (int i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
 	sprite = sprites[i];
+	if (sprite->_visible) {
+	  SDL_RenderCopy(window->_renderer, sprite->_texture, NULL, sprite->_drawRect);
+	}
+      }
+
+      // Draw dynamic sprites
+      for (int i = 0; i < window->_currentBoard->dynSpriteCount; i++) {
+	sprite = window->_currentBoard->dynamicSprites[i];
 	if (sprite->_visible) {
 	  SDL_RenderCopy(window->_renderer, sprite->_texture, NULL, sprite->_drawRect);
 	}

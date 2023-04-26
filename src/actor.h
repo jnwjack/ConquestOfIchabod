@@ -25,4 +25,6 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
 // Create list of COISprites from list of actors
 COISprite** actorGetSpriteList(Actor** actors, int numActors);
 
+char* actorGetNameFromType(int actorType);
+
 #endif

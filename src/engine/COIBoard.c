@@ -114,10 +114,25 @@ int COIBoardGetSpriteCount(COIBoard* board) {
 void COIBoardUpdateSpriteVisibility(COIBoard* board) {
   int farEdgeX = board->_frameX + board->_frameWidth;
   int farEdgeY = board->_frameY + board->_frameHeight;
-  int i;
   COISprite* sprite = NULL;
-  for (i = 0; i < board->_spriteCount; i++) {
+  for (int i = 0; i < board->_spriteCount; i++) {
     sprite = board->_sprites[i];
+    if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
+	&& ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
+      if (sprite->_autoHandle) {
+	sprite->_visible = true;
+      }
+      sprite->_drawRect->x = sprite->_x - board->_frameX;
+      sprite->_drawRect->y = sprite->_y - board->_frameY;
+    } else {
+      if (sprite->_autoHandle) {
+	sprite->_visible = false;
+      }
+    }
+  }
+  
+  for (int i = 0; i < board->dynSpriteCount; i++) {
+    sprite = board->dynamicSprites[i];
     if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
 	&& ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
       if (sprite->_autoHandle) {
