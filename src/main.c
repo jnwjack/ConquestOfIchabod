@@ -5,10 +5,12 @@
 #include "armory/Armory.h"
 #include "items.h"
 #include "tests.h"
-
+#include "player.h"
+#include "threadtown/Town.h"
 
 int main(int argc, char** argv) {
   COIWindow* window = COIWindowCreate();
+  COIAssetLoader* loader = COIAssetLoaderCreate();
 
   // Global item data
   ItemList* itemList = loadItems();
@@ -16,17 +18,21 @@ int main(int argc, char** argv) {
   // Test inventory
   Inventory* inventory = createTestInventory(itemList);
 
-  COIAssetLoader* loader = COIAssetLoaderCreate();
+  // Initialize player data
+  COISprite* playerSprite = COISpriteCreateFromAssetID(304, 224, 32, 32, loader, 1, COIWindowGetRenderer(window));
+  PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory);
+
+  
+  COIBoard* townBoard = townCreateBoard(window, loader, pInfo);
   COILoop threadTownLoop = &threadTown;
-  void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
+  COIWindowSetBoard(window, townBoard, threadTownLoop);
+  COIWindowLoop(window);
+
+  /*void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
+
 
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, loader);
   COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
-
-  // Testing new strings
-  COITextType* testType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
-  COIString* test = COIStringCreate("Turtle", 300, 300, testType);
-  COIBoardSetStrings(board, &test, 1);
 
   COIBoard* armoryBoard = armoryCreateBoard(window, loader, board, inventory);
 
@@ -38,22 +44,12 @@ int main(int argc, char** argv) {
   COIBoardSetContext(board, context);
   
   COIWindowSetBoard(window, board, threadTownLoop);
-  COIWindowLoop(window);
+  COIWindowLoop(window);*/
 
 
   // Cleanup
-  // Only need to free the int, other pointers in context get handled elsewhere
-  int* contextIntPtr = (int*) (context);
-  free(contextIntPtr);
-  
-  armoryDestroy(armoryBoard->context);
-  
   COIAssetLoaderDestroy(loader);
-  // Test string
-  COITextTypeDestroy(testType);
-  COIStringDestroy(test);
-  COIBoardDestroy(board);
-  COIBoardDestroy(armoryBoard);
+  COIBoardDestroy(townBoard);
   COIWindowDestroy(window);
   ItemListDestroy(itemList);
   inventoryDestroy(inventory);

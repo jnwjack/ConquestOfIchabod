@@ -43,6 +43,7 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   BattleContext* battleContext = (BattleContext*)context;
 
   bool selection = false;
+  bool shouldExit = false;
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
     case SDL_KEYDOWN:
@@ -55,6 +56,9 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
 	  break;
         case SDLK_DOWN:
 	  battleMovePointer(battleContext, 1);
+	  break;
+	case SDLK_LEFT:
+	  battleHandleBack(battleContext);
 	  break;
         case SDLK_SPACE:
 	  printf("handle select\n");
@@ -69,7 +73,12 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   board->_shouldDraw = true;
 
   if (selection) {
-    battleHandleActionSelection(context);
+    shouldExit = battleHandleActionSelection(battleContext);
+  }
+
+  if (shouldExit) {
+    COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
+    battleDestroyBoard(board);
   }
 }
 
@@ -160,48 +169,52 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIMenuReset(armoryContext->menu);
     COIMenuSetInvisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->menu;
-    //COIMenuIncrement(armoryContext->menu, -2);
     
     // Re-adjust player sprite in threadtown and change to threadtown
     COISprite* player = threadTownBoard->_sprites[threadTownBoard->_spriteCount - 1];
     COIBoardMoveSprite(threadTownBoard, player, 0, 30);
     COIWindowSetBoard(window, threadTownBoard, &threadTown);
+
+    armoryDestroy(armoryContext);
+    COIBoardDestroy(board);
     return;
   }
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   COISprite* player = board->_sprites[board->_spriteCount - 1];
-  int* direction = (int*) context;
+  TownContext* townContext = (TownContext*)context;
+  //int* direction = (int*) context;
 
   int playerCenterX, playerCenterY;
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_LEFT:
-          *direction = MOVING_LEFT;
+	  townContext->direction = MOVING_LEFT;
           break;
         case SDLK_RIGHT:
-          *direction = MOVING_RIGHT;
+	  townContext->direction = MOVING_RIGHT;
           break;
         case SDLK_UP:
-          *direction = MOVING_UP;
+	  townContext->direction = MOVING_UP;
           break;
         case SDLK_DOWN:
-          *direction = MOVING_DOWN;
+	  townContext->direction = MOVING_DOWN;
+	  break;
       }
       break;
     case SDL_KEYUP:
-      if ((event->key.keysym.sym == SDLK_LEFT && *direction == MOVING_LEFT) ||
-          (event->key.keysym.sym == SDLK_RIGHT && *direction == MOVING_RIGHT) ||
-          (event->key.keysym.sym == SDLK_UP && *direction == MOVING_UP) ||
-          (event->key.keysym.sym == SDLK_DOWN && *direction == MOVING_DOWN)) {
-        *direction = MOVING_NONE;
+      if ((event->key.keysym.sym == SDLK_LEFT && townContext->direction == MOVING_LEFT) ||
+          (event->key.keysym.sym == SDLK_RIGHT && townContext->direction == MOVING_RIGHT) ||
+          (event->key.keysym.sym == SDLK_UP && townContext->direction == MOVING_UP) ||
+          (event->key.keysym.sym == SDLK_DOWN && townContext->direction == MOVING_DOWN)) {
+	townContext->direction = MOVING_NONE;
       }
   }
 
   int collisionResult = -1;
-  switch (*direction) {
+  switch (townContext->direction) {
     case MOVING_LEFT:
       collisionResult = testForCollision(board, player, -5, 0);
       if (collisionResult) {
@@ -249,18 +262,18 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   }
   switch (collisionResult) {
     COIBoard* otherBoard;
-    COIWindow* window;
   case ARMORY_DOOR:
-    otherBoard = *(COIBoard**) (context + sizeof(int));
-    window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-    COIWindowSetBoard(window, otherBoard, &armory);
-    *direction = MOVING_NONE;
+    otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
+    COIWindowSetBoard(townContext->window, otherBoard, &armory);
+    townContext->direction = MOVING_NONE;
     break;
   case BATTLE:
-    window = *(COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-    otherBoard = battleCreateBoard(window, board->loader, board, ACTOR_SKELETON);
-    COIWindowSetBoard(window, otherBoard, &battle);
-    *direction = MOVING_NONE;
+    otherBoard = battleCreateBoard(townContext->window, board->loader, board, threadTown, ACTOR_SKELETON, townContext->pInfo);
+    COIWindowSetBoard(townContext->window, otherBoard, &battle);
+    // For now, move sprite so we don't instantly go back into battle.
+    // In the future, the sprite we run into will disappear after battle.
+    COIBoardMoveSprite(board, player, 120, 0);
+    townContext->direction = MOVING_NONE;
     break;
   }
 }

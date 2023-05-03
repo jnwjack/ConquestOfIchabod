@@ -6,7 +6,7 @@
 #include "engine/COIWindow.h"
 
 #define ACTOR_SKELETON 0
-
+#define ACTOR_PLAYER 1
 
 // Holds data about a character in the world
 // Sprite, stats, walking behaviors, etc.
@@ -17,10 +17,21 @@
 typedef struct Actor {
   int actorType;
   COISprite* sprite;
+
+  // Battle statistics
+  int atk;
+  int def;
+  int agi;
+  int hp;
+  int tp; // For tech
+  int sp; // For special
 } Actor;
 
-Actor* actorCreate(int actorType, COISprite* sprite);
+Actor* actorCreate(int actorType, COISprite* sprite,
+		   int atk, int def, int agi, int hp, int tp, int sp);
 Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, COIWindow* window);
+Actor* actorCreatePlayer(COISprite* sprite);
+void actorDestroy(Actor* actor);
 
 // Create list of COISprites from list of actors
 COISprite** actorGetSpriteList(Actor** actors, int numActors);
