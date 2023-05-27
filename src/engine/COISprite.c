@@ -22,6 +22,29 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture) {
   return sprite;
 }
 
+COISprite* COISpriteCopy(COISprite* original) {
+  COISprite* sprite = malloc(sizeof(COISprite));
+  sprite->_x = original->_x;
+  sprite->_y = original->_y;
+  sprite->_width = original->_width;
+  sprite->_height = original->_height;
+  sprite->_visible = original->_visible;
+  // JNW - here
+  sprite->_texture = texture;
+  sprite->_drawRect = malloc(sizeof(SDL_Rect));
+  sprite->_drawRect->x = x;
+  sprite->_drawRect->y = y;
+  sprite->_drawRect->w = w;
+  sprite->_drawRect->h = h;
+  sprite->_srcRect = NULL;
+  sprite->_sheetCount = 0;
+  sprite->_moving = false;
+  sprite->_autoHandle = true;
+  sprite->_extraCollision = NULL;
+
+  return sprite;
+}
+
 COISprite* COISpriteCreateFromAssetID(int x, int y, int w, int h, COIAssetLoader* loader, int assetID, SDL_Renderer* renderer) {
   SDL_Surface* asset = COIAssetLoaderGetAsset(loader, assetID);
   SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);

@@ -26,6 +26,7 @@ typedef struct COISprite {
 }COISprite;
 
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture);
+COISprite* COISpriteCopy(COISprite* original);
 COISprite* COISpriteCreateFromAssetID(int x, int y, int w, int h, COIAssetLoader* loader, int assetID, SDL_Renderer* renderer);
 void COISpriteDestroy(COISprite* sprite);
 void COISpriteSetSheetIndex(COISprite* sprite, int index);

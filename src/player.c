@@ -9,12 +9,12 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->partySize = 1;
 
   // Copy name from argument
-  char c = name[0];
-  info->partySize = 0;
+  int nameIndex = 0;
+  char c = name[nameIndex];
   while (c != '\0') {
-    info->name[info->partySize] = c;
-    info->partySize++;
-    c = name[info->partySize];
+    info->name[nameIndex] = c;
+    nameIndex++;
+    c = name[nameIndex];
   }
 
   return info;

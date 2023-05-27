@@ -1,6 +1,10 @@
 #include "Battle.h"
 #include "../actor.h"
 
+Actor** _getDynamicSprites(BattleContext* context) {
+  
+}
+
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
 			    int enemyType, PlayerInfo* pInfo) {  
@@ -52,17 +56,33 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->pointer->_autoHandle = false;
   context->pointer->_visible = false;
 
-  int offsetX = 50, offsetY = 70;
+  int eOffsetX = 50, eOffsetY = 70;
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
   context->enemyNames = malloc(sizeof(COIString*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
-    context->enemies[i] = actorCreateOfType(enemyType, offsetX, offsetY + 80*i, loader, window);
+    context->enemies[i] = actorCreateOfType(enemyType, eOffsetX, eOffsetY + 80*i, loader, window);
     char name[MAX_STRING_SIZE];
     sprintf(name, "%s %i", actorGetNameFromType(enemyType), i + 1);
     context->enemyNames[i] = COIStringCreate(name, 220, 40, context->textType);
     COIStringSetVisible(context->enemyNames[i], false);
     allStrings[BATTLE_NUM_ACTIONS+i] = context->enemyNames[i];
   }
+
+  int aOffsetX = 400, aOffsetY = 70;
+  context->allyNames = malloc(sizeof(COIString*) * context->numAllies);
+  // First ally is always the player
+  context->allyNames[0] = COIStringCreate(pInfo->name, 220, 40, context->textType);
+  COIStringSetVisible(context->allyNames[0], false);
+  allStrings[BATTLE_NUM_ACTIONS+context->numEnemies] = context->allyNames[0];
+  for (int i = 1; i < context->numAllies; i++) {
+    int allyType = context->allies[i]->actorType;
+    char name[MAX_STRING_SIZE];
+    sprintf(name, "%s %i", actorGetNameFromType(allyType), i + 1);
+    context->allyNames[i] = COIStringCreate(name, 220, 40, context->textType);
+    COIStringSetVisible(context->allyNames[i], false);
+    allStrings[BATTLE_NUM_ACTIONS+context->numEnemies+i] = context->allyNames[i];
+  }
+  
   COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
 
   COIBoardSetStrings(board, allStrings, BATTLE_NUM_ACTIONS + context->numEnemies);
@@ -74,7 +94,9 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
 // Adjust pointer sprite coords to be pointing at targeted actor
 void _adjustPointer(BattleContext* context) {
-  COISprite* target =  context->enemies[context->targetedActorIndex]->sprite;
+  Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
+  
+  COISprite* target =  actors[context->targetedActorIndex]->sprite;
   COISprite* pointer = context->pointer;
   
   int newY = target->_y + (target->_height / 2) - pointer->_height / 2;
@@ -83,23 +105,31 @@ void _adjustPointer(BattleContext* context) {
 }
 
 COISprite* _toggleTargetNameVisibility(BattleContext* context, bool visible) {
-  COIString* name = context->enemyNames[context->targetedActorIndex];
+  COIString** names = context->pointingAtEnemies ? context->enemyNames : context->allyNames;
+  COIString* name = names[context->targetedActorIndex];
   COIStringSetVisible(name, visible);
 }
 
 // Move pointer to actor 'offset' spaces away
 void battleMovePointer(BattleContext* context, int offset) {
+  int numActors = context->pointingAtEnemies ? context->numEnemies : context->numAllies;
+  if (numActors == 1) {
+    return;
+  }
+  
   // Make name of the previous actor invisible
   _toggleTargetNameVisibility(context, false);
   
   // Loop around if we need to
   int newTargetIndex = context->targetedActorIndex + offset;
   if (newTargetIndex < 0) {
-    int offsetFromEnd = (-1 * newTargetIndex) % context->numEnemies;
-    context->targetedActorIndex = context->numEnemies - offsetFromEnd;
+    int offsetFromEnd = (-1 * newTargetIndex) % numActors;
+    context->targetedActorIndex = numActors - offsetFromEnd;
   } else {
-    context->targetedActorIndex = newTargetIndex % context->numEnemies;
+    context->targetedActorIndex = newTargetIndex % numActors;
   }
+
+  printf("new index: %i\n", context->targetedActorIndex);
 
   _adjustPointer(context);
   // Show name of new actor
@@ -124,11 +154,23 @@ void _attack(BattleContext* context) {
   context->pointer->_visible = true;
 }
 
+void _tech(BattleContext* context) {
+  // Display menu of TECH abilities in the future
+  context->pointingAtEnemies = false;
+  context->targetedActorIndex = 0;
+  _adjustPointer(context);
+  _toggleTargetNameVisibility(context, true);
+  context->pointer->_visible = true;
+}
+
 // When selecting what character should do, handle each option in menu.
 bool battleHandleActionSelection(BattleContext* context) {
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
     _attack(context);
+    break;
+  case BATTLE_TECH:
+    _tech(context);
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
@@ -146,6 +188,9 @@ bool battleHandleActionSelection(BattleContext* context) {
 void battleHandleBack(BattleContext* context) {
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
+    _focusActionMenu(context);
+    break;
+  case BATTLE_TECH:
     _focusActionMenu(context);
     break;
   default:
