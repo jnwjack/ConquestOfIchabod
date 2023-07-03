@@ -23,10 +23,11 @@ typedef struct COISprite {
   // true if COIBoard manages visibility of sprite
   bool _autoHandle;
   COIExtraCollision* _extraCollision;
+  int _assetID;
 }COISprite;
 
-COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture);
-COISprite* COISpriteCopy(COISprite* original);
+COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int assetID);
+COISprite* COISpriteCopy(COISprite* original, COIAssetLoader* loader, SDL_Renderer* renderer);
 COISprite* COISpriteCreateFromAssetID(int x, int y, int w, int h, COIAssetLoader* loader, int assetID, SDL_Renderer* renderer);
 void COISpriteDestroy(COISprite* sprite);
 void COISpriteSetSheetIndex(COISprite* sprite, int index);

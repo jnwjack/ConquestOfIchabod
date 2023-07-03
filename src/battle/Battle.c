@@ -24,6 +24,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Allies
   context->allies = pInfo->party;
   context->numAllies = pInfo->partySize;
+  printf("numAllies %i\n", pInfo->partySize);
 
   // Enemies, can later randomize number
   context->numEnemies = 3;

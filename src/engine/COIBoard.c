@@ -85,7 +85,7 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
 
     SDL_Surface* asset = COIAssetLoaderGetAsset(board->loader, assetID);
     SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);
-    sprite = COISpriteCreate(x, y, w, h, texture);
+    sprite = COISpriteCreate(x, y, w, h, texture, assetID);
     COISpriteSetExtraCollision(sprite, COIAssetLoaderGetCollision(board->loader, assetID));
     board->_sprites[i] = sprite;
     i++;

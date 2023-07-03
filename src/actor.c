@@ -17,7 +17,6 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 }
 
 Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, COIWindow* window) {
-
   COISprite* sprite;
   switch(actorType) {
   case ACTOR_SKELETON:
