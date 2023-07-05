@@ -13,6 +13,8 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   actor->tp = tp;
   actor->sp = sp;
 
+  actor->techList = techCreateList(MAX_TECH_COUNT_NPC);
+
   return actor;
 }
 
@@ -39,6 +41,13 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   actor->hp = 40;
   actor->tp = 10;
   actor->sp = 30;
+
+  actor->techList = techCreateList(MAX_TECH_COUNT_ALLY);
+  techAddToList(actor->techList, TECH_ID_FOCUS);
+  techAddToList(actor->techList, TECH_ID_COUNTER);
+  techAddToList(actor->techList, TECH_ID_BRACE);
+  techAddToList(actor->techList, TECH_ID_RAGE);
+    
 
   return actor;
 }

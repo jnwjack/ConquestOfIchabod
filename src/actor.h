@@ -4,6 +4,7 @@
 #include "engine/COISprite.h"
 #include "engine/COIAssetLoader.h"
 #include "engine/COIWindow.h"
+#include "tech.h"
 
 #define ACTOR_SKELETON 0
 #define ACTOR_PLAYER 1
@@ -25,6 +26,8 @@ typedef struct Actor {
   int hp;
   int tp; // For tech
   int sp; // For special
+
+  TechList* techList;
 } Actor;
 
 Actor* actorCreate(int actorType, COISprite* sprite,

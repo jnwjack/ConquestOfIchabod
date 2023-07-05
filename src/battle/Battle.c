@@ -1,8 +1,23 @@
 #include "Battle.h"
 #include "../actor.h"
 
-Actor** _getDynamicSprites(BattleContext* context) {
+COISprite** _getDynamicSprites(BattleContext* context) {
+  COISprite** enemySprites = actorGetSpriteList(context->enemies, context->numEnemies);
+  COISprite** allySprites = actorGetSpriteList(context->allies, context->numAllies);
+
+  int numSprites = context->numEnemies + context->numAllies;
+  COISprite** allSprites = malloc(sizeof(COISprite*) * numSprites);
+  for (int i = 0; i < context->numEnemies; i++) {
+    allSprites[i] = enemySprites[i];
+  }
+  for (int i = 0; i < context->numAllies; i++) {
+    allSprites[context->numEnemies + i] = allySprites[i];
+  }
   
+  free(enemySprites);
+  free(allySprites);
+
+  return allSprites;
 }
 
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
@@ -24,7 +39,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Allies
   context->allies = pInfo->party;
   context->numAllies = pInfo->partySize;
-  printf("numAllies %i\n", pInfo->partySize);
 
   // Enemies, can later randomize number
   context->numEnemies = 3;
@@ -84,9 +98,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     allStrings[BATTLE_NUM_ACTIONS+context->numEnemies+i] = context->allyNames[i];
   }
   
-  COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
+  //COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
+  COIBoardSetDynamicSprites(board, _getDynamicSprites(context), context->numEnemies + context->numAllies);
 
-  COIBoardSetStrings(board, allStrings, BATTLE_NUM_ACTIONS + context->numEnemies);
+  COIBoardSetStrings(board, allStrings, BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies);
 
   COIBoardSetContext(board, (void*)context);
 
@@ -129,8 +144,6 @@ void battleMovePointer(BattleContext* context, int offset) {
   } else {
     context->targetedActorIndex = newTargetIndex % numActors;
   }
-
-  printf("new index: %i\n", context->targetedActorIndex);
 
   _adjustPointer(context);
   // Show name of new actor

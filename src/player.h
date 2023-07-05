@@ -3,9 +3,9 @@
 
 #include "actor.h"
 #include "inventory.h"
+#include "constants.h"
 
 #define MAX_PARTY_SIZE 4
-#define MAX_NAME_SIZE 12
 
 // Player character data
 // Party members, inventory, etc.

@@ -43,7 +43,8 @@ void COIBoardDestroy(COIBoard* board) {
   }
   if (board->dynamicSprites != NULL) {
     for (int i = 0; i < board->dynSpriteCount; i++) {
-      free(board->dynamicSprites[i]);
+      // Dynamic sprites are used elsewhere
+      //free(board->dynamicSprites[i]);
     }
     free(board->dynamicSprites);
   }
@@ -95,7 +96,8 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
 void COIBoardSetDynamicSprites(COIBoard* board, COISprite** sprites, int count) {
   if (board->dynamicSprites != NULL) {
     for (int i = 0; i < board->dynSpriteCount; i++) {
-      free(board->dynamicSprites[i]);
+      // Dynamic sprites are used elsewhere
+      // free(board->dynamicSprites[i]);
     }
     free(board->dynamicSprites);
   }

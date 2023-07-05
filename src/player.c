@@ -11,11 +11,12 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   // Copy name from argument
   int nameIndex = 0;
   char c = name[nameIndex];
-  while (c != '\0') {
+  while (c != '\0' && nameIndex < MAX_NAME_SIZE - 1) {
     info->name[nameIndex] = c;
     nameIndex++;
     c = name[nameIndex];
   }
+  info->name[nameIndex] = '\0';
 
   return info;
 }
