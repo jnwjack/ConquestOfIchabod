@@ -1,6 +1,61 @@
 #include "Battle.h"
 #include "../actor.h"
 
+int _getNumStrings(BattleContext* context) {
+  int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
+  /*for (int i = 0; i < context->numAllies; i++) {
+    count += context->allies[i]->techList->count;
+  }
+  for (int i = 0; i < context->numEnemies; i++) {
+    count += context->enemies[i]->techList->count;
+    }*/
+
+  return count;
+}
+
+COIString** _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* board) {
+  context->numStrings = _getNumStrings(context);
+  
+  COIString** allStrings = malloc(sizeof(COIString*) * context->numStrings);
+  
+  context->actionStrings[0] = COIStringCreate("Attack", 0, 0, context->textType);
+  context->actionStrings[1] = COIStringCreate("Tech", 0, 0, context->textType);
+  context->actionStrings[2] = COIStringCreate("Special", 0, 0, context->textType);
+  context->actionStrings[3] = COIStringCreate("Item", 0, 0, context->textType);
+  context->actionStrings[4] = COIStringCreate("Flee", 0, 0, context->textType);
+  for (int i = 0; i < BATTLE_NUM_ACTIONS; i++) {
+    allStrings[i] = context->actionStrings[i];
+  }
+  
+  context->enemyNames = malloc(sizeof(COIString*) * context->numEnemies);
+  for (int i = 0; i < context->numEnemies; i++) {
+    Actor* enemy = context->enemies[i];
+    char name[MAX_STRING_SIZE];
+    sprintf(name, "%s %i", actorGetNameFromType(enemy->actorType), i + 1);
+    context->enemyNames[i] = COIStringCreate(name, 220, 40, context->textType);
+    COIStringSetVisible(context->enemyNames[i], false);
+    allStrings[BATTLE_NUM_ACTIONS+i] = context->enemyNames[i];
+  }
+
+  //int aOffsetX = 400, aOffsetY = 70;
+  context->allyNames = malloc(sizeof(COIString*) * context->numAllies);
+  // First ally is always the player
+  context->allyNames[0] = COIStringCreate(pInfo->name, 220, 40, context->textType);
+  COIStringSetVisible(context->allyNames[0], false);
+  allStrings[BATTLE_NUM_ACTIONS+context->numEnemies] = context->allyNames[0];
+  for (int i = 1; i < context->numAllies; i++) {
+    int allyType = context->allies[i]->actorType;
+    char name[MAX_STRING_SIZE];
+    sprintf(name, "%s %i", actorGetNameFromType(allyType), i + 1);
+    context->allyNames[i] = COIStringCreate(name, 220, 40, context->textType);
+    COIStringSetVisible(context->allyNames[i], false);
+    allStrings[BATTLE_NUM_ACTIONS+context->numEnemies+i] = context->allyNames[i];
+  }
+
+  COIBoardSetStrings(board, allStrings, context->numStrings);
+}
+
+
 COISprite** _getDynamicSprites(BattleContext* context) {
   COISprite** enemySprites = actorGetSpriteList(context->enemies, context->numEnemies);
   COISprite** allySprites = actorGetSpriteList(context->allies, context->numAllies);
@@ -28,8 +83,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   // Context
   BattleContext* context = malloc(sizeof(BattleContext));
+  context->board = board;
   context->pointingAtEnemies = false;
   context->targetedActorIndex = 0;
+  context->turnIndex = 0;
 
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
@@ -44,27 +101,12 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->numEnemies = 3;
   
   // Keep a list of all strings we have that we can pass to the COIBoard
-  int totalStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
+   context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
   COIString** allStrings = malloc(sizeof(COIString*) * (BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies));
 
   context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
   
-  context->actionStrings[0] = COIStringCreate("Attack", 0, 0, context->textType);
-  context->actionStrings[1] = COIStringCreate("Tech", 0, 0, context->textType);
-  context->actionStrings[2] = COIStringCreate("Special", 0, 0, context->textType);
-  context->actionStrings[3] = COIStringCreate("Item", 0, 0, context->textType);
-  context->actionStrings[4] = COIStringCreate("Flee", 0, 0, context->textType);
-  for (int i = 0; i < BATTLE_NUM_ACTIONS; i++) {
-    allStrings[i] = context->actionStrings[i];
-  }
-
   COISprite** sprites = COIBoardGetSprites(board);
-
-  context->actionMenu = COIMenuCreate(sprites[3], sprites[4]);
-  COIMenuSetTexts(context->actionMenu, context->actionStrings, BATTLE_NUM_ACTIONS);
-  //COIMenuIncrement(context->actionMenu, 1);
-  COIMenuSetVisible(context->actionMenu);
-  context->actionMenuFocused = true;
 
   // Pointer for enemies and allies
   context->pointer = sprites[5];
@@ -73,35 +115,26 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   int eOffsetX = 50, eOffsetY = 70;
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
-  context->enemyNames = malloc(sizeof(COIString*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
     context->enemies[i] = actorCreateOfType(enemyType, eOffsetX, eOffsetY + 80*i, loader, window);
-    char name[MAX_STRING_SIZE];
-    sprintf(name, "%s %i", actorGetNameFromType(enemyType), i + 1);
-    context->enemyNames[i] = COIStringCreate(name, 220, 40, context->textType);
-    COIStringSetVisible(context->enemyNames[i], false);
-    allStrings[BATTLE_NUM_ACTIONS+i] = context->enemyNames[i];
   }
 
-  int aOffsetX = 400, aOffsetY = 70;
-  context->allyNames = malloc(sizeof(COIString*) * context->numAllies);
-  // First ally is always the player
-  context->allyNames[0] = COIStringCreate(pInfo->name, 220, 40, context->textType);
-  COIStringSetVisible(context->allyNames[0], false);
-  allStrings[BATTLE_NUM_ACTIONS+context->numEnemies] = context->allyNames[0];
-  for (int i = 1; i < context->numAllies; i++) {
-    int allyType = context->allies[i]->actorType;
-    char name[MAX_STRING_SIZE];
-    sprintf(name, "%s %i", actorGetNameFromType(allyType), i + 1);
-    context->allyNames[i] = COIStringCreate(name, 220, 40, context->textType);
-    COIStringSetVisible(context->allyNames[i], false);
-    allStrings[BATTLE_NUM_ACTIONS+context->numEnemies+i] = context->allyNames[i];
-  }
   
   //COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
   COIBoardSetDynamicSprites(board, _getDynamicSprites(context), context->numEnemies + context->numAllies);
+  
+  _makeStrings(context, pInfo, board);
 
-  COIBoardSetStrings(board, allStrings, BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies);
+  // Top-level menu
+  context->actionMenu = COIMenuCreate(sprites[3], sprites[4]);
+  COIMenuSetTexts(context->actionMenu, context->actionStrings, BATTLE_NUM_ACTIONS);
+
+  // Submenu
+  context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
+  COIMenuSetInvisible(context->subMenu);
+
+  COIMenuSetVisible(context->actionMenu);
+  context->menuFocus = ACTION_MENU;
 
   COIBoardSetContext(board, (void*)context);
 
@@ -157,7 +190,7 @@ void _focusActionMenu(BattleContext* context) {
   context->targetedActorIndex = 0;
   context->pointer->_visible = false;
 
-  context->actionMenuFocused = true;
+  context->menuFocus = ACTION_MENU;
 }
 
 void _attack(BattleContext* context) {
@@ -175,6 +208,47 @@ void _tech(BattleContext* context) {
   _adjustPointer(context);
   _toggleTargetNameVisibility(context, true);
   context->pointer->_visible = true;
+
+  // Clean up previous COIStrings
+  for (int i = 0; i < context->subMenu->_stringCount; i++) {
+    COIBoardRemoveString(context->board, context->subMenu->_strings[i]);
+    COIStringDestroy(context->subMenu->_strings[i]);
+  }
+
+  TechList* tList = context->allies[context->turnIndex]->techList;
+  COIString** tNames = malloc(sizeof(COIString*) * tList->count);
+  for (int i = 0; i <tList->count; i++) {
+    tNames[i] = techNameAsCOIString(tList->techs[i], 0, 0, context->textType, tList->techs[i]->active);
+    COIBoardAddString(context->board, tNames[i]);
+  }
+  COIMenuSetTexts(context->subMenu, tNames, tList->count);
+  
+  COIMenuSetVisible(context->subMenu);
+
+  free(tNames);
+}
+
+void _techSelection(BattleContext* context) {
+  Actor* ally = context->allies[context->turnIndex];
+  int selectedTech = context->subMenu->_current;
+  TechList* tList = ally->techList;
+  Tech* tech = tList->techs[selectedTech];
+  COIString** tNames = context->subMenu->_strings;
+  if (tech->active) {
+    tech->active = false;
+    COIBoardRemoveString(context->board, tNames[selectedTech]);
+    COIStringDestroy(tNames[selectedTech]);
+    tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
+    COIBoardAddString(context->board, tNames[selectedTech]);
+    COIMenuSetVisible(context->subMenu);
+  } else if (ally->tp >= tech->cost) {
+    tech->active = true;
+    COIBoardRemoveString(context->board, tNames[selectedTech]);
+    COIStringDestroy(tNames[selectedTech]);
+    tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
+    COIBoardAddString(context->board, tNames[selectedTech]);
+    COIMenuSetVisible(context->subMenu);
+  }
 }
 
 // When selecting what character should do, handle each option in menu.
@@ -182,9 +256,12 @@ bool battleHandleActionSelection(BattleContext* context) {
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
     _attack(context);
+    context->menuFocus = ACTORS;
     break;
   case BATTLE_TECH:
     _tech(context);
+    context->menuFocus = SUB_MENU;
+    context->subMenuType = TECH;
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
@@ -194,7 +271,7 @@ bool battleHandleActionSelection(BattleContext* context) {
     return false;
   }
   
-  context->actionMenuFocused = false;
+  
   return false;
 }
 
@@ -205,10 +282,21 @@ void battleHandleBack(BattleContext* context) {
     _focusActionMenu(context);
     break;
   case BATTLE_TECH:
+    COIMenuSetInvisible(context->subMenu);
     _focusActionMenu(context);
     break;
   default:
     printf("Invalid action in battle.\n");
+  }
+}
+
+void battleHandleSubMenuSelection(BattleContext* context) {
+  switch (context->subMenuType) {
+  case TECH:
+    _techSelection(context);
+    break;
+  default:
+    printf("Error on battle submenu selection.\n");
   }
 }
 

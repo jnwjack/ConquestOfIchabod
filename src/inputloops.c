@@ -47,22 +47,24 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
     case SDL_KEYDOWN:
-      if (battleContext->actionMenuFocused) {
-	selection = handleMenuInput(battleContext->actionMenu, event);
-      } else {
-	switch (event->key.keysym.sym) {
-        case SDLK_UP:
-	  battleMovePointer(battleContext, -1);
-	  break;
-        case SDLK_DOWN:
-	  battleMovePointer(battleContext, 1);
-	  break;
-	case SDLK_LEFT:
-	  battleHandleBack(battleContext);
-	  break;
-        case SDLK_SPACE:
-	  printf("handle select\n");
-	  break;
+      if (event->key.keysym.sym == SDLK_LEFT) {
+	battleHandleBack(battleContext);
+      }else {
+	if (battleContext->menuFocus == ACTION_MENU) {
+	  selection = handleMenuInput(battleContext->actionMenu, event);
+	} else if (battleContext->menuFocus == SUB_MENU) {
+	  selection = handleMenuInput(battleContext->subMenu, event);
+	} else {
+	  switch (event->key.keysym.sym) {
+	  case SDLK_UP:
+	    battleMovePointer(battleContext, -1);
+	    break;
+	  case SDLK_DOWN:
+	    battleMovePointer(battleContext, 1);
+	    break;
+	  case SDLK_SPACE:
+	    break;
+	  }
 	}
       }
       break;
@@ -73,7 +75,15 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   board->_shouldDraw = true;
 
   if (selection) {
-    shouldExit = battleHandleActionSelection(battleContext);
+    switch (battleContext->menuFocus) {
+    case ACTION_MENU:
+      shouldExit = battleHandleActionSelection(battleContext);
+      break;
+    case SUB_MENU:
+      battleHandleSubMenuSelection(battleContext);
+      break;
+    }
+
   }
 
   if (shouldExit) {

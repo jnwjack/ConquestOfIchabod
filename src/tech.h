@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "constants.h"
+#include "engine/COIString.h"
 
 
 // Holds data about a technique (TECH)
@@ -42,6 +43,9 @@ TechList* techDestroyList(TechList* list);
 void techAddToList(TechList* list, int id);
 char* techNameFromID(int id);
 char* techDescFromID(int id);
+
+COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType, bool asterisk);
+
 
 #endif
 

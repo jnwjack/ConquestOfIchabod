@@ -4,6 +4,8 @@ COIString* COIStringCreate(char* string, int x, int y, COITextType* textType) {
   COIString* obj = malloc(sizeof(COIString));
 
   obj->fontSize = textType->fontSize;
+  obj->visible = false;
+  obj->index = -1;
 
   // Store string as a linked list of COIChars
   COIChar* current = NULL;
@@ -61,4 +63,14 @@ void COIStringSetVisible(COIString* obj, bool visible) {
     current->visible = visible;
     current = current->next;
   }
+  obj->visible = visible;
+}
+
+COIString** COIStringCopyList(COIString** src, int size) {
+  COIString** copy = malloc(sizeof(COIString*) * size);
+  for (int i = 0; i < size; i++) {
+    copy[i] = src[i];
+  }
+
+  return copy;
 }

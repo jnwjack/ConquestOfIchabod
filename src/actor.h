@@ -26,6 +26,9 @@ typedef struct Actor {
   int hp;
   int tp; // For tech
   int sp; // For special
+  int hpMax;
+  int tpMax;
+  int spMax;
 
   TechList* techList;
 } Actor;

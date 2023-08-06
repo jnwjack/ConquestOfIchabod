@@ -12,6 +12,8 @@
 #define INDEX_BLUE  2
 #define INDEX_ALPHA 3
 
+#define COIBOARD_MAX_STRINGS 100
+
 
 typedef struct COIBoard {
   int _bgColor[4];
@@ -57,5 +59,7 @@ void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
 void COIBoardQueueDraw(COIBoard* board); // Request draw for this board
 void COIBoardSetContext(COIBoard* board, void* context);
 void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
+bool COIBoardAddString(COIBoard* board, COIString* string);
+void COIBoardRemoveString(COIBoard* board, COIString* string);
 
 #endif

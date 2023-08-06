@@ -18,7 +18,12 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
   board->dynSpriteCount = 0;
   board->_shouldDraw = true;
   board->context = NULL;
-  board->strings = NULL;
+  // JNW
+  board->strings = malloc(sizeof(COIString*) * COIBOARD_MAX_STRINGS);
+  for (int i = 0; i < COIBOARD_MAX_STRINGS; i++) {
+    board->strings[i] = NULL;
+  }
+  //board->strings = NULL;
   board->stringCount = 0;
   board->loader = loader;
 
@@ -192,13 +197,43 @@ void COIBoardSetContext(COIBoard* board, void* context) {
   board->context = context;
 }
 
-void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
-  if (board->strings != NULL) {
-    free(board->strings);
+bool COIBoardAddString(COIBoard* board, COIString* string) {
+  if (board->stringCount == COIBOARD_MAX_STRINGS) {
+    return false;
   }
 
+  board->strings[board->stringCount] = string;
+  string->index = board->stringCount;
+  board->stringCount++;
+  return true;
+}
+
+void COIBoardRemoveString(COIBoard* board, COIString* string) {
+  if (string->index == -1) {
+    return;
+  }
+
+  board->strings[string->index] = NULL;
+  int holeIndex = string->index;
+
+  // Shift all strings at a higher index down a position to fill hole
+  for (int i = holeIndex + 1; i < board->stringCount; i++) {
+    board->strings[i - 1] = board->strings[i];
+    board->strings[i - 1]->index = i - 1;
+    board->strings[i] = NULL;
+  }
+
+  board->stringCount -= 1;
+  string->index = -1;
+}
+
+void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
+  /*if (board->strings != NULL) {
+    free(board->strings);
+    }*/
+
   board->stringCount = count;
-  board->strings = malloc(sizeof(COIString*) * board->stringCount);
+  //board->strings = malloc(sizeof(COIString*) * board->stringCount);
   for (int i = 0; i < board->stringCount; i++) {
     board->strings[i] = strings[i];
   }

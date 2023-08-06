@@ -18,13 +18,33 @@
 
 #define BATTLE_NUM_ACTIONS 5
 
+typedef enum BattleMenuFocus {
+  ACTION_MENU,
+  SUB_MENU,
+  ACTORS
+} BattleMenuFocus;
+
+typedef enum BattleSubMenu {
+  TECH,
+  SPECIAL,
+  ITEM
+} BattleSubMenu;
+
 typedef struct BattleContext {
+  COIBoard* board;
+  
   // Actions: Attack, Tech, Special, etc.
   COIMenu* actionMenu;
   COIString* actionStrings[BATTLE_NUM_ACTIONS];
-  bool actionMenuFocused;
+
+  // Secondary menu when Item, Tech, Special actions selected
+  COIMenu* subMenu;
+
+  BattleMenuFocus menuFocus;
+  BattleSubMenu subMenuType;
 
   COITextType* textType;
+  int numStrings; // Count of COIStrings in context
 
   Actor** enemies;
   COIString** enemyNames;
@@ -41,6 +61,9 @@ typedef struct BattleContext {
   // Who are we looking at?
   int targetedActorIndex;
 
+  // Which ally is acting?
+  int turnIndex;
+
   // Data for next board after battle completes
   COIBoard* outside;
   COILoop outsideLoop;
@@ -52,7 +75,9 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    int enemyType, PlayerInfo* pInfo);
 void battleDestroyBoard(COIBoard* board);
 void battleHandleBack(BattleContext* context);
+COIMenu* battleGetFocusedMenu(BattleContext* context);
 bool battleHandleActionSelection(BattleContext* context);
+void battleHandleSubMenuSelection(BattleContext* context);
 void battleMovePointer(BattleContext* context, int offset);
 
 
