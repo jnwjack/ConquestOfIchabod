@@ -7,6 +7,7 @@
 #include "../engine/COIString.h"
 #include "../engine/COISprite.h"
 #include "../player.h"
+#include "BattleBehavior.h"
 
 #define BATTLE_ATTACK 0
 #define BATTLE_TECH 1
@@ -18,16 +19,16 @@
 
 #define BATTLE_NUM_ACTIONS 5
 
-typedef enum BattleMenuFocus {
+typedef enum {
   ACTION_MENU,
   SUB_MENU,
-  ACTORS
+  ACTORS,
 } BattleMenuFocus;
 
-typedef enum BattleSubMenu {
-  TECH,
-  SPECIAL,
-  ITEM
+typedef enum {
+  SM_TECH,
+  SM_SPECIAL,
+  SM_ITEM
 } BattleSubMenu;
 
 typedef struct BattleContext {
@@ -54,6 +55,8 @@ typedef struct BattleContext {
   COIString** allyNames;
   int numAllies;
 
+  BattleAction* actions; // Queue of turn's actions, 1 per actor
+
   // Pointer for enemies and allies
   COISprite* pointer;
   // Is the pointer over the enemies or the allies?
@@ -78,7 +81,9 @@ void battleHandleBack(BattleContext* context);
 COIMenu* battleGetFocusedMenu(BattleContext* context);
 bool battleHandleActionSelection(BattleContext* context);
 void battleHandleSubMenuSelection(BattleContext* context);
+void battleHandleActorSelect(BattleContext* context);
 void battleMovePointer(BattleContext* context, int offset);
+void battleSelectAttackTarget(BattleContext* context);
 
 
 #endif

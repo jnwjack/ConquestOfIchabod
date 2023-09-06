@@ -99,7 +99,11 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   // Enemies, can later randomize number
   context->numEnemies = 3;
-  
+
+  // Actions
+  context->actions = malloc(sizeof(BattleAction) *
+			    (context->numAllies + context->numEnemies));
+
   // Keep a list of all strings we have that we can pass to the COIBoard
    context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
   COIString** allStrings = malloc(sizeof(COIString*) * (BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies));
@@ -228,6 +232,14 @@ void _tech(BattleContext* context) {
   free(tNames);
 }
 
+void _pickNPCActions(BattleContext* context) {
+  // Actions stored like this: |Ally|...|Ally|Enemy|...|Enemy|
+  int offset = context->numAllies;
+  for (int i = 0; i < context->numEnemies; i++) {
+    context->actions[offset + i] = battleBehaviorGenerateAction(context->enemies[i], context->allies, context->numAllies, context->enemies, context->numEnemies);
+  }
+}
+
 void _techSelection(BattleContext* context) {
   Actor* ally = context->allies[context->turnIndex];
   int selectedTech = context->subMenu->_current;
@@ -251,6 +263,44 @@ void _techSelection(BattleContext* context) {
   }
 }
 
+void _processActions(BattleContext* context) {
+  int numActions = context->numAllies + context->numEnemies;
+
+  // NPCs select actions
+  _pickNPCActions(context);
+  
+  // Sort current BattleActions by actor AGI
+  battleBehaviorSortActions(context->actions, numActions);
+
+  for (int i = 0; i < numActions; i++) {
+    BattleAction action = context->actions[i];
+  }
+}
+
+// Change the current ally index by 'step'.
+// If we're moving past the last ally, process all actions
+void _changeTurn(BattleContext* context, int step) {
+  if (context->turnIndex + step >= context->numAllies) {
+    context->turnIndex = 0;
+    _processActions(context);
+  } else if (context->turnIndex + step < 0) {
+    // Can't go lower than ally at position 0
+    context->turnIndex = 0;
+  } else {
+    context->turnIndex += step;
+  }
+}
+
+void _selectAttackTarget(BattleContext* context) {
+  BattleAction* action = &context->actions[context->turnIndex];
+  Actor* actor = context->allies[context->turnIndex];
+  action->actor = actor;
+  action->target = context->enemies[context->targetedActorIndex];
+  action->type = ATTACK;
+  action->index = -1; // Unused
+}
+
+
 // When selecting what character should do, handle each option in menu.
 bool battleHandleActionSelection(BattleContext* context) {
   switch (context->actionMenu->_current) {
@@ -261,7 +311,7 @@ bool battleHandleActionSelection(BattleContext* context) {
   case BATTLE_TECH:
     _tech(context);
     context->menuFocus = SUB_MENU;
-    context->subMenuType = TECH;
+    context->subMenuType = SM_TECH;
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
@@ -274,6 +324,20 @@ bool battleHandleActionSelection(BattleContext* context) {
   
   return false;
 }
+
+// User selects an actor when attacking, using item, etc.
+void battleHandleActorSelect(BattleContext* context) {
+  switch (context->actionMenu->_current) {
+  case BATTLE_ATTACK:
+    _selectAttackTarget(context);
+    break;
+  default:
+    printf("Invalid actor selection in battle.\n");
+    break;
+  }
+  _changeTurn(context, 1);
+}
+
 
 // User presses 'LEFT' key, cancels out of current operation
 void battleHandleBack(BattleContext* context) {
@@ -292,13 +356,14 @@ void battleHandleBack(BattleContext* context) {
 
 void battleHandleSubMenuSelection(BattleContext* context) {
   switch (context->subMenuType) {
-  case TECH:
+  case SM_TECH:
     _techSelection(context);
     break;
   default:
     printf("Error on battle submenu selection.\n");
   }
 }
+
 
 void battleDestroyBoard(COIBoard* board) {
   BattleContext* context = (BattleContext*)board->context;
@@ -314,6 +379,7 @@ void battleDestroyBoard(COIBoard* board) {
     COIStringDestroy(context->enemyNames[i]);
   }
   free(context->enemies);
+  free(context->actions);
   free(context);
   COIBoardDestroy(board);
 }

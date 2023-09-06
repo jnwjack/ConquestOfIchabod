@@ -63,6 +63,7 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
 	    battleMovePointer(battleContext, 1);
 	    break;
 	  case SDLK_SPACE:
+	    selection = true;
 	    break;
 	  }
 	}
@@ -81,6 +82,9 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case SUB_MENU:
       battleHandleSubMenuSelection(battleContext);
+      break;
+    case ACTORS:
+      battleHandleActorSelect(battleContext);
       break;
     }
 
