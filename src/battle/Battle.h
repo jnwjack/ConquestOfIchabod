@@ -16,8 +16,20 @@
 #define BATTLE_FLEE 4
 
 #define BATTLE_POINTER_PADDING_X 10
-
 #define BATTLE_NUM_ACTIONS 5
+#define BATTLE_MAX_MOVEMENT 30
+#define BATTLE_MOVEMENT_STEP 1
+
+// Actor positions
+#define BATTLE_E_OFFSET_X 50
+#define BATTLE_A_OFFSET_X 400
+#define BATTLE_OFFSET_Y 70
+
+typedef enum{
+  SS_MOVE_FORWARD,
+  SS_TEXT,
+  SS_MOVE_BACKWARDS
+} BattleSceneStage;
 
 typedef enum {
   ACTION_MENU,
@@ -67,6 +79,12 @@ typedef struct BattleContext {
   // Which ally is acting?
   int turnIndex;
 
+  // Battle Scenes
+  bool controlEnabled; // False when playing animations/processing actions
+  int currentActionIndex; // Action we're currently processing
+  BattleSceneStage sceneStage; // Current stage in action processing
+  int movementOffset; // How far has actor moved so far?
+
   // Data for next board after battle completes
   COIBoard* outside;
   COILoop outsideLoop;
@@ -84,6 +102,6 @@ void battleHandleSubMenuSelection(BattleContext* context);
 void battleHandleActorSelect(BattleContext* context);
 void battleMovePointer(BattleContext* context, int offset);
 void battleSelectAttackTarget(BattleContext* context);
-
+void battleAdvanceScene(BattleContext* context);
 
 #endif

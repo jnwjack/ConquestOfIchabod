@@ -92,10 +92,6 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
 
 
 void battleBehaviorSortActions(BattleAction* actions, int numActions) {
-  for (int i = 0; i < numActions; i++) {
-    printf("AGI IN SORT:%i\n", actions[i].actor->agi);
-  }
-  
   _sortHelper(actions, 0, numActions - 1);
 }
 

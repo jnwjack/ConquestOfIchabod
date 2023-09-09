@@ -41,6 +41,10 @@ bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
 
 void battle(COIBoard* board, SDL_Event* event, void* context) {
   BattleContext* battleContext = (BattleContext*)context;
+  if (!battleContext->controlEnabled) {
+    battleAdvanceScene(battleContext);
+    return;
+  }
 
   bool selection = false;
   bool shouldExit = false;

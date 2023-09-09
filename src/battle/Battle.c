@@ -87,6 +87,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->pointingAtEnemies = false;
   context->targetedActorIndex = 0;
   context->turnIndex = 0;
+  context->controlEnabled = true;
+  context->currentActionIndex = 0;
+  context->sceneStage = SS_MOVE_FORWARD;
+  context->movementOffset = 0;
 
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
@@ -117,10 +121,9 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->pointer->_autoHandle = false;
   context->pointer->_visible = false;
 
-  int eOffsetX = 50, eOffsetY = 70;
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
-    context->enemies[i] = actorCreateOfType(enemyType, eOffsetX, eOffsetY + 80*i, loader, window);
+    context->enemies[i] = actorCreateOfType(enemyType, BATTLE_E_OFFSET_X, BATTLE_OFFSET_Y + 80*i, loader, window);
   }
 
   
@@ -271,10 +274,6 @@ void _processActions(BattleContext* context) {
   
   // Sort current BattleActions by actor AGI
   battleBehaviorSortActions(context->actions, numActions);
-
-  for (int i = 0; i < numActions; i++) {
-    BattleAction action = context->actions[i];
-  }
 }
 
 // Change the current ally index by 'step'.
@@ -283,6 +282,8 @@ void _changeTurn(BattleContext* context, int step) {
   if (context->turnIndex + step >= context->numAllies) {
     context->turnIndex = 0;
     _processActions(context);
+    // Ready to run the whole turn
+    context->controlEnabled = false;
   } else if (context->turnIndex + step < 0) {
     // Can't go lower than ally at position 0
     context->turnIndex = 0;
@@ -298,6 +299,30 @@ void _selectAttackTarget(BattleContext* context) {
   action->target = context->enemies[context->targetedActorIndex];
   action->type = ATTACK;
   action->index = -1; // Unused
+}
+
+// Return true if we're done moving
+bool _moveActorBackwards(BattleContext* context, Actor* actor) {
+  // If actor's an enemy, decrease x. If it's an ally, increase x.
+  if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
+    COIBoardMoveSprite(context->board, actor->sprite,-1 * BATTLE_MOVEMENT_STEP, 0);
+  } else {
+    COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
+  }
+  context->movementOffset -= BATTLE_MOVEMENT_STEP;
+  return context->movementOffset <= 0;
+}
+
+// Return true if we're done moving
+bool _moveActorForward(BattleContext* context, Actor* actor) {
+  // If actor's an enemy, increase x. If it's an ally, decrease x.
+  if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
+    COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
+  } else {
+    COIBoardMoveSprite(context->board, actor->sprite, -1 * BATTLE_MOVEMENT_STEP, 0);
+  }
+  context->movementOffset += BATTLE_MOVEMENT_STEP;
+  return context->movementOffset >= BATTLE_MAX_MOVEMENT;
 }
 
 
@@ -362,6 +387,39 @@ void battleHandleSubMenuSelection(BattleContext* context) {
   default:
     printf("Error on battle submenu selection.\n");
   }
+}
+
+void battleAdvanceScene(BattleContext* context) {
+  int numActions = context->numAllies + context->numEnemies;
+  if (context->currentActionIndex >=  numActions) {
+    // We're done processing actions, user can control again
+    context->sceneStage = SS_MOVE_FORWARD;
+    context->currentActionIndex = 0;
+    context->controlEnabled = true;
+    context->movementOffset = 0;
+  } else {
+    BattleAction action = context->actions[context->currentActionIndex];
+    switch (context->sceneStage) {
+    case SS_MOVE_FORWARD:
+      if (_moveActorForward(context, action.actor)) {
+	context->sceneStage = SS_TEXT;
+      }
+      break;
+    case SS_TEXT:
+      printf("TEXT\n");
+      context->sceneStage = SS_MOVE_BACKWARDS;
+      break;
+    case SS_MOVE_BACKWARDS:
+      if (_moveActorBackwards(context, action.actor)) {
+	context->sceneStage = SS_MOVE_FORWARD;
+	// If we're done, move to next action
+	context->currentActionIndex++;
+      }
+      break;
+    default:
+      printf("Invalid scene stage.\n");
+    }
+  }    
 }
 
 
