@@ -28,5 +28,7 @@ BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, in
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b);
 void battleBehaviorSortActions(BattleAction* actions, int numActions);
 
+void battleBehaviorDoAction(BattleAction* action, char* playerName);
+
 
 #endif

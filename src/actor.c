@@ -77,3 +77,7 @@ char* actorGetNameFromType(int actorType) {
     return "UNKNOWN";
   }
 }
+
+bool actorIsDead(Actor* actor) {
+  return actor->hp == 0;
+}

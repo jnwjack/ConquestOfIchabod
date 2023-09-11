@@ -43,5 +43,6 @@ void actorDestroy(Actor* actor);
 COISprite** actorGetSpriteList(Actor** actors, int numActors);
 
 char* actorGetNameFromType(int actorType);
+bool actorIsDead(Actor* actor);
 
 #endif

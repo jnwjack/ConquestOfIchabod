@@ -91,6 +91,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->currentActionIndex = 0;
   context->sceneStage = SS_MOVE_FORWARD;
   context->movementOffset = 0;
+  context->pInfo = pInfo;
 
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
@@ -166,9 +167,21 @@ COISprite* _toggleTargetNameVisibility(BattleContext* context, bool visible) {
   COIStringSetVisible(name, visible);
 }
 
+int _getIndexAfterOffset(int index, int offset, int n) {
+  // Loop around if we need to
+  int newTargetIndex = index + offset;
+  if (newTargetIndex < 0) {
+    int offsetFromEnd = (-1 * newTargetIndex) % n;
+    return (n - offsetFromEnd);
+  } else {
+    return (newTargetIndex % n);
+  }
+}
+
 // Move pointer to actor 'offset' spaces away
 void battleMovePointer(BattleContext* context, int offset) {
   int numActors = context->pointingAtEnemies ? context->numEnemies : context->numAllies;
+  Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
   if (numActors == 1) {
     return;
   }
@@ -176,14 +189,17 @@ void battleMovePointer(BattleContext* context, int offset) {
   // Make name of the previous actor invisible
   _toggleTargetNameVisibility(context, false);
   
-  // Loop around if we need to
-  int newTargetIndex = context->targetedActorIndex + offset;
-  if (newTargetIndex < 0) {
-    int offsetFromEnd = (-1 * newTargetIndex) % numActors;
-    context->targetedActorIndex = numActors - offsetFromEnd;
-  } else {
-    context->targetedActorIndex = newTargetIndex % numActors;
+  int newTargetIndex = _getIndexAfterOffset(context->targetedActorIndex, offset, numActors);
+
+  // Can't point over dead actor
+  Actor* target = actors[newTargetIndex];
+  while (actorIsDead(target)) {
+    int direction = offset > 0 ? 1 : -1; // Move in direction of offset
+    newTargetIndex = _getIndexAfterOffset(newTargetIndex, direction, numActors);
+    target = actors[newTargetIndex];
   }
+
+  context->targetedActorIndex = newTargetIndex;
 
   _adjustPointer(context);
   // Show name of new actor
@@ -196,13 +212,13 @@ void _focusActionMenu(BattleContext* context) {
   // Reset targeted actor back to 0
   context->targetedActorIndex = 0;
   context->pointer->_visible = false;
-
   context->menuFocus = ACTION_MENU;
 }
 
 void _attack(BattleContext* context) {
   context->pointingAtEnemies = true;
   context->targetedActorIndex = 0;
+  battleMovePointer(context, 0); // Move off of dead actor if we need to
   _adjustPointer(context);
   _toggleTargetNameVisibility(context, true);
   context->pointer->_visible = true;
@@ -284,6 +300,7 @@ void _changeTurn(BattleContext* context, int step) {
     _processActions(context);
     // Ready to run the whole turn
     context->controlEnabled = false;
+    context->pointer->_visible = false;
   } else if (context->turnIndex + step < 0) {
     // Can't go lower than ally at position 0
     context->turnIndex = 0;
@@ -303,6 +320,11 @@ void _selectAttackTarget(BattleContext* context) {
 
 // Return true if we're done moving
 bool _moveActorBackwards(BattleContext* context, Actor* actor) {
+  // If actor is dead, don't do anything
+  if (actorIsDead(actor)) {
+    return true;
+  }
+  
   // If actor's an enemy, decrease x. If it's an ally, increase x.
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
     COIBoardMoveSprite(context->board, actor->sprite,-1 * BATTLE_MOVEMENT_STEP, 0);
@@ -315,6 +337,11 @@ bool _moveActorBackwards(BattleContext* context, Actor* actor) {
 
 // Return true if we're done moving
 bool _moveActorForward(BattleContext* context, Actor* actor) {
+  // If actor is dead, don't do anything
+  if (actorIsDead(actor)) {
+    return true;
+  }
+  
   // If actor's an enemy, increase x. If it's an ally, decrease x.
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
     COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
@@ -397,6 +424,7 @@ void battleAdvanceScene(BattleContext* context) {
     context->currentActionIndex = 0;
     context->controlEnabled = true;
     context->movementOffset = 0;
+    context->pointer->_visible = true;
   } else {
     BattleAction action = context->actions[context->currentActionIndex];
     switch (context->sceneStage) {
@@ -406,7 +434,7 @@ void battleAdvanceScene(BattleContext* context) {
       }
       break;
     case SS_TEXT:
-      printf("TEXT\n");
+      battleBehaviorDoAction(&action, context->pInfo->name);
       context->sceneStage = SS_MOVE_BACKWARDS;
       break;
     case SS_MOVE_BACKWARDS:

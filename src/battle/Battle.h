@@ -45,6 +45,7 @@ typedef enum {
 
 typedef struct BattleContext {
   COIBoard* board;
+  PlayerInfo* pInfo;
   
   // Actions: Attack, Tech, Special, etc.
   COIMenu* actionMenu;

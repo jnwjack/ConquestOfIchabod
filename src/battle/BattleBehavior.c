@@ -68,6 +68,11 @@ int battleBehaviorPickIndex(ActionType action, TechList* techList) {
 BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies) {
   BattleAction action;
   action.actor = actor;
+  if (actorIsDead(actor)) {
+    action.type = INACTIVE;
+    return action;
+  }
+  
   action.type = battleBehaviorPickActionType(actor->actorType);
   action.target = battleBehaviorPickTarget(actor->actorType, action.type, actorEnemies, numEnemies, actorAllies, numAllies);
   action.index = battleBehaviorPickIndex(actor->actorType, actor->techList);
@@ -93,6 +98,38 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
 
 void battleBehaviorSortActions(BattleAction* actions, int numActions) {
   _sortHelper(actions, 0, numActions - 1);
+}
+
+void battleBehaviorDoAction(BattleAction* action, char* playerName) {
+  Actor* a = action->actor;
+  Actor* t = action->target;
+  char* aName;
+  char* tName;
+  int damage = 0;
+  if (a->actorType == ACTOR_PLAYER) {
+    aName = playerName;
+  } else {
+    aName = actorGetNameFromType(a->actorType);
+  }
+  if (t->actorType == ACTOR_PLAYER) {
+    tName = playerName;
+  } else {
+    tName = actorGetNameFromType(t->actorType);
+  }
+  switch (action->type) {
+  case ATTACK:
+    damage = MAX(1, a->atk - t->def);
+    printf("%s ATTACKS %s FOR %i DAMAGE\n", aName, tName, damage);
+    break;
+  default:
+    printf("Invalid action type.\n");
+  }
+  
+  t->hp = MAX(0, t->hp - damage);
+  if (actorIsDead(t)) {
+    t->sprite->_visible = false;
+    printf("%s DIES\n", tName);
+  }
 }
 
 
