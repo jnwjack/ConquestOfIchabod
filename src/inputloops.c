@@ -43,6 +43,7 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   BattleContext* battleContext = (BattleContext*)context;
   if (!battleContext->controlEnabled) {
     battleAdvanceScene(battleContext);
+    board->_shouldDraw = true;
     return;
   }
 

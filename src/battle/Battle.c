@@ -418,13 +418,14 @@ void battleHandleSubMenuSelection(BattleContext* context) {
 
 void battleAdvanceScene(BattleContext* context) {
   int numActions = context->numAllies + context->numEnemies;
-  if (context->currentActionIndex >=  numActions) {
+  if (context->currentActionIndex >= numActions) {
     // We're done processing actions, user can control again
     context->sceneStage = SS_MOVE_FORWARD;
     context->currentActionIndex = 0;
     context->controlEnabled = true;
     context->movementOffset = 0;
     context->pointer->_visible = true;
+    _focusActionMenu(context);
   } else {
     BattleAction action = context->actions[context->currentActionIndex];
     switch (context->sceneStage) {
