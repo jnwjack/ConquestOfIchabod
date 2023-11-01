@@ -41,14 +41,20 @@ bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
 
 void battle(COIBoard* board, SDL_Event* event, void* context) {
   BattleContext* battleContext = (BattleContext*)context;
+
+  bool shouldExit = false;
   if (!battleContext->controlEnabled) {
-    battleAdvanceScene(battleContext);
-    board->_shouldDraw = true;
+    shouldExit = battleAdvanceScene(battleContext);
+    if (shouldExit) {
+      COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
+      battleDestroyBoard(board);
+    } else {
+      board->_shouldDraw = true;
+    }
     return;
   }
 
   bool selection = false;
-  bool shouldExit = false;
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
     case SDL_KEYDOWN:
@@ -94,7 +100,6 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
     }
 
   }
-
   if (shouldExit) {
     COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
     battleDestroyBoard(board);

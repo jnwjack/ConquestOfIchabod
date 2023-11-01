@@ -23,7 +23,13 @@
 // Actor positions
 #define BATTLE_E_OFFSET_X 50
 #define BATTLE_A_OFFSET_X 400
-#define BATTLE_OFFSET_Y 70
+#define BATTLE_OFFSET_Y 50
+#define BATTLE_Y_STEP 80
+
+// Spritemap positions
+#define BATTLE_SPRITEMAP_A_BOX 1
+#define BATTLE_SPRITEMAP_E_BOX 0
+#define BATTLE_SPRITEMAP_DESC_BOX 8
 
 typedef enum{
   SS_MOVE_FORWARD,
@@ -69,6 +75,7 @@ typedef struct BattleContext {
   int numAllies;
 
   BattleAction* actions; // Queue of turn's actions, 1 per actor
+  ActionSummary* summary;
 
   // Pointer for enemies and allies
   COISprite* pointer;
@@ -103,6 +110,6 @@ void battleHandleSubMenuSelection(BattleContext* context);
 void battleHandleActorSelect(BattleContext* context);
 void battleMovePointer(BattleContext* context, int offset);
 void battleSelectAttackTarget(BattleContext* context);
-void battleAdvanceScene(BattleContext* context);
+bool battleAdvanceScene(BattleContext* context);
 
 #endif

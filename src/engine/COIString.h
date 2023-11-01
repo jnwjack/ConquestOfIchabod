@@ -2,8 +2,10 @@
 #define COISTRING_H
 
 #include "COIChar.h"
+#include "COISprite.h"
 
 #define MAX_STRING_SIZE 100
+#define CONFINE_STRING
 
 typedef struct COIString {
   COIChar* _head;
@@ -21,6 +23,7 @@ void COIStringDestroy(COIString* obj);
 void COIStringDraw(COIString* obj, SDL_Renderer* renderer);
 void COIStringSetPos(COIString* obj, int x, int y);
 void COIStringSetVisible(COIString* obj, bool visible);
+void COIStringConfineToSprite(COIString* obj, COISprite* sprite);
 COIString** COIStringCopyList(COIString** src, int size);
 
 #endif

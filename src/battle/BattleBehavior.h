@@ -18,6 +18,18 @@ typedef struct BattleAction {
   int index; // Index of used special/item
 } BattleAction;
 
+// Data structure that contains text that describes an
+// action that just took place. Used for populating
+// text box in battles.
+typedef struct ActionSummary {
+  COIString** strings;
+  int numStrings;
+  int currentString;
+  int ticksPerString;
+  int ticks;
+  bool finished;
+} ActionSummary;
+
 // AI action selection
 ActionType battleBehaviorPickActionType(int actorType);
 Actor* battleBehaviorPickTarget(int actorType, ActionType action, Actor** enemies, int numEnemies, Actor** allies, int numAllies);
@@ -28,7 +40,12 @@ BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, in
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b);
 void battleBehaviorSortActions(BattleAction* actions, int numActions);
 
-void battleBehaviorDoAction(BattleAction* action, char* playerName);
+ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, COITextType* textType, COIBoard* board, COISprite* box);
+
+ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...);
+void ActionSummaryAdvance(ActionSummary* summary);
+void ActionSummaryPosition(ActionSummary* summary, int x, int y);
+void ActionSummaryDestroy(ActionSummary* summary, COIBoard* board);
 
 
 #endif

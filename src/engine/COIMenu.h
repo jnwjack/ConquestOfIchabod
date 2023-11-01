@@ -9,7 +9,6 @@
 
 #define COI_MENU_OFFSET_X 50
 #define COI_MENU_OFFSET_Y 10
-#define COI_MENU_PADDING 10
 
 typedef struct COIMenu {
   COISprite* _frame;

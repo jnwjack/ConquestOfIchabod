@@ -74,3 +74,38 @@ COIString** COIStringCopyList(COIString** src, int size) {
 
   return copy;
 }
+
+// Return true when done
+bool _confineToSpriteHelper(COIChar* coiChar, int x, int y, int xMax) {
+  int xOffset = x;
+  
+  // Words are separated by a space.
+  // If we decide to add a line break, do it by word. Move the whole
+  // word down.
+  COIChar* currentWordStart = coiChar;
+  COIChar* current = coiChar;
+  while (current != NULL) {
+    COICharSetPos(current, xOffset, y);
+    xOffset += current->w;
+    if (current->value == ' ' || current->next == NULL) {
+      if (xOffset > xMax) {
+	return _confineToSpriteHelper(currentWordStart, x, y + current->h, xMax);
+      } else {
+	currentWordStart = current->next;
+      }
+    }
+    current = current->next;
+  }
+
+  return true;
+}
+
+void COIStringConfineToSprite(COIString* obj, COISprite* sprite) {
+  // Start at y of sprite, increase y (line breaks) in order to stay
+  // inside of sprite
+  int yOffset = sprite->_y + COI_PADDING;
+  int xOffset = sprite->_x + COI_PADDING;
+  int xMax = sprite->_x + (sprite->_width - COI_PADDING);
+  
+  _confineToSpriteHelper(obj->_head, xOffset, yOffset, xMax);
+}

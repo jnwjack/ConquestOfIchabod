@@ -100,12 +100,13 @@ void battleBehaviorSortActions(BattleAction* actions, int numActions) {
   _sortHelper(actions, 0, numActions - 1);
 }
 
-void battleBehaviorDoAction(BattleAction* action, char* playerName) {
+ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, COITextType* textType, COIBoard* board, COISprite* box) {
   Actor* a = action->actor;
   Actor* t = action->target;
   char* aName;
   char* tName;
   int damage = 0;
+  ActionSummary* summary;
   if (a->actorType == ACTOR_PLAYER) {
     aName = playerName;
   } else {
@@ -119,10 +120,16 @@ void battleBehaviorDoAction(BattleAction* action, char* playerName) {
   switch (action->type) {
   case ATTACK:
     damage = MAX(1, a->atk - t->def);
-    printf("%s ATTACKS %s FOR %i DAMAGE\n", aName, tName, damage);
+    char atkString[MAX_STRING_SIZE];
+    sprintf(atkString, "%s ATTACKS %s", aName, tName);
+    char dmgString[MAX_STRING_SIZE];
+    sprintf(dmgString, "%i DAMAGE DEALT", damage);
+    //printf("%s ATTACKS %s FOR %i DAMAGE\n", aName, tName, damage);
+    summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, "THIS IS A REALY LONG STRING I HOPE IT WORKS", NULL);
     break;
   default:
     printf("Invalid action type.\n");
+    summary = ActionSummaryCreate(board, box, textType, "Invalid action type.");
   }
   
   t->hp = MAX(0, t->hp - damage);
@@ -130,6 +137,80 @@ void battleBehaviorDoAction(BattleAction* action, char* playerName) {
     t->sprite->_visible = false;
     printf("%s DIES\n", tName);
   }
+
+  return summary;
+}
+
+ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...) {
+  ActionSummary* summary = malloc(sizeof(ActionSummary));
+  
+  va_list list;
+  char* currentString = string;
+  va_start(list, string);
+  
+  // Count how many strings we have
+  int count = 0;
+  while (currentString){
+    count++;
+    currentString = va_arg(list, char*);
+  }
+  va_end(list);
+  summary->numStrings = count;
+  summary->strings = malloc(sizeof(COIString*) * count);
+  summary->ticksPerString = 50; // Can have an arg for this later
+  summary->ticks = 0;
+  summary->finished = false;
+
+  // Create a COIString for each string arg
+  currentString = string;
+  va_start(list, string);
+  int i = 0;
+  while (currentString){
+    summary->strings[i] = COIStringCreate(currentString, 0, 0, textType);
+    COIStringConfineToSprite(summary->strings[i], box);
+    // Add COIString to board
+    COIBoardAddString(board, summary->strings[i]);
+    COIStringSetVisible(summary->strings[i], false);
+    currentString = va_arg(list, char*);
+    i++;
+  }
+  // Set first string to visible
+  if (i > 0) {
+    COIStringSetVisible(summary->strings[0], true);
+  }
+  va_end(list);
+  
+  return summary;;
+}
+
+void ActionSummaryAdvance(ActionSummary* summary) {
+  summary->ticks++;
+  if (summary->ticks >= summary->ticksPerString) {
+    summary->ticks = 0;
+    COIStringSetVisible(summary->strings[summary->currentString], false);
+    summary->currentString++;
+    if (summary->currentString >= summary->numStrings) {
+      summary->finished = true;
+    } else {
+      COIStringSetVisible(summary->strings[summary->currentString], true);
+    }
+  }
+}
+
+void ActionSummaryPosition(ActionSummary* summary, int x, int y) {
+  for (int i = 0; i < summary->numStrings; i++) {
+    COIStringSetPos(summary->strings[i], x, y);
+  }
+}
+
+void ActionSummaryDestroy(ActionSummary* summary, COIBoard* board) {
+  for (int i = 0; i < summary->numStrings; i++) {
+    // Remove COIString from board
+    COIBoardRemoveString(board, summary->strings[i]);
+    COIStringDestroy(summary->strings[i]);
+  }
+  free(summary->strings);
+  free(summary);
 }
 
 

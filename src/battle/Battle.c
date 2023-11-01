@@ -75,6 +75,16 @@ COISprite** _getDynamicSprites(BattleContext* context) {
   return allSprites;
 }
 
+void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
+  int boxCenterX = box->_x + box->_width / 2;
+  for (int i = 0; i < numAllies; i++) {
+    COISprite* actor = allies[i]->sprite;
+    int actorOriginX = boxCenterX - actor->_width / 2;
+    //COISpriteSetPos(allies[i]->sprite, BATTLE_A_OFFSET_X, BATTLE_OFFSET_Y + 80*i);
+    COISpriteSetPos(actor, actorOriginX, box->_y + BATTLE_OFFSET_Y + (BATTLE_Y_STEP * i));
+  }
+}
+
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
 			    int enemyType, PlayerInfo* pInfo) {  
@@ -92,6 +102,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->sceneStage = SS_MOVE_FORWARD;
   context->movementOffset = 0;
   context->pInfo = pInfo;
+  context->summary = NULL;
 
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
@@ -101,6 +112,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Allies
   context->allies = pInfo->party;
   context->numAllies = pInfo->partySize;
+  COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
+  _centerActorsInBox(context->allies, context->numAllies, aBox);
 
   // Enemies, can later randomize number
   context->numEnemies = 3;
@@ -110,7 +123,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    (context->numAllies + context->numEnemies));
 
   // Keep a list of all strings we have that we can pass to the COIBoard
-   context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
+  context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
   COIString** allStrings = malloc(sizeof(COIString*) * (BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies));
 
   context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
@@ -124,8 +137,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
-    context->enemies[i] = actorCreateOfType(enemyType, BATTLE_E_OFFSET_X, BATTLE_OFFSET_Y + 80*i, loader, window);
+    context->enemies[i] = actorCreateOfType(enemyType, 0, 0, loader, window);
   }
+  COISprite* eBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_E_BOX];
+  _centerActorsInBox(context->enemies, context->numEnemies, eBox);
 
   
   //COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
@@ -352,6 +367,29 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
 }
 
+int _countAliveActors(Actor** actors, int numActors) {
+  int aliveActors = 0;
+  for (int i = 0; i < numActors; i++) {
+    if (!actorIsDead(actors[i])) {
+      aliveActors++;
+    }
+  }
+
+  return aliveActors;
+}
+
+bool battleFinished(BattleContext* context) {
+  if (_countAliveActors(context->allies, context->numAllies) == 0) {
+    printf("Allies lose.\n");
+    return true;
+  }
+  if(_countAliveActors(context->enemies, context->numEnemies) == 0) {
+    printf("Enemies lose.\n");
+    return true;
+  }
+  return false;
+}
+
 
 // When selecting what character should do, handle each option in menu.
 bool battleHandleActionSelection(BattleContext* context) {
@@ -416,7 +454,9 @@ void battleHandleSubMenuSelection(BattleContext* context) {
   }
 }
 
-void battleAdvanceScene(BattleContext* context) {
+
+// Returns true if battle is finished
+bool battleAdvanceScene(BattleContext* context) {
   int numActions = context->numAllies + context->numEnemies;
   if (context->currentActionIndex >= numActions) {
     // We're done processing actions, user can control again
@@ -428,6 +468,12 @@ void battleAdvanceScene(BattleContext* context) {
     _focusActionMenu(context);
   } else {
     BattleAction action = context->actions[context->currentActionIndex];
+    // Actor may die before it's able to take its turn. Move to next action
+    if (actorIsDead(action.actor)) {
+      context->sceneStage = SS_MOVE_FORWARD;
+      context->currentActionIndex++;
+      return false;
+    }
     switch (context->sceneStage) {
     case SS_MOVE_FORWARD:
       if (_moveActorForward(context, action.actor)) {
@@ -435,20 +481,38 @@ void battleAdvanceScene(BattleContext* context) {
       }
       break;
     case SS_TEXT:
-      battleBehaviorDoAction(&action, context->pInfo->name);
-      context->sceneStage = SS_MOVE_BACKWARDS;
+      if (!context->summary) {
+	// Create ActionSummary. This holds the COIStrings
+	// that describe the current action.
+	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
+	context->summary = battleBehaviorDoAction(&action, context->pInfo->name, context->textType, context->board, box);
+	//ActionSummaryPosition(context->summary, 150, 400);
+      } else if (context->summary->finished) {
+	ActionSummaryDestroy(context->summary, context->board);
+	context->summary = NULL;
+	context->sceneStage = SS_MOVE_BACKWARDS;
+      } else {
+	ActionSummaryAdvance(context->summary);
+      }
+      
       break;
     case SS_MOVE_BACKWARDS:
       if (_moveActorBackwards(context, action.actor)) {
 	context->sceneStage = SS_MOVE_FORWARD;
 	// If we're done, move to next action
 	context->currentActionIndex++;
+
+	if (battleFinished(context)) {
+	  return true;
+	}
       }
       break;
     default:
       printf("Invalid scene stage.\n");
     }
-  }    
+  }
+
+  return false;
 }
 
 

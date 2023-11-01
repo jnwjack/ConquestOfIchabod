@@ -52,7 +52,7 @@ void COIMenuSetVisible(COIMenu* menu) {
       COIStringSetVisible(string, true);
       COIStringSetPos(string,
 		    menu->_x + COI_MENU_OFFSET_X,
-		    menu->_y + COI_MENU_OFFSET_Y + (slot * (menu->_fontSize + COI_MENU_PADDING)));
+		    menu->_y + COI_MENU_OFFSET_Y + (slot * (menu->_fontSize + COI_PADDING)));
       slot++;
     } else {
       COIStringSetVisible(string, false);
@@ -77,7 +77,7 @@ void COIMenuSetTexts(COIMenu* menu, COIString** strings, int numStrings) {
   // Using first string in list, assuming all to be same font weight.
   if (numStrings > 0) {
     menu->_fontSize = strings[0]->fontSize;
-    menu->_visibleTextCount = (menu->_height - COI_MENU_OFFSET_Y) / (menu->_fontSize + COI_MENU_PADDING);
+    menu->_visibleTextCount = (menu->_height - COI_MENU_OFFSET_Y) / (menu->_fontSize + COI_PADDING);
     menu->_upperFrameBound = menu->_visibleTextCount - 1;
     // Can't have upper bound greater than lower
     if (menu->_lowerFrameBound > menu->_upperFrameBound) {
@@ -118,8 +118,8 @@ void COIMenuAdjustFrame(COIMenu* menu) {
   }
 
   int pointerLocation = menu->_current - menu->_lowerFrameBound;
-  int pointerY = (menu->_y + COI_MENU_OFFSET_Y) + (menu->_fontSize / 2) + (pointerLocation * (menu->_fontSize + COI_MENU_PADDING)) - (menu->_pointer->_height / 2);
-  int pointerX = (menu->_x + COI_MENU_OFFSET_X) - (menu->_pointer->_width + COI_MENU_PADDING);
+  int pointerY = (menu->_y + COI_MENU_OFFSET_Y) + (menu->_fontSize / 2) + (pointerLocation * (menu->_fontSize + COI_PADDING)) - (menu->_pointer->_height / 2);
+  int pointerX = (menu->_x + COI_MENU_OFFSET_X) - (menu->_pointer->_width + COI_PADDING);
   COISpriteSetPos(menu->_pointer, pointerX, pointerY);
 }
 
