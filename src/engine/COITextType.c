@@ -11,9 +11,16 @@ COITextType* COITextTypeCreate(int fontSize, int r, int g, int b, SDL_Renderer* 
   type->color.r = r;
   type->color.g = g;
   type->color.b = b;
+  type->color.a = 255;
   type->fontSize = fontSize;
   
   return type;
+}
+
+void COITextTypeSetColor(COITextType* type, int r, int g, int b) {
+  type->color.r = r;
+  type->color.g = g;
+  type->color.b = b;
 }
 
 void COITextTypeDestroy(COITextType* type) {

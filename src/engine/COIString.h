@@ -5,7 +5,6 @@
 #include "COISprite.h"
 
 #define MAX_STRING_SIZE 100
-#define CONFINE_STRING
 
 typedef struct COIString {
   COIChar* _head;

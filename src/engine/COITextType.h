@@ -13,6 +13,7 @@ typedef struct COITextType {
 }COITextType;
 
 COITextType* COITextTypeCreate(int fontSize, int r, int g, int b, SDL_Renderer* renderer);
+void COITextTypeSetColor(COITextType* type, int r, int g, int b);
 void COITextTypeDestroy(COITextType* type);
 
 #endif

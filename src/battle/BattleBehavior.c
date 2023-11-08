@@ -105,6 +105,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
   Actor* t = action->target;
   char* aName;
   char* tName;
+  char atkString[MAX_STRING_SIZE];
+  char dmgString[MAX_STRING_SIZE];  
   int damage = 0;
   ActionSummary* summary;
   if (a->actorType == ACTOR_PLAYER) {
@@ -117,27 +119,33 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
   } else {
     tName = actorGetNameFromType(t->actorType);
   }
+
+
   switch (action->type) {
   case ATTACK:
     damage = MAX(1, a->atk - t->def);
-    char atkString[MAX_STRING_SIZE];
     sprintf(atkString, "%s ATTACKS %s", aName, tName);
-    char dmgString[MAX_STRING_SIZE];
     sprintf(dmgString, "%i DAMAGE DEALT", damage);
+    t->hp = MAX(0, t->hp - damage);
+    if (actorIsDead(t)) {
+      t->sprite->_visible = false;
+      char deathString[MAX_STRING_SIZE];
+      sprintf(deathString, "%s DIES", tName);
+      summary = ActionSummaryCreate(board, box, textType,
+				    atkString,
+				    dmgString,
+				    deathString,
+				    NULL);
+    } else {
+      summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, NULL);
+    }
     //printf("%s ATTACKS %s FOR %i DAMAGE\n", aName, tName, damage);
-    summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, "THIS IS A REALY LONG STRING I HOPE IT WORKS", NULL);
     break;
   default:
     printf("Invalid action type.\n");
     summary = ActionSummaryCreate(board, box, textType, "Invalid action type.");
   }
   
-  t->hp = MAX(0, t->hp - damage);
-  if (actorIsDead(t)) {
-    t->sprite->_visible = false;
-    printf("%s DIES\n", tName);
-  }
-
   return summary;
 }
 

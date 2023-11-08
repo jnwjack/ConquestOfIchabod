@@ -44,6 +44,9 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   actor->hp = 40;
   actor->tp = 10;
   actor->sp = 30;
+  actor->hpMax = actor->hp;
+  actor->tpMax = actor->tp;
+  actor->spMax = actor->sp;
 
   actor->techList = techCreateList(MAX_TECH_COUNT_ALLY);
   techAddToList(actor->techList, TECH_ID_FOCUS);

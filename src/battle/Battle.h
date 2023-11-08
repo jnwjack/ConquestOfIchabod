@@ -8,6 +8,7 @@
 #include "../engine/COISprite.h"
 #include "../player.h"
 #include "BattleBehavior.h"
+#include "Status.h"
 
 #define BATTLE_ATTACK 0
 #define BATTLE_TECH 1
@@ -73,6 +74,7 @@ typedef struct BattleContext {
   Actor** allies;
   COIString** allyNames;
   int numAllies;
+  AllyStatus** allyStatuses;
 
   BattleAction* actions; // Queue of turn's actions, 1 per actor
   ActionSummary* summary;

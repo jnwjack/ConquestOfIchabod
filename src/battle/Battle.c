@@ -3,12 +3,6 @@
 
 int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
-  /*for (int i = 0; i < context->numAllies; i++) {
-    count += context->allies[i]->techList->count;
-  }
-  for (int i = 0; i < context->numEnemies; i++) {
-    count += context->enemies[i]->techList->count;
-    }*/
 
   return count;
 }
@@ -53,6 +47,12 @@ COIString** _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
   }
 
   COIBoardSetStrings(board, allStrings, context->numStrings);
+}
+
+void _updateStatuses(BattleContext* context) {
+  for (int i = 0; i < context->numAllies; i++) {
+    AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
+  }
 }
 
 
@@ -114,6 +114,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->numAllies = pInfo->partySize;
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
   _centerActorsInBox(context->allies, context->numAllies, aBox);
+  context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
+  
 
   // Enemies, can later randomize number
   context->numEnemies = 3;
@@ -159,7 +161,13 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COIMenuSetVisible(context->actionMenu);
   context->menuFocus = ACTION_MENU;
 
+  for (int i = 0; i < context->numAllies; i++) {
+    context->allyStatuses[i] = AllyStatusCreate(context->board, window, 15);
+    AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
+  }
+
   COIBoardSetContext(board, (void*)context);
+
 
   return board;
 }
@@ -486,7 +494,6 @@ bool battleAdvanceScene(BattleContext* context) {
 	// that describe the current action.
 	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
 	context->summary = battleBehaviorDoAction(&action, context->pInfo->name, context->textType, context->board, box);
-	//ActionSummaryPosition(context->summary, 150, 400);
       } else if (context->summary->finished) {
 	ActionSummaryDestroy(context->summary, context->board);
 	context->summary = NULL;
@@ -501,6 +508,9 @@ bool battleAdvanceScene(BattleContext* context) {
 	context->sceneStage = SS_MOVE_FORWARD;
 	// If we're done, move to next action
 	context->currentActionIndex++;
+
+	_updateStatuses(context);
+
 
 	if (battleFinished(context)) {
 	  return true;
@@ -529,6 +539,10 @@ void battleDestroyBoard(COIBoard* board) {
     actorDestroy(context->enemies[i]);
     COIStringDestroy(context->enemyNames[i]);
   }
+  for (int i = 0; i < context->numAllies; i++) {
+    AllyStatusDestroy(context->allyStatuses[i]);
+  }
+  free(context->allyStatuses);
   free(context->enemies);
   free(context->actions);
   free(context);
