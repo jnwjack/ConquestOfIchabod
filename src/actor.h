@@ -9,6 +9,15 @@
 #define ACTOR_SKELETON 0
 #define ACTOR_PLAYER 1
 
+// How many ticks per animation frame when moving
+#define ACTOR_SPRITE_TICKS 10
+
+#define MOVING_NONE 0
+#define MOVING_LEFT 1
+#define MOVING_RIGHT 2
+#define MOVING_UP 3
+#define MOVING_DOWN 4
+
 // Holds data about a character in the world
 // Sprite, stats, walking behaviors, etc.
 
@@ -31,6 +40,10 @@ typedef struct Actor {
   int spMax;
 
   TechList* techList;
+
+  int _ticks;
+  int _spriteSheetColIndex;
+  int _spriteSheetRow;
 } Actor;
 
 Actor* actorCreate(int actorType, COISprite* sprite,
@@ -44,5 +57,7 @@ COISprite** actorGetSpriteList(Actor** actors, int numActors);
 
 char* actorGetNameFromType(int actorType);
 bool actorIsDead(Actor* actor);
+void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board);
+void actorStandStill(Actor* actor);
 
 #endif

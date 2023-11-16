@@ -7,6 +7,9 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->window = window;
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
+  // Only 1 dynamic sprite: the player
+  COISprite** dynSprites = actorGetSpriteList(context->pInfo->party, 1);
+  COIBoardSetDynamicSprites(board, dynSprites, 1);
 
   COIBoardSetContext(board, (void*)context);
 

@@ -79,6 +79,9 @@ void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
   int boxCenterX = box->_x + box->_width / 2;
   for (int i = 0; i < numAllies; i++) {
     COISprite* actor = allies[i]->sprite;
+    if (actor->_srcRect != NULL) {
+      printf("it's not null\n");
+    }
     int actorOriginX = boxCenterX - actor->_width / 2;
     //COISpriteSetPos(allies[i]->sprite, BATTLE_A_OFFSET_X, BATTLE_OFFSET_Y + 80*i);
     COISpriteSetPos(actor, actorOriginX, box->_y + BATTLE_OFFSET_Y + (BATTLE_Y_STEP * i));

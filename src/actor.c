@@ -1,5 +1,8 @@
 #include "actor.h"
 
+// For a 3 x 4 spritesheet
+static int _spriteSheetOrderCols[] = { 0, 2, 1, 2 };
+
 Actor* actorCreate(int actorType, COISprite* sprite,
 		   int atk, int def, int agi, int hp, int tp, int sp) {
   Actor* actor = malloc(sizeof(Actor));
@@ -17,6 +20,10 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   actor->spMax = sp;
 
   actor->techList = techCreateList(MAX_TECH_COUNT_NPC);
+
+  actor->_ticks = 0;
+  actor->_spriteSheetColIndex = 0;
+  actor->_spriteSheetRow = 0;
 
   return actor;
 }
@@ -36,6 +43,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   Actor* actor = malloc(sizeof(Actor));
   actor->actorType = ACTOR_PLAYER;
   actor->sprite = sprite;
+  COISpriteSetSheetIndex(actor->sprite, 3, 0);
 
   // Process for random stat generation, maybe specific for each class?
   actor->atk = 15;
@@ -83,4 +91,36 @@ char* actorGetNameFromType(int actorType) {
 
 bool actorIsDead(Actor* actor) {
   return actor->hp == 0;
+}
+
+int _spriteSheetRowFromDirection(int xOffset, int yOffset) {
+  // Moving left or right?
+  if (xOffset != 0) {
+    return xOffset > 0 ? 0 : 1;
+  }
+
+  // Moving up or down?
+  if (yOffset != 0) {
+    return yOffset > 0 ? 3 : 2;
+  }
+
+  return 0;
+}
+
+void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board) {
+  actor->_spriteSheetRow = _spriteSheetRowFromDirection(xOffset, yOffset);
+  if (actor->_ticks >= ACTOR_SPRITE_TICKS) {
+    actor->_spriteSheetColIndex = (actor->_spriteSheetColIndex + 1) % 4;
+    actor->_ticks = 0;
+  }
+
+  int spriteSheetCol = _spriteSheetOrderCols[actor->_spriteSheetColIndex];
+  COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, spriteSheetCol);
+  COIBoardMoveSprite(board, actor->sprite, xOffset, yOffset);
+  actor->_ticks++;
+}
+
+// Should be called at beginning of input loop
+void actorStandStill(Actor* actor) {
+  COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, 2);
 }

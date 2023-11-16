@@ -67,16 +67,16 @@ void COISpriteDestroy(COISprite* sprite) {
   free(sprite);
 }
 
-void COISpriteSetSheetIndex(COISprite* sprite, int index) {
+void COISpriteSetSheetIndex(COISprite* sprite, int row, int col) {
   if(sprite->_srcRect == NULL) {
     sprite->_srcRect = malloc(sizeof(SDL_Rect));
     // Default width and height to draw width and draw height
-    sprite->_srcRect->w = sprite->_width;
-    sprite->_srcRect->h = sprite->_height;
-    sprite->_srcRect->y = 0;
+    sprite->_srcRect->w = COI_VIEW_WINDOW_WIDTH;
+    sprite->_srcRect->h = COI_VIEW_WINDOW_HEIGHT;
   }
   // Assume sprite sheet is an n x 1 image of sprites
-  sprite->_srcRect->x = index * sprite->_width;
+  sprite->_srcRect->x = col * sprite->_srcRect->w;
+  sprite->_srcRect->y = row * sprite->_srcRect->h;
   sprite->_sheetCount = 1;
 }
 

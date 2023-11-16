@@ -9,6 +9,10 @@
 #define COI_NO_COLLISION 0
 #define COI_COLLISION 1
 
+// Used when moving view window on sprite sheets
+#define COI_VIEW_WINDOW_WIDTH 32
+#define COI_VIEW_WINDOW_HEIGHT 32
+
 typedef struct COISprite {
   int _x;
   int _y;
@@ -30,7 +34,7 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int
 COISprite* COISpriteCopy(COISprite* original, COIAssetLoader* loader, SDL_Renderer* renderer);
 COISprite* COISpriteCreateFromAssetID(int x, int y, int w, int h, COIAssetLoader* loader, int assetID, SDL_Renderer* renderer);
 void COISpriteDestroy(COISprite* sprite);
-void COISpriteSetSheetIndex(COISprite* sprite, int index);
+void COISpriteSetSheetIndex(COISprite* sprite, int row, int col);
 void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h);
 void COISpriteSheetIncrementIndex(COISprite* sprite);
 int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height);
