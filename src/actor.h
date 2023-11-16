@@ -59,5 +59,8 @@ char* actorGetNameFromType(int actorType);
 bool actorIsDead(Actor* actor);
 void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board);
 void actorStandStill(Actor* actor);
+void actorFaceLeft(Actor* actor);
+void actorFaceRight(Actor* actor);
+void actorTurnAround(Actor* actor);
 
 #endif

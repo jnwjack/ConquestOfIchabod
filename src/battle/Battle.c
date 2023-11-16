@@ -353,12 +353,20 @@ bool _moveActorBackwards(BattleContext* context, Actor* actor) {
   
   // If actor's an enemy, decrease x. If it's an ally, increase x.
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
-    COIBoardMoveSprite(context->board, actor->sprite,-1 * BATTLE_MOVEMENT_STEP, 0);
+    //COIBoardMoveSprite(context->board, actor->sprite,-1 * BATTLE_MOVEMENT_STEP, 0);
+    actorMove(actor, -1 * BATTLE_MOVEMENT_STEP, 0, context->board);
   } else {
-    COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
+    //COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
+    actorMove(actor,BATTLE_MOVEMENT_STEP, 0, context->board);
   }
   context->movementOffset -= BATTLE_MOVEMENT_STEP;
-  return context->movementOffset <= 0;
+  
+  bool done =  context->movementOffset <= 0;
+  if (done) {
+    // Face the proper direction when movement's done
+    actorTurnAround(actor);
+  }
+  return done;
 }
 
 // Return true if we're done moving
@@ -370,9 +378,11 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
   
   // If actor's an enemy, increase x. If it's an ally, decrease x.
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
-    COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
+    //COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
+    actorMove(actor, BATTLE_MOVEMENT_STEP, 0, context->board);
   } else {
-    COIBoardMoveSprite(context->board, actor->sprite, -1 * BATTLE_MOVEMENT_STEP, 0);
+    //COIBoardMoveSprite(context->board, actor->sprite, -1 * BATTLE_MOVEMENT_STEP, 0);
+    actorMove(actor, -1 * BATTLE_MOVEMENT_STEP, 0, context->board);
   }
   context->movementOffset += BATTLE_MOVEMENT_STEP;
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
@@ -508,6 +518,7 @@ bool battleAdvanceScene(BattleContext* context) {
       break;
     case SS_MOVE_BACKWARDS:
       if (_moveActorBackwards(context, action.actor)) {
+	actorStandStill(action.actor);
 	context->sceneStage = SS_MOVE_FORWARD;
 	// If we're done, move to next action
 	context->currentActionIndex++;

@@ -32,7 +32,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   COISprite* sprite;
   switch(actorType) {
   case ACTOR_SKELETON:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 7, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 64, 64, loader, 1, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 25, 0, 0);
   }
 
@@ -120,7 +120,36 @@ void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board) {
   actor->_ticks++;
 }
 
-// Should be called at beginning of input loop
 void actorStandStill(Actor* actor) {
+  COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, 2);
+}
+
+void actorFaceLeft(Actor* actor) {
+  COISpriteSetSheetIndex(actor->sprite, 1, 2);
+}
+
+void actorFaceRight(Actor* actor) {
+  COISpriteSetSheetIndex(actor->sprite, 0, 2);
+}
+
+// Useful when resetting sprites in battle animations
+void actorTurnAround(Actor* actor) {
+  switch (actor->_spriteSheetRow) {
+  case 0:
+    actor->_spriteSheetRow = 1;
+    break;
+  case 1:
+    actor->_spriteSheetRow = 0;
+    break;
+  case 2:
+    actor->_spriteSheetRow = 3;
+    break;
+  case 3:
+    actor->_spriteSheetRow = 2;
+    break;
+  default:
+    actor->_spriteSheetRow = 0;
+  }
+
   COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, 2);
 }
