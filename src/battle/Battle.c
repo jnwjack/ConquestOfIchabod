@@ -79,9 +79,6 @@ void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
   int boxCenterX = box->_x + box->_width / 2;
   for (int i = 0; i < numAllies; i++) {
     COISprite* actor = allies[i]->sprite;
-    if (actor->_srcRect != NULL) {
-      printf("it's not null\n");
-    }
     int actorOriginX = boxCenterX - actor->_width / 2;
     //COISpriteSetPos(allies[i]->sprite, BATTLE_A_OFFSET_X, BATTLE_OFFSET_Y + 80*i);
     COISpriteSetPos(actor, actorOriginX, box->_y + BATTLE_OFFSET_Y + (BATTLE_Y_STEP * i));
@@ -111,11 +108,17 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->outside = outsideBoard;
   context->outsideLoop = outsideLoop;
   context->window = window;
+  context->playerOutsideX = pInfo->party[0]->sprite->_x;
+  context->playerOutsideY = pInfo->party[0]->sprite->_y;
 
   // Allies
   context->allies = pInfo->party;
   context->numAllies = pInfo->partySize;
+  for (int i = 0; i < context->numAllies; i++) {
+    actorFaceLeft(context->allies[i]);
+  }
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
+  COISprite* duh = context->allies[0]->sprite;
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
   
@@ -143,6 +146,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
     context->enemies[i] = actorCreateOfType(enemyType, 0, 0, loader, window);
+    actorFaceRight(context->enemies[i]);
   }
   COISprite* eBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_E_BOX];
   _centerActorsInBox(context->enemies, context->numEnemies, eBox);
@@ -170,7 +174,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   }
 
   COIBoardSetContext(board, (void*)context);
-
 
   return board;
 }
@@ -399,21 +402,19 @@ int _countAliveActors(Actor** actors, int numActors) {
   return aliveActors;
 }
 
-bool battleFinished(BattleContext* context) {
+BattleResult battleFinished(BattleContext* context) {
   if (_countAliveActors(context->allies, context->numAllies) == 0) {
-    printf("Allies lose.\n");
-    return true;
+    return BR_LOSS;
   }
   if(_countAliveActors(context->enemies, context->numEnemies) == 0) {
-    printf("Enemies lose.\n");
-    return true;
+    return BR_WIN;
   }
-  return false;
+  return BR_CONTINUE;
 }
 
 
 // When selecting what character should do, handle each option in menu.
-bool battleHandleActionSelection(BattleContext* context) {
+BattleResult battleHandleActionSelection(BattleContext* context) {
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
     _attack(context);
@@ -426,14 +427,14 @@ bool battleHandleActionSelection(BattleContext* context) {
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
-    return true;
+    return BR_FLEE;
   default:
     printf("Invalid action in battle.\n");
-    return false;
+    return BR_CONTINUE;
   }
   
   
-  return false;
+  return BR_CONTINUE;
 }
 
 // User selects an actor when attacking, using item, etc.
@@ -477,7 +478,7 @@ void battleHandleSubMenuSelection(BattleContext* context) {
 
 
 // Returns true if battle is finished
-bool battleAdvanceScene(BattleContext* context) {
+BattleResult battleAdvanceScene(BattleContext* context) {
   int numActions = context->numAllies + context->numEnemies;
   if (context->currentActionIndex >= numActions) {
     // We're done processing actions, user can control again
@@ -493,7 +494,7 @@ bool battleAdvanceScene(BattleContext* context) {
     if (actorIsDead(action.actor)) {
       context->sceneStage = SS_MOVE_FORWARD;
       context->currentActionIndex++;
-      return false;
+      return BR_CONTINUE;
     }
     switch (context->sceneStage) {
     case SS_MOVE_FORWARD:
@@ -525,10 +526,7 @@ bool battleAdvanceScene(BattleContext* context) {
 
 	_updateStatuses(context);
 
-
-	if (battleFinished(context)) {
-	  return true;
-	}
+	return battleFinished(context);
       }
       break;
     default:
@@ -536,7 +534,7 @@ bool battleAdvanceScene(BattleContext* context) {
     }
   }
 
-  return false;
+  return BR_CONTINUE;
 }
 
 

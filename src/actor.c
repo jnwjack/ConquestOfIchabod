@@ -8,6 +8,7 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   Actor* actor = malloc(sizeof(Actor));
   actor->actorType = actorType;
   actor->sprite = sprite;
+  COISpriteSetSheetIndex(actor->sprite, 2, 2);
 
   actor->atk = atk;
   actor->def = def;
@@ -49,7 +50,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   actor->atk = 15;
   actor->def = 10;
   actor->agi = 8;
-  actor->hp = 40;
+  actor->hp = 25;
   actor->tp = 10;
   actor->sp = 30;
   actor->hpMax = actor->hp;

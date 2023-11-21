@@ -15,3 +15,13 @@ int countLines(const char* filename) {
 
   return n;
 }
+
+int generateRandomChar() {
+  return random() & 0xFF;
+}
+
+bool generateRandomBoolWeighted(double weight) {
+  char low = weight * 0xFF;
+  return generateRandomChar() <= low;
+}
+

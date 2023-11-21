@@ -6,9 +6,6 @@
 #include "COIExtraCollision.h"
 #include "COIAssetLoader.h"
 
-#define COI_NO_COLLISION 0
-#define COI_COLLISION 1
-
 // Used when moving view window on sprite sheets
 #define COI_VIEW_WINDOW_WIDTH 32
 #define COI_VIEW_WINDOW_HEIGHT 32
@@ -28,6 +25,7 @@ typedef struct COISprite {
   bool _autoHandle;
   COIExtraCollision* _extraCollision;
   int _assetID;
+  bool _extraCollisionActive; // Extra collision should only trigger if the sprite has JUST moved in contact with the =other sprite
 }COISprite;
 
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int assetID);

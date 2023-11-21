@@ -45,7 +45,9 @@ void COIWindowLoop(COIWindow* window) {
 	      quit = true;
 	      break;
       default:
-        window->_loop(window->_currentBoard, &event, window->_currentBoard->context);
+	if (window->_loop) {
+	  window->_loop(window->_currentBoard, &event, window->_currentBoard->context);
+	}
 	break;
     }
 

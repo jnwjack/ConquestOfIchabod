@@ -1,6 +1,7 @@
 #include "inputloops.h"
 
 int testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
+  // Probably want this to only look  at visible sprites
   int maxSpriteIndex = board->_spriteCount - 1;
   COISprite* currentSprite = NULL;
   int i;
@@ -39,21 +40,37 @@ bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
   return selection;
 }
 
+void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleResult result) {
+  COIBoard* nextBoard = NULL;
+  switch (result) {
+  case BR_LOSS:
+    nextBoard = gameOverCreateBoard(battleContext->window, board->loader);
+    COIWindowSetBoard(battleContext->window, nextBoard, NULL);
+    break;
+  case BR_FLEE:
+  case BR_WIN:
+    //COIBoardMoveSprite(board, battleContext->allies[0]->sprite, context->playerOutsideX + 120, );
+    COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX + 120, battleContext->playerOutsideY);
+    COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
+    battleDestroyBoard(board);
+    break;
+  default:
+    board->_shouldDraw = true;
+  }
+}
+
 void battle(COIBoard* board, SDL_Event* event, void* context) {
   BattleContext* battleContext = (BattleContext*)context;
 
-  bool shouldExit = false;
+  // Behavior when not accepting user input
+  BattleResult result = BR_CONTINUE;
   if (!battleContext->controlEnabled) {
-    shouldExit = battleAdvanceScene(battleContext);
-    if (shouldExit) {
-      COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
-      battleDestroyBoard(board);
-    } else {
-      board->_shouldDraw = true;
-    }
+    result = battleAdvanceScene(battleContext);
+    _processBattleResult(board, battleContext, result);
     return;
   }
 
+  // Behavior when accepting user input
   bool selection = false;
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
@@ -89,7 +106,7 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   if (selection) {
     switch (battleContext->menuFocus) {
     case ACTION_MENU:
-      shouldExit = battleHandleActionSelection(battleContext);
+      result = battleHandleActionSelection(battleContext);
       break;
     case SUB_MENU:
       battleHandleSubMenuSelection(battleContext);
@@ -98,12 +115,8 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
       battleHandleActorSelect(battleContext);
       break;
     }
-
   }
-  if (shouldExit) {
-    COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
-    battleDestroyBoard(board);
-  }
+  _processBattleResult(board, battleContext, result);
 }
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {
@@ -244,68 +257,76 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   int collisionResult = -1;
   switch (townContext->direction) {
     case MOVING_LEFT:
-      collisionResult = testForCollision(board, player->sprite, -5, 0);
-      if (collisionResult) {
+      collisionResult = testForCollision(board, player->sprite, -1 * OVERWORLD_MOVE_SPEED, 0);
+      if (collisionResult == COI_COLLISION) {
 	break;
       }
       //COIBoardMoveSprite(board, player, -5, 0);
-      actorMove(player, -5, 0, board);
+      actorMove(player, -1 * OVERWORLD_MOVE_SPEED, 0, board);
       playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
       if (playerCenterX <= board->_frameWidth / 2) {
-        COIBoardShiftFrameX(board, -5);
+        COIBoardShiftFrameX(board, -1 * OVERWORLD_MOVE_SPEED);
       }
-      return;
+      break;
     case MOVING_RIGHT:
-      collisionResult = testForCollision(board, player->sprite, 5, 0);
-      if (collisionResult) {
+      collisionResult = testForCollision(board, player->sprite, OVERWORLD_MOVE_SPEED, 0);
+      if (collisionResult == COI_COLLISION) {
 	break;
       }
       //COIBoardMoveSprite(board, player, 5, 0);
-      actorMove(player, 5, 0, board);
+      actorMove(player, OVERWORLD_MOVE_SPEED, 0, board);
       playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
       if (playerCenterX >= board->_frameWidth / 2) {
-        COIBoardShiftFrameX(board, 5);
+        COIBoardShiftFrameX(board, OVERWORLD_MOVE_SPEED);
       }
-      return;
+      break;
     case MOVING_UP:
-      collisionResult = testForCollision(board, player->sprite, 0, -5);
-      if (collisionResult) {
+      collisionResult = testForCollision(board, player->sprite, 0, -1 * OVERWORLD_MOVE_SPEED);
+      if (collisionResult == COI_COLLISION) {
 	break;
       }
       //COIBoardMoveSprite(board, player, 0, -5);
-      actorMove(player, 0, -5, board);
+      actorMove(player, 0, -1 * OVERWORLD_MOVE_SPEED, board);
       playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
       if (playerCenterY <= board->_frameHeight / 2) {
-        COIBoardShiftFrameY(board, -5);
+        COIBoardShiftFrameY(board, -1 * OVERWORLD_MOVE_SPEED);
       }
-      return;
+      break;
     case MOVING_DOWN:
-      collisionResult = testForCollision(board, player->sprite, 0, 5);
-      if (collisionResult) {
+      collisionResult = testForCollision(board, player->sprite, 0, OVERWORLD_MOVE_SPEED);
+      if (collisionResult == COI_COLLISION) {
 	break;
       }
       //COIBoardMoveSprite(board, player, 0, 5);
-      actorMove(player, 0, 5, board);
+      actorMove(player, 0, OVERWORLD_MOVE_SPEED, board);
       playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
       if (playerCenterY >= board->_frameHeight / 2) {
-        COIBoardShiftFrameY(board, 5);
+        COIBoardShiftFrameY(board, OVERWORLD_MOVE_SPEED);
       }
-      return;
+      break;
+  default:
+    collisionResult = testForCollision(board, player->sprite, 0, 0);
   }
+
+  COIBoard* otherBoard;
   switch (collisionResult) {
-    COIBoard* otherBoard;
   case ARMORY_DOOR:
     otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
     COIWindowSetBoard(townContext->window, otherBoard, &armory);
     townContext->direction = MOVING_NONE;
     break;
-  case BATTLE:
+  default:
+    break;
+  }
+
+  townUpdateTerrain(townContext, collisionResult);
+
+  if (townCheckForBattle(townContext)) {
     otherBoard = battleCreateBoard(townContext->window, board->loader, board, threadTown, ACTOR_SKELETON, townContext->pInfo);
     COIWindowSetBoard(townContext->window, otherBoard, &battle);
     // For now, move sprite so we don't instantly go back into battle.
     // In the future, the sprite we run into will disappear after battle.
-    COIBoardMoveSprite(board, player->sprite, 120, 0);
     townContext->direction = MOVING_NONE;
-    break;
+    //BattleContext* bbContext = (BattleContext*)otherBoard->context;
   }
 }

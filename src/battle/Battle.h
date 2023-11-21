@@ -50,6 +50,13 @@ typedef enum {
   SM_ITEM
 } BattleSubMenu;
 
+typedef enum {
+  BR_LOSS,
+  BR_WIN,
+  BR_FLEE,
+  BR_CONTINUE
+} BattleResult;
+
 typedef struct BattleContext {
   COIBoard* board;
   PlayerInfo* pInfo;
@@ -99,6 +106,8 @@ typedef struct BattleContext {
   COIBoard* outside;
   COILoop outsideLoop;
   COIWindow* window;
+  int playerOutsideX;
+  int playerOutsideY;
 } BattleContext;
 
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
@@ -107,11 +116,11 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 void battleDestroyBoard(COIBoard* board);
 void battleHandleBack(BattleContext* context);
 COIMenu* battleGetFocusedMenu(BattleContext* context);
-bool battleHandleActionSelection(BattleContext* context);
+BattleResult battleHandleActionSelection(BattleContext* context);
 void battleHandleSubMenuSelection(BattleContext* context);
 void battleHandleActorSelect(BattleContext* context);
 void battleMovePointer(BattleContext* context, int offset);
 void battleSelectAttackTarget(BattleContext* context);
-bool battleAdvanceScene(BattleContext* context);
+BattleResult battleAdvanceScene(BattleContext* context);
 
 #endif
