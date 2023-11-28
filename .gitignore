@@ -2,5 +2,6 @@ SDL*
 *~
 *.o
 coi
+cbb
 *.DS_STORE
 *.xcf

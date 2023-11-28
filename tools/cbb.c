@@ -22,7 +22,7 @@ static void updateSquare(GtkWidget* square, int assetIndex, int width, int heigh
   // Also store the width and height of the asset.
   // Pretty bad way of doing this. We're storing it in the accessibility text.
   char indexString[100];
-  gtk_picture_set_filename(GTK_PICTURE(square), assetStrings[currentAsset]);
+  gtk_picture_set_filename(GTK_PICTURE(square), assetStrings[assetIndex]);
   sprintf(indexString, "%i %i %i", assetIndex, width, height);
   gtk_picture_set_alternative_text(GTK_PICTURE(square), indexString);
 }
@@ -67,7 +67,7 @@ static void loadSpritemap(char* filename) {
     row = y / 32;
     GtkWidget* square = gtk_grid_get_child_at(GTK_GRID(grid), col, row);
     updateSquare(square, assetIndex, w, h);
-    occupyNearbySquares(x, y, w, h);
+    occupyNearbySquares(col, row, w, h);
   }
 }
 
@@ -174,9 +174,17 @@ static void setAssetHeight(GtkSpinButton* heightWidget, gpointer data) {
   currentAssetHeight = gtk_spin_button_get_value_as_int(heightWidget);
 }
 
-/*static void fileButtonPressed(GtkWidget* button, gpointer dialog) {
-  gtk_file_dialog_open(GTK_FILE_DIALOG(dialog), NULL, NULL, 
-  }*/
+static void fileSelected(GObject* dialog, GAsyncResult* res, gpointer data) {
+  GFile* f = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(dialog), res, NULL);
+  // Will be NULL if we cancel out of file dialog
+  if (G_IS_FILE(f)) {
+    loadSpritemap(g_file_get_path(f));
+  }
+}
+
+static void fileButtonPressed(GtkWidget* button, gpointer dialog) {
+  gtk_file_dialog_open(GTK_FILE_DIALOG(dialog), NULL, NULL, fileSelected, NULL);
+}
 
 static void activate(GtkApplication *app,
 		     gpointer userData) {
@@ -196,7 +204,7 @@ static void activate(GtkApplication *app,
   GtkWidget* heightBox; // For holding label
   GtkWidget* heightLabel;
   GtkWidget* fileButton;
-  GtkWidget* fileDialog;
+  GtkFileDialog* fileDialog;
   
 
   window = gtk_application_window_new(app);
@@ -246,15 +254,16 @@ static void activate(GtkApplication *app,
   gtk_box_append(GTK_BOX(dimensionsBox), widthBox);
   gtk_box_append(GTK_BOX(dimensionsBox), heightBox);
 
-  /*fileDialog = gtk_file_dialog_new();
+  fileDialog = gtk_file_dialog_new();
   fileButton = gtk_button_new_with_label("Load Spritemap");
-  g_signal_connect(fileButton, "clicked", G_CALLBACK(*/
+  g_signal_connect(fileButton, "clicked", G_CALLBACK(fileButtonPressed), fileDialog);
   
   button = gtk_button_new_with_label("Create Board");
   g_signal_connect(button, "clicked", G_CALLBACK(generateSpritemap), grid);
 
   gtk_box_append(GTK_BOX(rightBox), spriteSelectBox);
   gtk_box_append(GTK_BOX(rightBox), dimensionsBox);
+  gtk_box_append(GTK_BOX(rightBox), fileButton);
   gtk_box_append(GTK_BOX(rightBox), button);
   gtk_box_append(GTK_BOX(box), rightBox);
 
@@ -264,7 +273,8 @@ static void activate(GtkApplication *app,
   gtk_widget_set_margin_start(box, 20);
   gtk_widget_set_margin_end(box, 20);
 
-
+  gtk_widget_set_hexpand(scrolledWindow, TRUE);
+  gtk_widget_set_halign(rightBox, GTK_ALIGN_FILL);
 
   // CSS
   GtkCssProvider* cssProvider = gtk_css_provider_new();
