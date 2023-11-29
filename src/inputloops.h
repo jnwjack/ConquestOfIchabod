@@ -11,7 +11,7 @@
 #include "threadtown/Town.h"
 #include <stdbool.h>
 
-#define OVERWORLD_MOVE_SPEED 5
+#define OVERWORLD_MOVE_SPEED 4
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context);
 void armory(COIBoard* board, SDL_Event* event, void* context);

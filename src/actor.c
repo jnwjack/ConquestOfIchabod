@@ -22,6 +22,10 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 
   actor->techList = techCreateList(MAX_TECH_COUNT_NPC);
 
+  actor->movementDirection = MOVING_NONE;
+  actor->nextMovementDirection = MOVING_NONE;
+  actor->_stepsLeft = 0;
+
   actor->_ticks = 0;
   actor->_spriteSheetColIndex = 0;
   actor->_spriteSheetRow = 0;
@@ -109,6 +113,28 @@ int _spriteSheetRowFromDirection(int xOffset, int yOffset) {
 }
 
 void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board) {
+  //int xOffset, yOffset;
+  switch (actor->movementDirection) {
+  case MOVING_LEFT:
+    xOffset = actor->_speed * -1;
+    yOffset = 0;
+    break;
+  case MOVING_RIGHT:
+    xOffset = actor->_speed;
+    yOffset = 0;
+    break;
+  case MOVING_UP:
+    xOffset = 0;
+    yOffset = actor->_speed * -1;
+    break;
+  case MOVING_DOWN:
+    xOffset = 0;
+    yOffset = actor->_speed;
+    break;
+  default:
+    return;
+  }
+  
   actor->_spriteSheetRow = _spriteSheetRowFromDirection(xOffset, yOffset);
   if (actor->_ticks >= ACTOR_SPRITE_TICKS) {
     actor->_spriteSheetColIndex = (actor->_spriteSheetColIndex + 1) % 4;
@@ -119,10 +145,39 @@ void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board) {
   COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, spriteSheetCol);
   COIBoardMoveSprite(board, actor->sprite, xOffset, yOffset);
   actor->_ticks++;
+
+  actor->_stepsLeft -= actor->_speed;
+  if (actor->_stepsLeft <= 0) {
+    actor->movementDirection = actor->nextMovementDirection;
+    actor->_stepsLeft = COIBOARD_GRID_SIZE;
+  }
+}
+
+// Actor continues current movement until stepsLeft = 0, then switches to
+// nextMovementDirection
+// No more setting MOVEMENT=NONE when reaching stepsLeft = 0
+void actorQueueNextDirection(Actor* actor, int direction) {
+  actor->nextMovementDirection = direction;
+}
+
+// If we're not currently in motion, start moving in the provided direction.
+void actorStartMovement(Actor* actor, int direction, int speed) {
+  if (actor->movementDirection == MOVING_NONE) {
+    actor->_stepsLeft = COIBOARD_GRID_SIZE;
+    actor->movementDirection = direction;
+    actor->nextMovementDirection = direction;
+    actor->_speed = speed;
+  } else {
+    actor->nextMovementDirection = direction;
+    //actor->nextMovementDirection = direction;
+  }
 }
 
 void actorStandStill(Actor* actor) {
   COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, 2);
+  actor->movementDirection = MOVING_NONE;
+  actor->_speed = 0;
+  actor->_stepsLeft = 0;
 }
 
 void actorFaceLeft(Actor* actor) {

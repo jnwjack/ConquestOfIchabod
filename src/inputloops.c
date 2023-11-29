@@ -50,7 +50,7 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
   case BR_FLEE:
   case BR_WIN:
     //COIBoardMoveSprite(board, battleContext->allies[0]->sprite, context->playerOutsideX + 120, );
-    COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX + 120, battleContext->playerOutsideY);
+    COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
     COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
     battleDestroyBoard(board);
     break;
@@ -223,22 +223,24 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   TownContext* townContext = (TownContext*)context;
   //int* direction = (int*) context;
   Actor* player = townContext->pInfo->party[0];
-  
-  
   int playerCenterX, playerCenterY;
   switch (event->type) {
     case SDL_KEYDOWN:
       switch (event->key.keysym.sym) {
         case SDLK_LEFT:
+	  actorStartMovement(player, MOVING_LEFT, OVERWORLD_MOVE_SPEED);
 	  townContext->direction = MOVING_LEFT;
           break;
         case SDLK_RIGHT:
+	  actorStartMovement(player, MOVING_RIGHT, OVERWORLD_MOVE_SPEED);
 	  townContext->direction = MOVING_RIGHT;
           break;
         case SDLK_UP:
+	  actorStartMovement(player, MOVING_UP, OVERWORLD_MOVE_SPEED);
 	  townContext->direction = MOVING_UP;
           break;
         case SDLK_DOWN:
+	  actorStartMovement(player, MOVING_DOWN, OVERWORLD_MOVE_SPEED);
 	  townContext->direction = MOVING_DOWN;
 	  break;
       }
@@ -248,17 +250,21 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
           (event->key.keysym.sym == SDLK_RIGHT && townContext->direction == MOVING_RIGHT) ||
           (event->key.keysym.sym == SDLK_UP && townContext->direction == MOVING_UP) ||
           (event->key.keysym.sym == SDLK_DOWN && townContext->direction == MOVING_DOWN)) {
+	actorQueueNextDirection(player, MOVING_NONE);
 	townContext->direction = MOVING_NONE;
-	actorStandStill(player);
+	//actorStandStill(player);
 	board->_shouldDraw = true;
       }
+      break;
   }
 
   int collisionResult = -1;
-  switch (townContext->direction) {
+  //printf("movement: %i\n", player->movementDirection);
+  switch (player->movementDirection) {
     case MOVING_LEFT:
       collisionResult = testForCollision(board, player->sprite, -1 * OVERWORLD_MOVE_SPEED, 0);
       if (collisionResult == COI_COLLISION) {
+	actorStandStill(player);
 	break;
       }
       //COIBoardMoveSprite(board, player, -5, 0);
@@ -271,6 +277,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case MOVING_RIGHT:
       collisionResult = testForCollision(board, player->sprite, OVERWORLD_MOVE_SPEED, 0);
       if (collisionResult == COI_COLLISION) {
+	actorStandStill(player);
 	break;
       }
       //COIBoardMoveSprite(board, player, 5, 0);
@@ -283,6 +290,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case MOVING_UP:
       collisionResult = testForCollision(board, player->sprite, 0, -1 * OVERWORLD_MOVE_SPEED);
       if (collisionResult == COI_COLLISION) {
+	actorStandStill(player);
 	break;
       }
       //COIBoardMoveSprite(board, player, 0, -5);
@@ -295,6 +303,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case MOVING_DOWN:
       collisionResult = testForCollision(board, player->sprite, 0, OVERWORLD_MOVE_SPEED);
       if (collisionResult == COI_COLLISION) {
+	actorStandStill(player);
 	break;
       }
       //COIBoardMoveSprite(board, player, 0, 5);

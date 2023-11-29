@@ -13,6 +13,7 @@
 #define INDEX_ALPHA 3
 
 #define COIBOARD_MAX_STRINGS 100
+#define COIBOARD_GRID_SIZE 32
 
 
 typedef struct COIBoard {

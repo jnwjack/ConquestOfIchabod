@@ -41,6 +41,11 @@ typedef struct Actor {
 
   TechList* techList;
 
+  int movementDirection;
+  int nextMovementDirection;
+  int _stepsLeft; // We want to move in fixed chunks. We're on a grid
+  int _speed;
+
   int _ticks;
   int _spriteSheetColIndex;
   int _spriteSheetRow;
@@ -58,6 +63,8 @@ COISprite** actorGetSpriteList(Actor** actors, int numActors);
 char* actorGetNameFromType(int actorType);
 bool actorIsDead(Actor* actor);
 void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board);
+void actorStartMovement(Actor* actor, int direction, int speed);
+void actorQueueNextDirection(Actor* actor, int direction);
 void actorStandStill(Actor* actor);
 void actorFaceLeft(Actor* actor);
 void actorFaceRight(Actor* actor);
