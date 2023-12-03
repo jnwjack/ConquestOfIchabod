@@ -7,8 +7,10 @@
 
 #define MIN(a,b) ((a > b) ? b : a)
 #define MAX(a,b) ((a > b) ? a : b)
+#define ABS_DIFF(a,b) ((a > b) ? a - b : b - a)
 
 #define COI_PADDING 10
+#define COIBOARD_GRID_SIZE 32
 
 int countLines(const char* filename);
 int generateRandomChar();

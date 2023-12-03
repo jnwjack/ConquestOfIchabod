@@ -1,11 +1,11 @@
+#ifndef COIBOARD_H
+#define COIBOARD_H
+
 #include "COIString.h"
 #include "COISprite.h"
 #include "COIAssetLoader.h"
 #include "util.h"
 #include <stdbool.h>
-
-#ifndef COIBOARD_H
-#define COIBOARD_H
 
 #define INDEX_RED   0
 #define INDEX_GREEN 1
@@ -13,7 +13,6 @@
 #define INDEX_ALPHA 3
 
 #define COIBOARD_MAX_STRINGS 100
-#define COIBOARD_GRID_SIZE 32
 
 
 typedef struct COIBoard {

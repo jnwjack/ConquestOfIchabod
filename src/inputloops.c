@@ -1,25 +1,5 @@
 #include "inputloops.h"
 
-int testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
-  // Probably want this to only look  at visible sprites
-  int maxSpriteIndex = board->_spriteCount - 1;
-  COISprite* currentSprite = NULL;
-  int i;
-  int collisionResult;
-  for (i = 0; i < maxSpriteIndex; i++) {
-    currentSprite = board->_sprites[i];
-    collisionResult = COISpriteCollision(currentSprite,
-					 player->_x + changeX,
-					 player->_y + changeY,
-					 player->_width,
-					 player->_height);
-    if (collisionResult != COI_NO_COLLISION) {
-      return collisionResult;
-    }
-  }
-
-  return COI_NO_COLLISION;
-}
 
 bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
   bool selection = false;
@@ -206,10 +186,6 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIMenuReset(armoryContext->menu);
     COIMenuSetInvisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->menu;
-    
-    // Re-adjust player sprite in threadtown and change to threadtown
-    COISprite* player = threadTownBoard->_sprites[threadTownBoard->_spriteCount - 1];
-    COIBoardMoveSprite(threadTownBoard, player, 0, 30);
     COIWindowSetBoard(window, threadTownBoard, &threadTown);
 
     armoryDestroy(armoryContext);
@@ -219,6 +195,58 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 }
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
+  TownContext* townContext = (TownContext*)context;
+  Actor* player = townContext->pInfo->party[0];
+
+  switch (event->type) {
+  case SDL_KEYDOWN:
+    switch (event->key.keysym.sym) {
+    case SDLK_LEFT:
+      townProcessMovementInput(townContext, MOVING_LEFT);
+      break;
+    case SDLK_RIGHT:
+      townProcessMovementInput(townContext, MOVING_RIGHT);
+      break;
+    case SDLK_UP:
+      townProcessMovementInput(townContext, MOVING_UP);
+      break;
+    case SDLK_DOWN:
+  
+    townProcessMovementInput(townContext, MOVING_DOWN);
+      break;
+    }
+    break;
+  case SDL_KEYUP:
+    if ((event->key.keysym.sym == SDLK_LEFT && player->nextMovementDirection == MOVING_LEFT) ||
+	(event->key.keysym.sym == SDLK_RIGHT && player->nextMovementDirection == MOVING_RIGHT) ||
+	(event->key.keysym.sym == SDLK_UP && player->nextMovementDirection == MOVING_UP) ||
+	(event->key.keysym.sym == SDLK_DOWN && player->nextMovementDirection == MOVING_DOWN)) {
+      townProcessMovementInput(townContext, MOVING_NONE);
+      board->_shouldDraw = true;
+    }
+    break;
+  }
+
+  int collision = townCheckForCollision(context);
+  // Town context handle generic collision, moving actors around, etc.
+  townProcessCollisionType(townContext, collision);
+  // Input loop handles collisions that lead to changes in the input loop (going into a shop, etc.)
+
+  COIBoard* otherBoard;
+  switch (collision) {
+  case ARMORY_DOOR:
+    player->movementDirection = MOVING_NONE;
+    otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
+    COIWindowSetBoard(townContext->window, otherBoard, &armory);
+    break;
+  default:
+    townMovePlayer(townContext);
+  }
+  
+}
+
+
+/*void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   //COISprite* player = board->_sprites[board->_spriteCount - 1];
   TownContext* townContext = (TownContext*)context;
   //int* direction = (int*) context;
@@ -339,3 +367,4 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     //BattleContext* bbContext = (BattleContext*)otherBoard->context;
   }
 }
+*/

@@ -10,7 +10,7 @@
 #define ACTOR_PLAYER 1
 
 // How many ticks per animation frame when moving
-#define ACTOR_SPRITE_TICKS 10
+#define ACTOR_SPRITE_TICKS 12
 
 #define MOVING_NONE 0
 #define MOVING_LEFT 1
@@ -63,11 +63,15 @@ COISprite** actorGetSpriteList(Actor** actors, int numActors);
 char* actorGetNameFromType(int actorType);
 bool actorIsDead(Actor* actor);
 void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board);
-void actorStartMovement(Actor* actor, int direction, int speed);
-void actorQueueNextDirection(Actor* actor, int direction);
+//void actorStartMovement(Actor* actor, int direction, int speed);
+void actorQueueMovement(Actor* actor, int direction, int speed);
+bool actorContinueMovement(Actor* actor, COIBoard* board);
 void actorStandStill(Actor* actor);
 void actorFaceLeft(Actor* actor);
 void actorFaceRight(Actor* actor);
+void actorFaceUp(Actor* actor);
+void actorFaceDown(Actor* actor);
+void actorFaceDirection(Actor* actor, int direction);
 void actorTurnAround(Actor* actor);
 
 #endif

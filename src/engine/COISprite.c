@@ -1,5 +1,9 @@
 #include "COISprite.h"
 
+int _pixelsToGridSquare(int px) {
+  return px / COIBOARD_GRID_SIZE;
+}
+
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int assetID) {
   COISprite* sprite = malloc(sizeof(COISprite));
   sprite->_x = x;
@@ -102,6 +106,40 @@ void COISpriteSheetIncrementIndex(COISprite* sprite) {
 
 // Assumes that otherRect is smaller than or equal to the sprite's rect
 int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {
+  // Check if we're in the same grid cell
+  /*if ((sprite->_x/COIBOARD_GRID_SIZE) == (x/COIBOARD_GRID_SIZE) &&
+      (sprite->_y/COIBOARD_GRID_SIZE) == (y/COIBOARD_GRID_SIZE)) {
+    return COI_COLLISION;
+  }
+  
+  return COI_NO_COLLISION;
+  */
+  
+
+  int myGridX = _pixelsToGridSquare(x);
+  int myGridY = _pixelsToGridSquare(y);
+
+  int spriteGridLeft = _pixelsToGridSquare(sprite->_x);
+  int spriteGridRight = _pixelsToGridSquare(sprite->_x + sprite->_width) - 1;
+  int spriteGridTop = _pixelsToGridSquare(sprite->_y);
+  int spriteGridBottom = _pixelsToGridSquare(sprite->_y + sprite->_height) - 1;
+
+  if ((myGridX >= spriteGridLeft && myGridX <= spriteGridRight) &&
+      (myGridY >= spriteGridTop && myGridY <= spriteGridBottom)) {
+    if(sprite->_extraCollision != NULL) {
+      int ecGridLeft = _pixelsToGridSquare(sprite->_x + sprite->_extraCollision->tlX);
+      int ecGridRight = _pixelsToGridSquare(sprite->_x + sprite->_extraCollision->brX);
+      int ecGridTop = _pixelsToGridSquare(sprite->_y + sprite->_extraCollision->tlY);
+      int ecGridBottom = _pixelsToGridSquare(sprite->_y + sprite->_extraCollision->brY);
+      if ((myGridX >= ecGridLeft && myGridX <= ecGridRight) &&
+	  (myGridY >= ecGridTop && myGridY <= ecGridBottom)) {
+	return sprite->_extraCollision->returnValue;
+      }
+    }
+    return COI_COLLISION;
+  }
+  return COI_NO_COLLISION;
+  
   int myTopLeft[] = { sprite->_x, sprite->_y };
   int myBottomRight[] = { sprite->_x + sprite->_width, sprite->_y + sprite->_height };
   int otherCorners[4][2] = {{ x, y },
