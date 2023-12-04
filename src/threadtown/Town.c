@@ -36,6 +36,13 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   COISprite** dynSprites = actorGetSpriteList(context->pInfo->party, 1);
   COIBoardSetDynamicSprites(board, dynSprites, 1);
 
+  Actor* player = context->pInfo->party[0];
+  // Adjust board player is in the center of the screen.
+  int playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
+  COIBoardShiftFrameX(board, playerCenterX);
+  int playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
+  COIBoardShiftFrameY(board, playerCenterY);
+  
   COIBoardSetContext(board, (void*)context);
 
   return board;

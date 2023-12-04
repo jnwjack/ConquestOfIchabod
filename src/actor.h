@@ -10,7 +10,7 @@
 #define ACTOR_PLAYER 1
 
 // How many ticks per animation frame when moving
-#define ACTOR_SPRITE_TICKS 12
+#define ACTOR_SPRITE_TICKS 8
 
 #define MOVING_NONE 0
 #define MOVING_LEFT 1

@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
   Inventory* inventory = createTestInventory(itemList);
 
   // Initialize player data
-  COISprite* playerSprite = COISpriteCreateFromAssetID(320, 320, 32, 32, loader, 1, COIWindowGetRenderer(window));
+  COISprite* playerSprite = COISpriteCreateFromAssetID(1216, 1472, 32, 32, loader, 1, COIWindowGetRenderer(window));
   PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory);
 
   

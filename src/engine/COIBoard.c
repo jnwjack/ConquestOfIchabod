@@ -88,7 +88,6 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
     y = atoi(strtok(NULL, " "));
     w = atoi(strtok(NULL, " "));
     h = atoi(strtok(NULL, " "));
-
     SDL_Surface* asset = COIAssetLoaderGetAsset(board->loader, assetID);
     SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);
     sprite = COISpriteCreate(x, y, w, h, texture, assetID);

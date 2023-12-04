@@ -17,6 +17,12 @@ static bool squareIsOccupied(GtkWidget* square) {
   return gtk_widget_get_css_classes(square)[0] != NULL;
 }
 
+// Return true if the square has an asset associated with it.
+// We can only remove assets from squares that have an asset.
+static bool squareHasAsset(GtkWidget* square) {
+  return (gtk_picture_get_file(GTK_PICTURE(square)) != NULL);
+}
+
 static void updateSquare(GtkWidget* square, int assetIndex, int width, int height) {
   // Store the index of the asset - used when we write to file
   // Also store the width and height of the asset.
@@ -120,7 +126,7 @@ static void removeAssetFromSquare (GtkGestureClick *gesture,
 				   double           y,
 				   GtkWidget       *area)
 {
-  if (!squareIsOccupied(area)) {
+  if (!squareIsOccupied(area) && squareHasAsset(area)) {
     gtk_picture_set_filename(GTK_PICTURE(area), NULL);
     // We might need to mark nearby squares as unoccupied.
     int areaX, areaY;
