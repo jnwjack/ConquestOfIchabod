@@ -118,7 +118,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     actorFaceLeft(context->allies[i]);
   }
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
-  COISprite* duh = context->allies[0]->sprite;
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
   

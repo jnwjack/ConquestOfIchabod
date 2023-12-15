@@ -33,6 +33,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->terrain = TT_SAFE;
   context->terrainTicks = 0;
   context->board = board;
+  context->willEnterBattle = false;
   // Only 1 dynamic sprite: the player
   COISprite** dynSprites = actorGetSpriteList(context->pInfo->party, 1);
   COIBoardSetDynamicSprites(board, dynSprites, 1);
@@ -109,13 +110,14 @@ bool townContinueMovement(Actor* actor, COIBoard* board) {
 
 // After a certain amount of ticks, check if we should enter a battle (random encounter).
 // The likelihood of entering a battle is based off of the current terrain.
-bool townCheckForBattle(TownContext* context) {
+void townCheckForBattle(TownContext* context) {
   context->terrainTicks = 0;
   switch (context->terrain) {
   case TT_THICK_GRASS:
-    return generateRandomBoolWeighted(0.05);
+    context->willEnterBattle = generateRandomBoolWeighted(0.05);
+    break;
   default:
-    return false;
+    context->willEnterBattle = false;
   }
 }
 
@@ -239,6 +241,11 @@ void townMovePlayer(TownContext* context) {
 
   if (inNextGridCell) {
     townCheckForBattle(context);
+  }
+
+  if (context->willEnterBattle) {
+    player->nextMovementDirection = MOVING_NONE;
+    player->movementDirection = MOVING_NONE;
   }
 }
 

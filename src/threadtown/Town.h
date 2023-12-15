@@ -24,12 +24,13 @@ typedef struct TownContext {
   TownTerrain terrain;
   TownTerrain nextGridTerrain;
   int terrainTicks;
+  bool willEnterBattle;
   COIBoard* board;
 } TownContext;
 
 COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo* pInfo);
 
-bool townCheckForBattle(TownContext* context);
+void townCheckForBattle(TownContext* context);
 void townUpdateTerrain(TownContext* context, int collisionResult);
 void townProcessMovementInput(TownContext* context, int direction);
 void townProcessCollisionType(TownContext* context, int collision);

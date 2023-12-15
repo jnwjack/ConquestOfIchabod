@@ -245,130 +245,18 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       break;
     }
   }
-  townMovePlayer(townContext);
   
-}
+  townMovePlayer(townContext);
 
-
-/*void threadTown(COIBoard* board, SDL_Event* event, void* context) {
-  //COISprite* player = board->_sprites[board->_spriteCount - 1];
-  TownContext* townContext = (TownContext*)context;
-  //int* direction = (int*) context;
-  Actor* player = townContext->pInfo->party[0];
-  int playerCenterX, playerCenterY;
-  switch (event->type) {
-    case SDL_KEYDOWN:
-      switch (event->key.keysym.sym) {
-        case SDLK_LEFT:
-	  actorStartMovement(player, MOVING_LEFT, OVERWORLD_MOVE_SPEED);
-	  townContext->direction = MOVING_LEFT;
-          break;
-        case SDLK_RIGHT:
-	  actorStartMovement(player, MOVING_RIGHT, OVERWORLD_MOVE_SPEED);
-	  townContext->direction = MOVING_RIGHT;
-          break;
-        case SDLK_UP:
-	  actorStartMovement(player, MOVING_UP, OVERWORLD_MOVE_SPEED);
-	  townContext->direction = MOVING_UP;
-          break;
-        case SDLK_DOWN:
-	  actorStartMovement(player, MOVING_DOWN, OVERWORLD_MOVE_SPEED);
-	  townContext->direction = MOVING_DOWN;
-	  break;
-      }
-      break;
-    case SDL_KEYUP:
-      if ((event->key.keysym.sym == SDLK_LEFT && townContext->direction == MOVING_LEFT) ||
-          (event->key.keysym.sym == SDLK_RIGHT && townContext->direction == MOVING_RIGHT) ||
-          (event->key.keysym.sym == SDLK_UP && townContext->direction == MOVING_UP) ||
-          (event->key.keysym.sym == SDLK_DOWN && townContext->direction == MOVING_DOWN)) {
-	actorQueueNextDirection(player, MOVING_NONE);
-	townContext->direction = MOVING_NONE;
-	//actorStandStill(player);
-	board->_shouldDraw = true;
-      }
-      break;
-  }
-
-  int collisionResult = -1;
-  //printf("movement: %i\n", player->movementDirection);
-  switch (player->movementDirection) {
-    case MOVING_LEFT:
-      collisionResult = testForCollision(board, player->sprite, -1 * OVERWORLD_MOVE_SPEED, 0);
-      if (collisionResult == COI_COLLISION) {
-	actorStandStill(player);
-	break;
-      }
-      //COIBoardMoveSprite(board, player, -5, 0);
-      actorMove(player, -1 * OVERWORLD_MOVE_SPEED, 0, board);
-      playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
-      if (playerCenterX <= board->_frameWidth / 2) {
-        COIBoardShiftFrameX(board, -1 * OVERWORLD_MOVE_SPEED);
-      }
-      break;
-    case MOVING_RIGHT:
-      collisionResult = testForCollision(board, player->sprite, OVERWORLD_MOVE_SPEED, 0);
-      if (collisionResult == COI_COLLISION) {
-	actorStandStill(player);
-	break;
-      }
-      //COIBoardMoveSprite(board, player, 5, 0);
-      actorMove(player, OVERWORLD_MOVE_SPEED, 0, board);
-      playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
-      if (playerCenterX >= board->_frameWidth / 2) {
-        COIBoardShiftFrameX(board, OVERWORLD_MOVE_SPEED);
-      }
-      break;
-    case MOVING_UP:
-      collisionResult = testForCollision(board, player->sprite, 0, -1 * OVERWORLD_MOVE_SPEED);
-      if (collisionResult == COI_COLLISION) {
-	actorStandStill(player);
-	break;
-      }
-      //COIBoardMoveSprite(board, player, 0, -5);
-      actorMove(player, 0, -1 * OVERWORLD_MOVE_SPEED, board);
-      playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
-      if (playerCenterY <= board->_frameHeight / 2) {
-        COIBoardShiftFrameY(board, -1 * OVERWORLD_MOVE_SPEED);
-      }
-      break;
-    case MOVING_DOWN:
-      collisionResult = testForCollision(board, player->sprite, 0, OVERWORLD_MOVE_SPEED);
-      if (collisionResult == COI_COLLISION) {
-	actorStandStill(player);
-	break;
-      }
-      //COIBoardMoveSprite(board, player, 0, 5);
-      actorMove(player, 0, OVERWORLD_MOVE_SPEED, board);
-      playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
-      if (playerCenterY >= board->_frameHeight / 2) {
-        COIBoardShiftFrameY(board, OVERWORLD_MOVE_SPEED);
-      }
-      break;
-  default:
-    collisionResult = testForCollision(board, player->sprite, 0, 0);
-  }
-
-  COIBoard* otherBoard;
-  switch (collisionResult) {
-  case ARMORY_DOOR:
-    otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
-    COIWindowSetBoard(townContext->window, otherBoard, &armory);
-    townContext->direction = MOVING_NONE;
-    break;
-  default:
-    break;
-  }
-
-  townUpdateTerrain(townContext, collisionResult);
-
-  if (townCheckForBattle(townContext)) {
-    otherBoard = battleCreateBoard(townContext->window, board->loader, board, threadTown, ACTOR_SKELETON, townContext->pInfo);
-    COIWindowSetBoard(townContext->window, otherBoard, &battle);
-    // For now, move sprite so we don't instantly go back into battle.
-    // In the future, the sprite we run into will disappear after battle.
-    townContext->direction = MOVING_NONE;
-    //BattleContext* bbContext = (BattleContext*)otherBoard->context;
+  if (townContext->willEnterBattle) {
+    COIBoard* armory = battleCreateBoard(townContext->window,
+					 board->loader,
+					 board,
+					 threadTown,
+					 ACTOR_SKELETON,
+					 townContext->pInfo);
+    COIWindowSetBoard(townContext->window, armory, &battle);
+    townContext->willEnterBattle = false;
   }
 }
-*/
+
