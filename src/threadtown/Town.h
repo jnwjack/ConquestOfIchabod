@@ -22,6 +22,7 @@ typedef struct TownContext {
   COIWindow* window;
   int direction;
   TownTerrain terrain;
+  TownTerrain nextGridTerrain;
   int terrainTicks;
   COIBoard* board;
 } TownContext;
@@ -34,6 +35,7 @@ void townProcessMovementInput(TownContext* context, int direction);
 void townProcessCollisionType(TownContext* context, int collision);
 int townCheckForCollision(TownContext* context);
 void townMovePlayer(TownContext* context);
+bool townShouldCheckForCollision(TownContext* context);
 
 
 void townDestroyBoard(COIBoard* board);

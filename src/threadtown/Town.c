@@ -1,6 +1,7 @@
 #include "Town.h"
 
 int _testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
+  //printf("checking collision...\n");
   // Probably want this to only look  at visible sprites
   int maxSpriteIndex = board->_spriteCount;
   COISprite* currentSprite = NULL;
@@ -109,16 +110,11 @@ bool townContinueMovement(Actor* actor, COIBoard* board) {
 // After a certain amount of ticks, check if we should enter a battle (random encounter).
 // The likelihood of entering a battle is based off of the current terrain.
 bool townCheckForBattle(TownContext* context) {
-  if (context->terrainTicks >= TOWN_BATTLE_TICKS) {
-    context->terrainTicks = 0;
-    switch (context->terrain) {
-    case TT_THICK_GRASS:
-      return generateRandomBoolWeighted(0.3);
-    default:
-      return false;
-    }
-  } else {
-    context->terrainTicks++;
+  context->terrainTicks = 0;
+  switch (context->terrain) {
+  case TT_THICK_GRASS:
+    return generateRandomBoolWeighted(0.05);
+  default:
     return false;
   }
 }
@@ -145,7 +141,7 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
   case MOVING_LEFT:
     changeX = COIBOARD_GRID_SIZE * -1;
     break;
-  case MOVING_RIGHT:
+ case MOVING_RIGHT:
     changeX = COIBOARD_GRID_SIZE;
     break;
   case MOVING_UP:
@@ -165,28 +161,8 @@ void townProcessMovementInput(TownContext* context, int direction) {
   Actor* player = context->pInfo->party[0];
   bool canAcceptInput = player->_stepsLeft == 0;
   _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
-  /*if (_getNextCollision(context, player, direction) != COI_COLLISION) {
-    printf("player->sprite->_x: %i\n", player->sprite->_x);
-    _queueMovement(player, direction, TOWN_MOVE_SPEED);
-  } else {
-    _queueMovement(player, MOVING_NONE, 0);
-    printf("will collide\n");
-  }
-  */
 }
 
-/*void townProcessCollisionType(TownContext* context, int collision) {
-  if (collision != COI_COLLISION) {
-    _queueMovement(player, direction, TOWN_MOVE_SPEED);
-  }
-  switch (collision) {
-  default:
-    _queueMovement(player, direction, TOWN_MOVE_SPEED);
-  }
-  if (collision != COI_TEXT_TYPE) 
-    _queueMovement(player, direction, TOWN_MOVE_SPEED);
-  }
-  }*/
 void townProcessCollisionType(TownContext* context, int collision) {
   Actor* player = context->pInfo->party[0];
   switch (collision) {
@@ -195,12 +171,21 @@ void townProcessCollisionType(TownContext* context, int collision) {
     actorStandStill(player);
     break;
   default:
+    townUpdateTerrain(context, collision);
     break;
   }
 }
 
 // When we're about to move to another square (but haven't started moving yet),
 // we want to check if there's a collision.
+bool townShouldCheckForCollision(TownContext* context) {
+  Actor* player = context->pInfo->party[0];
+  return (player->movementDirection != MOVING_NONE &&
+	  player->sprite->_x % COIBOARD_GRID_SIZE == 0 &&
+	  player->sprite->_y % COIBOARD_GRID_SIZE == 0);
+}
+
+
 int townCheckForCollision(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   // We haven't started moving from our current square yet if the x and y of the sprite
@@ -252,10 +237,9 @@ void townMovePlayer(TownContext* context) {
     break;
   }
 
-  /*  if (inNextGridCell) {
-    printf("nextcell\n");
+  if (inNextGridCell) {
+    townCheckForBattle(context);
   }
-  */
 }
 
 

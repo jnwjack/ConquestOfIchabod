@@ -227,21 +227,25 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     break;
   }
 
-  int collision = townCheckForCollision(context);
-  // Town context handle generic collision, moving actors around, etc.
-  townProcessCollisionType(townContext, collision);
-  // Input loop handles collisions that lead to changes in the input loop (going into a shop, etc.)
+  if (townShouldCheckForCollision(context)) {
+    int collision = townCheckForCollision(context);
+    // Town context handle generic collision, moving actors around, etc.
+    townProcessCollisionType(townContext, collision);
+    // Input loop handles collisions that lead to changes in the input loop (going into a shop, etc.)
 
-  COIBoard* otherBoard;
-  switch (collision) {
-  case ARMORY_DOOR:
-    player->movementDirection = MOVING_NONE;
-    otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
-    COIWindowSetBoard(townContext->window, otherBoard, &armory);
-    break;
-  default:
-    townMovePlayer(townContext);
+    COIBoard* otherBoard;
+    switch (collision) {
+    case ARMORY_DOOR:
+      player->movementDirection = MOVING_NONE;
+      otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
+      COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      break;
+    default:
+      //townMovePlayer(townContext);
+      break;
+    }
   }
+  townMovePlayer(townContext);
   
 }
 
