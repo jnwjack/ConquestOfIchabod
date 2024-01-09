@@ -1,5 +1,7 @@
 #include "COIWindow.h"
 
+COIWindow* COI_GLOBAL_WINDOW = NULL;
+
 COIWindow* COIWindowCreate() {
   // Initialize SDL
   SDL_Init(SDL_INIT_VIDEO);
@@ -100,5 +102,10 @@ void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop) {
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window) {
   return window->_renderer;
 }
+
+void COIWindowInit() {
+  COI_GLOBAL_WINDOW = COIWindowCreate();
+}
+
 
 

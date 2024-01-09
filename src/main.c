@@ -9,7 +9,13 @@
 #include "threadtown/Town.h"
 
 int main(int argc, char** argv) {
-  COIWindow* window = COIWindowCreate();
+  // Initialize global window
+  COIWindowInit();
+  
+  // In the future, we can remove COIWindow member variables from structs so
+  // we don't have to pass it around all over the place.
+  COIWindow* window = COI_GLOBAL_WINDOW;
+  
   COIAssetLoader* loader = COIAssetLoaderCreate();
 
   // Global item data
@@ -27,25 +33,6 @@ int main(int argc, char** argv) {
   COILoop threadTownLoop = &threadTown;
   COIWindowSetBoard(window, townBoard, threadTownLoop);
   COIWindowLoop(window);
-
-  /*void* context = malloc(sizeof(int) + sizeof(COIBoard*) + sizeof(COIWindow*));
-
-
-  COIBoard* board = COIBoardCreate(2, 132, 28, 255, 700, 700, loader);
-  COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
-
-  COIBoard* armoryBoard = armoryCreateBoard(window, loader, board, inventory);
-
-  // Modify threadtown context
-  COIBoard** armoryBoardPtr = (COIBoard**) (context + sizeof(int));
-  *armoryBoardPtr = armoryBoard;
-  COIWindow** windowPtr = (COIWindow**) (context + sizeof(int) + sizeof(COIBoard*));
-  *windowPtr = window;
-  COIBoardSetContext(board, context);
-  
-  COIWindowSetBoard(window, board, threadTownLoop);
-  COIWindowLoop(window);*/
-
 
   // Cleanup
   COIAssetLoaderDestroy(loader);

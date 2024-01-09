@@ -6,6 +6,9 @@ COIString* COIStringCreate(char* string, int x, int y, COITextType* textType) {
   obj->fontSize = textType->fontSize;
   obj->visible = false;
   obj->index = -1;
+  obj->x = x;
+  obj->y = y;
+  obj->yBottomLine = y; // Same as y until we request word wrapping
 
   // Store string as a linked list of COIChars
   COIChar* current = NULL;
@@ -50,6 +53,12 @@ void COIStringDraw(COIString* obj, SDL_Renderer* renderer) {
 void COIStringSetPos(COIString* obj, int x, int y) {
   COIChar* current = obj->_head;
   int offsetX = x;
+  obj->x = x;
+
+  // Handle strings that already have multiple lines
+  int offsetY = obj->yBottomLine - obj->y;
+  obj->y = y;
+  obj->yBottomLine = y + offsetY;
   while (current != NULL) {
     COICharSetPos(current, offsetX, y);
     offsetX += current->w;
@@ -76,7 +85,7 @@ COIString** COIStringCopyList(COIString** src, int size) {
 }
 
 // Return true when done
-bool _confineToSpriteHelper(COIChar* coiChar, int x, int y, int xMax) {
+bool _confineToSpriteHelper(COIChar* coiChar, int x, int y, int xMax, COIString* string) {
   int xOffset = x;
   
   // Words are separated by a space.
@@ -89,7 +98,8 @@ bool _confineToSpriteHelper(COIChar* coiChar, int x, int y, int xMax) {
     xOffset += current->w;
     if (current->value == ' ' || current->next == NULL) {
       if (xOffset > xMax) {
-	return _confineToSpriteHelper(currentWordStart, x, y + current->h, xMax);
+	string->yBottomLine = y + current->h;
+	return _confineToSpriteHelper(currentWordStart, x, y + current->h, xMax, string);
       } else {
 	currentWordStart = current->next;
       }
@@ -106,6 +116,17 @@ void COIStringConfineToSprite(COIString* obj, COISprite* sprite) {
   int yOffset = sprite->_y + COI_PADDING;
   int xOffset = sprite->_x + COI_PADDING;
   int xMax = sprite->_x + (sprite->_width - COI_PADDING);
-  
-  _confineToSpriteHelper(obj->_head, xOffset, yOffset, xMax);
+
+  obj->x = xOffset;
+  obj->y = yOffset;
+  obj->yBottomLine = yOffset;
+  _confineToSpriteHelper(obj->_head, xOffset, yOffset, xMax, obj);
+}
+
+void COIStringPositionBelowString(COIString* below, COIString* above) {
+  // Position string 'below' below string 'above'.
+  // Use the y-position of 'above' as the base.
+  // Do nothing to x-coordinate.
+
+  COIStringSetPos(below, below->x, above->yBottomLine + above->fontSize);
 }

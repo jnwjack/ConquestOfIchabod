@@ -16,8 +16,13 @@ typedef struct PlayerInfo {
   int partySize;
 
   Inventory* inventory;
+
+  unsigned int level;
+  unsigned long xp;
+  unsigned long xpForLevelUp;
 } PlayerInfo;
 
+void playerAddXP(PlayerInfo* info, unsigned long xp);
 PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory);
 void playerInfoDestroy(PlayerInfo* info);
 

@@ -9,6 +9,7 @@
 #include "../player.h"
 #include "BattleBehavior.h"
 #include "Status.h"
+#include "BattleSplash.h"
 
 #define BATTLE_ATTACK 0
 #define BATTLE_TECH 1
@@ -31,17 +32,19 @@
 #define BATTLE_SPRITEMAP_A_BOX 1
 #define BATTLE_SPRITEMAP_E_BOX 0
 #define BATTLE_SPRITEMAP_DESC_BOX 8
+#define BATTLE_SPRITEMAP_SPLASH_BOX 9
 
 typedef enum{
   SS_MOVE_FORWARD,
   SS_TEXT,
-  SS_MOVE_BACKWARDS
+  SS_MOVE_BACKWARDS,
+  SS_SPLASH
 } BattleSceneStage;
 
 typedef enum {
   ACTION_MENU,
   SUB_MENU,
-  ACTORS,
+  ACTORS
 } BattleMenuFocus;
 
 typedef enum {
@@ -101,6 +104,11 @@ typedef struct BattleContext {
   int currentActionIndex; // Action we're currently processing
   BattleSceneStage sceneStage; // Current stage in action processing
   int movementOffset; // How far has actor moved so far?
+
+  // End splash screen, XP gained, new items, progress bar, etc.
+  BattleSplash* splash;
+
+  unsigned long xpYield;
 
   // Data for next board after battle completes
   COIBoard* outside;

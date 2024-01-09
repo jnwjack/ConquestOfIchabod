@@ -11,6 +11,7 @@ typedef struct COIString {
   
   int x;
   int y;
+  int yBottomLine; // Y-coord of lowest line on string. Useful when confining to sprites
   int fontSize;
   bool visible;
 
@@ -23,6 +24,7 @@ void COIStringDraw(COIString* obj, SDL_Renderer* renderer);
 void COIStringSetPos(COIString* obj, int x, int y);
 void COIStringSetVisible(COIString* obj, bool visible);
 void COIStringConfineToSprite(COIString* obj, COISprite* sprite);
+void COIStringPositionBelowString(COIString* below, COIString* above);
 COIString** COIStringCopyList(COIString** src, int size);
 
 #endif

@@ -103,7 +103,9 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->movementOffset = 0;
   context->pInfo = pInfo;
   context->summary = NULL;
-
+  context->splash = NULL;
+  context->xpYield = 35;
+  
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
   context->outsideLoop = outsideLoop;
@@ -120,10 +122,15 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
+
+  
+  COISprite* splashBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
+  splashBox->_autoHandle = false;
+  splashBox->_visible = false;
   
 
   // Enemies, can later randomize number
-  context->numEnemies = 3;
+  context->numEnemies = 1;
 
   // Actions
   context->actions = malloc(sizeof(BattleAction) *
@@ -390,6 +397,18 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
 }
 
+bool _showSplash(BattleContext* context, BattleResult result) {
+  COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
+  context->splash = BattleSplashCreate(context->board,
+				       context->textType,
+				       box,
+				       result == BR_WIN,
+				       context->pInfo->xp,
+				       context->pInfo->xpForLevelUp,
+				       context->xpYield);
+				    
+}
+
 int _countAliveActors(Actor** actors, int numActors) {
   int aliveActors = 0;
   for (int i = 0; i < numActors; i++) {
@@ -479,7 +498,18 @@ void battleHandleSubMenuSelection(BattleContext* context) {
 // Returns true if battle is finished
 BattleResult battleAdvanceScene(BattleContext* context) {
   int numActions = context->numAllies + context->numEnemies;
-  if (context->currentActionIndex >= numActions) {
+  
+  if(context->sceneStage == SS_SPLASH) {
+    // If the splash screen has finished animating
+    if (BattleSplashFinished(context->splash)) {
+      BattleSplashDestroy(context->splash, context->board);
+      context->splash = NULL;
+      return battleFinished(context);
+    } else {
+      BattleSplashAnimate(context->splash);
+      return BR_CONTINUE;
+    }
+  } else if (context->currentActionIndex >= numActions) {
     // We're done processing actions, user can control again
     context->sceneStage = SS_MOVE_FORWARD;
     context->currentActionIndex = 0;
@@ -525,9 +555,16 @@ BattleResult battleAdvanceScene(BattleContext* context) {
 
 	_updateStatuses(context);
 
-	return battleFinished(context);
+	BattleResult res = battleFinished(context);
+	
+	// We're done with the battle, display the splash screen
+	if (res != BR_CONTINUE) {
+	  _showSplash(context, res);
+	  context->sceneStage = SS_SPLASH;
+	}
       }
       break;
+
     default:
       printf("Invalid scene stage.\n");
     }

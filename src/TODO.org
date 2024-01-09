@@ -1,0 +1,4 @@
+* TODO
++ Add guards around #malloc
++ Settle on style conventions
++ DynamicSprites - add 1 by 1

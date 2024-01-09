@@ -29,7 +29,6 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
     break;
   case BR_FLEE:
   case BR_WIN:
-    //COIBoardMoveSprite(board, battleContext->allies[0]->sprite, context->playerOutsideX + 120, );
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
     COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
     battleDestroyBoard(board);

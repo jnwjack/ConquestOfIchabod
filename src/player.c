@@ -7,6 +7,9 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->party = malloc(sizeof(Actor*) * MAX_PARTY_SIZE);
   info->party[0] = actorCreatePlayer(sprite);
   info->partySize = 1;
+  info->level = 1;
+  info->xp = 0;
+  info->xpForLevelUp = 500;
 
   // Copy name from argument
   int nameIndex = 0;
@@ -19,6 +22,19 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->name[nameIndex] = '\0';
 
   return info;
+}
+
+unsigned long _getXPForLevel(unsigned long oldXP) {
+  return oldXP * 1.5;
+}
+
+void playerAddXP(PlayerInfo* info, unsigned long xp) {
+  info->xp += xp;
+  if (info->xp >= info->xpForLevelUp) {
+    info->level++;
+    info->xp -= info->xpForLevelUp;
+    info->xpForLevelUp = _getXPForLevel(info->xpForLevelUp);
+  }
 }
 
 void playerInfoDestroy(PlayerInfo* info) {

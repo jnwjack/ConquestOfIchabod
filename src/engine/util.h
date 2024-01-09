@@ -12,6 +12,8 @@
 #define COI_PADDING 10
 #define COIBOARD_GRID_SIZE 32
 
+//TODO: Linked List
+
 int countLines(const char* filename);
 int generateRandomChar();
 bool generateRandomBoolWeighted(double weight);

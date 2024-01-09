@@ -27,6 +27,8 @@ void COIWindowDestroy(COIWindow* window);
 void COIWindowLoop(COIWindow* window);
 void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop);
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window);
+void COIWindowInit();
 
-
+// Global Window
+extern COIWindow* COI_GLOBAL_WINDOW;
 #endif
