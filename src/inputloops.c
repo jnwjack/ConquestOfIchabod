@@ -210,8 +210,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       townProcessMovementInput(townContext, MOVING_UP);
       break;
     case SDLK_DOWN:
-  
-    townProcessMovementInput(townContext, MOVING_DOWN);
+      townProcessMovementInput(townContext, MOVING_DOWN);
       break;
     }
     break;

@@ -60,6 +60,8 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   actor->hpMax = actor->hp;
   actor->tpMax = actor->tp;
   actor->spMax = actor->sp;
+  actor->movementDirection = MOVING_NONE;
+  actor->nextMovementDirection = MOVING_NONE;
 
   actor->techList = techCreateList(MAX_TECH_COUNT_ALLY);
   techAddToList(actor->techList, TECH_ID_FOCUS);
