@@ -502,6 +502,7 @@ BattleResult battleAdvanceScene(BattleContext* context) {
   if(context->sceneStage == SS_SPLASH) {
     // If the splash screen has finished animating
     if (BattleSplashFinished(context->splash)) {
+      playerAddXP(context->pInfo, context->xpYield);
       BattleSplashDestroy(context->splash, context->board);
       context->splash = NULL;
       return battleFinished(context);
