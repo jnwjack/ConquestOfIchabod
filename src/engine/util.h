@@ -12,7 +12,25 @@
 #define COI_PADDING 10
 #define COIBOARD_GRID_SIZE 32
 
-//TODO: Linked List
+struct LinkedListNode;
+typedef struct LinkedListNode {
+  void* data;
+  struct LinkedListNode* next;
+} LinkedListNode;
+
+typedef struct LinkedList {
+  LinkedListNode* head;
+  LinkedListNode* tail; // Add is O(1)
+  LinkedListNode* cursor; // Used when traversing list
+} LinkedList;
+
+LinkedList* LinkedListCreate();
+void LinkedListAdd(LinkedList* list, void* data);
+void LinkedListRemove(LinkedList* list, void* data);
+void* LinkedListNext(LinkedList* list);
+void LinkedListResetCursor(LinkedList* list);
+void LinkedListDestroy(LinkedList* list);
+
 
 int countLines(const char* filename);
 int generateRandomChar();

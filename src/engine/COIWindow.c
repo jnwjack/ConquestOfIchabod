@@ -66,12 +66,22 @@ void COIWindowLoop(COIWindow* window) {
 	}
       }
 
-      // Draw dynamic sprites
-      for (int i = 0; i < window->_currentBoard->dynSpriteCount; i++) {
-	sprite = window->_currentBoard->dynamicSprites[i];
+      // Draw persistent sprites
+      for (int i = 0; i < window->_currentBoard->perSpriteCount; i++) {
+	sprite = window->_currentBoard->persistentSprites[i];
 	if (sprite->_visible) {
 	  SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
 	}
+      }
+
+      // Draw dynamic sprites
+      LinkedListResetCursor(window->_currentBoard->dynamicSprites);
+      sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
+      while (sprite != NULL) {
+	if (sprite->_visible) {
+	  SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+	}
+	sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
       }
 
       // New method of handling strings

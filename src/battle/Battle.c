@@ -56,7 +56,7 @@ void _updateStatuses(BattleContext* context) {
 }
 
 
-COISprite** _getDynamicSprites(BattleContext* context) {
+COISprite** _getPersistentSprites(BattleContext* context) {
   COISprite** enemySprites = actorGetSpriteList(context->enemies, context->numEnemies);
   COISprite** allySprites = actorGetSpriteList(context->allies, context->numAllies);
 
@@ -158,8 +158,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   _centerActorsInBox(context->enemies, context->numEnemies, eBox);
 
   
-  //COIBoardSetDynamicSprites(board, actorGetSpriteList(context->enemies, context->numEnemies), context->numEnemies);
-  COIBoardSetDynamicSprites(board, _getDynamicSprites(context), context->numEnemies + context->numAllies);
+  COIBoardSetPersistentSprites(board, _getPersistentSprites(context), context->numEnemies + context->numAllies);
   
   _makeStrings(context, pInfo, board);
 

@@ -6,6 +6,7 @@
 #include "../player.h"
 #include "../engine/util.h"
 #include "../engine/COIExtraCollision.h"
+#include "PauseOverlay.h"
 
 // After how many ticks should we check for battle?
 #define TOWN_BATTLE_TICKS 50
@@ -25,6 +26,8 @@ typedef struct TownContext {
   TownTerrain nextGridTerrain;
   int terrainTicks;
   bool willEnterBattle;
+  COITextType* textType;
+  PauseOverlay* pauseOverlay;
   COIBoard* board;
 } TownContext;
 
@@ -32,13 +35,14 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
 
 void townCheckForBattle(TownContext* context);
 void townUpdateTerrain(TownContext* context, int collisionResult);
-void townProcessMovementInput(TownContext* context, int direction);
+void townProcessDirectionalInput(TownContext* context, int direction);
 void townProcessCollisionType(TownContext* context, int collision);
 int townCheckForCollision(TownContext* context);
 void townMovePlayer(TownContext* context);
 bool townShouldCheckForCollision(TownContext* context);
+void townTogglePauseOverlay(TownContext* context);
 
 
-void townDestroyBoard(COIBoard* board);
+void townDestroyBoard(TownContext* context);
 
 #endif

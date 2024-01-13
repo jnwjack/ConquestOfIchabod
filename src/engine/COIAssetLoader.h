@@ -18,5 +18,8 @@ void COIAssetLoaderDestroy(COIAssetLoader* loader);
 
 SDL_Surface* COIAssetLoaderGetAsset(COIAssetLoader* loader, int index);
 COIExtraCollision* COIAssetLoaderGetCollision(COIAssetLoader*, int index);
+void COIAssetLoaderInit();
+
+COIAssetLoader* COI_GLOBAL_LOADER;
 
 #endif

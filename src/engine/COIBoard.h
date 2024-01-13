@@ -28,10 +28,16 @@ typedef struct COIBoard {
 
   // Sprites loaded in via spritemap
   COISprite** _sprites;
-  // Sprites loaded in "on-the-fly"
-  COISprite** dynamicSprites;
   int _spriteCount;
-  int dynSpriteCount;
+
+  // Loaded in "on-the-fly"
+  //COISprite** dynamicSprites;
+  LinkedList* dynamicSprites;
+  
+  // Sprites loaded in dynamically that persist after COIBoard desturction
+  // It'd be better to structure the code so we don't need this
+  COISprite** persistentSprites;
+  int perSpriteCount;
   
   int _shouldDraw;
   void* context;
@@ -49,7 +55,7 @@ void COIBoardDestroy(COIBoard* board);
 
 int COIBoardBGColor(COIBoard* board, int index);
 void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* filename);
-void COIBoardSetDynamicSprites(COIBoard* board, COISprite** sprites, int count);
+void COIBoardSetPersistentSprites(COIBoard* board, COISprite** sprites, int count);
 COISprite** COIBoardGetSprites(COIBoard* board);
 int COIBoardGetSpriteCount(COIBoard* board);
 bool COIBoardShiftFrameX(COIBoard* board, int stride);
@@ -60,6 +66,9 @@ void COIBoardQueueDraw(COIBoard* board); // Request draw for this board
 void COIBoardSetContext(COIBoard* board, void* context);
 void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
 bool COIBoardAddString(COIBoard* board, COIString* string);
+bool COIBoardAddSprite(COIBoard* board, COISprite* sprite);
 void COIBoardRemoveString(COIBoard* board, COIString* string);
+void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite);
+void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite);
 
 #endif

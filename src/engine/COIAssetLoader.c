@@ -1,5 +1,7 @@
 #include "COIAssetLoader.h"
 
+COIAssetLoader* COI_GLOBAL_LOADER = NULL;
+
 COIAssetLoader* COIAssetLoaderCreate() {
   FILE* fp = NULL;
   char* line = NULL;
@@ -97,6 +99,10 @@ SDL_Surface* COIAssetLoaderGetAsset(COIAssetLoader* loader, int index) {
 
 COIExtraCollision* COIAssetLoaderGetCollision(COIAssetLoader* loader, int index) {
   return loader->_extraCollisions[index];
+}
+
+void COIAssetLoaderInit() {
+  COI_GLOBAL_LOADER = COIAssetLoaderCreate();
 }
 
 void COIAssetLoaderDestroy(COIAssetLoader* loader) {

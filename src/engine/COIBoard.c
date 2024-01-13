@@ -14,8 +14,9 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
   board->_frameHeight = 0;
   board->_sprites = NULL;
   board->_spriteCount = 0;
-  board->dynamicSprites = NULL;
-  board->dynSpriteCount = 0;
+  board->persistentSprites = NULL;
+  board->perSpriteCount = 0;
+  board->dynamicSprites = LinkedListCreate();
   board->_shouldDraw = true;
   board->context = NULL;
   // JNW
@@ -46,13 +47,15 @@ void COIBoardDestroy(COIBoard* board) {
     }
     free(board->_sprites);
   }
-  if (board->dynamicSprites != NULL) {
-    for (int i = 0; i < board->dynSpriteCount; i++) {
+  if (board->persistentSprites != NULL) {
+    for (int i = 0; i < board->perSpriteCount; i++) {
       // Dynamic sprites are used elsewhere
-      //free(board->dynamicSprites[i]);
+      //free(board->persistentSprites[i]);
     }
-    free(board->dynamicSprites);
+    free(board->persistentSprites);
   }
+  LinkedListDestroy(board->dynamicSprites);
+  free(board);
 }
 
 int COIBoardBGColor(COIBoard* board, int index) {
@@ -97,16 +100,16 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
   }
 }
 
-void COIBoardSetDynamicSprites(COIBoard* board, COISprite** sprites, int count) {
-  if (board->dynamicSprites != NULL) {
-    for (int i = 0; i < board->dynSpriteCount; i++) {
+void COIBoardSetPersistentSprites(COIBoard* board, COISprite** sprites, int count) {
+  if (board->persistentSprites != NULL) {
+    for (int i = 0; i < board->perSpriteCount; i++) {
       // Dynamic sprites are used elsewhere
-      // free(board->dynamicSprites[i]);
+      // free(board->persistentSprites[i]);
     }
-    free(board->dynamicSprites);
+    free(board->persistentSprites);
   }
-  board->dynamicSprites = sprites;
-  board->dynSpriteCount = count;
+  board->persistentSprites = sprites;
+  board->perSpriteCount = count;
 }
 
 COISprite** COIBoardGetSprites(COIBoard* board) {
@@ -137,8 +140,8 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
     }
   }
   
-  for (int i = 0; i < board->dynSpriteCount; i++) {
-    sprite = board->dynamicSprites[i];
+  for (int i = 0; i < board->perSpriteCount; i++) {
+    sprite = board->persistentSprites[i];
     if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
 	&& ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
       if (sprite->_autoHandle) {
@@ -239,5 +242,13 @@ void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
   
   /*  board->strings = strings;
       board->stringCount = count;*/
+}
+
+void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite) {
+  LinkedListAdd(board->dynamicSprites, (void*)sprite);
+}
+
+void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite) {
+  LinkedListRemove(board->dynamicSprites, (void*)sprite);
 }
 

@@ -77,7 +77,7 @@ void actorDestroy(Actor* actor) {
   free(actor);
 }
 
-// COIBoard expects dynamic sprites as a list of COISprite*
+// COIBoard expects persistent sprites as a list of COISprite*
 COISprite** actorGetSpriteList(Actor** actors, int numActors) {
   COISprite** sprites = malloc(sizeof(COISprite*) * numActors);
   for (int i = 0; i < numActors; i++) {

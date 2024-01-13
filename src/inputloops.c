@@ -201,16 +201,19 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   case SDL_KEYDOWN:
     switch (event->key.keysym.sym) {
     case SDLK_LEFT:
-      townProcessMovementInput(townContext, MOVING_LEFT);
+      townProcessDirectionalInput(townContext, MOVING_LEFT);
       break;
     case SDLK_RIGHT:
-      townProcessMovementInput(townContext, MOVING_RIGHT);
+      townProcessDirectionalInput(townContext, MOVING_RIGHT);
       break;
     case SDLK_UP:
-      townProcessMovementInput(townContext, MOVING_UP);
+      townProcessDirectionalInput(townContext, MOVING_UP);
       break;
     case SDLK_DOWN:
-      townProcessMovementInput(townContext, MOVING_DOWN);
+      townProcessDirectionalInput(townContext, MOVING_DOWN);
+      break;
+    case SDLK_ESCAPE:
+      townTogglePauseOverlay(townContext);
       break;
     }
     break;
@@ -219,7 +222,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
 	(event->key.keysym.sym == SDLK_RIGHT && player->nextMovementDirection == MOVING_RIGHT) ||
 	(event->key.keysym.sym == SDLK_UP && player->nextMovementDirection == MOVING_UP) ||
 	(event->key.keysym.sym == SDLK_DOWN && player->nextMovementDirection == MOVING_DOWN)) {
-      townProcessMovementInput(townContext, MOVING_NONE);
+      townProcessDirectionalInput(townContext, MOVING_NONE);
       board->_shouldDraw = true;
     }
     break;

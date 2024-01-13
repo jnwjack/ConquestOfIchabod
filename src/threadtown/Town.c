@@ -34,9 +34,11 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->terrainTicks = 0;
   context->board = board;
   context->willEnterBattle = false;
-  // Only 1 dynamic sprite: the player
-  COISprite** dynSprites = actorGetSpriteList(context->pInfo->party, 1);
-  COIBoardSetDynamicSprites(board, dynSprites, 1);
+  context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
+  context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board); 
+  // Only 1 persistent sprite: the player
+  COISprite** perSprites = actorGetSpriteList(context->pInfo->party, 1);
+  COIBoardSetPersistentSprites(board, perSprites, 1);
 
   Actor* player = context->pInfo->party[0];
   // Adjust board player is in the center of the screen.
@@ -159,7 +161,7 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
 }
 
 
-void townProcessMovementInput(TownContext* context, int direction) {
+void townProcessDirectionalInput(TownContext* context, int direction) {
   Actor* player = context->pInfo->party[0];
   bool canAcceptInput = player->_stepsLeft == 0;
   _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
@@ -249,10 +251,17 @@ void townMovePlayer(TownContext* context) {
   }
 }
 
+void townTogglePauseOverlay(TownContext* context) {
+  PauseOverlaySetVisible(context->pauseOverlay, !context->pauseOverlay->visible);
+  context->board->_shouldDraw = true;
+}
 
 
-void townDestroyBoard(COIBoard* board) {
-  COIBoardDestroy(board);
+
+void townDestroyBoard(TownContext* context) {
+  PauseOverlayDestroy(context->pauseOverlay, context->board);
+  COIBoardDestroy(context->board);
+  free(context);
 }
 
 

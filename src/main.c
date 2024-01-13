@@ -9,14 +9,15 @@
 #include "threadtown/Town.h"
 
 int main(int argc, char** argv) {
-  // Initialize global window
+  // Initialize global window and asset loader
   COIWindowInit();
+  COIAssetLoaderInit();
   
   // In the future, we can remove COIWindow member variables from structs so
   // we don't have to pass it around all over the place.
   COIWindow* window = COI_GLOBAL_WINDOW;
-  
-  COIAssetLoader* loader = COIAssetLoaderCreate();
+  // Same for COIAssetLoader
+  COIAssetLoader* loader = COI_GLOBAL_LOADER;
 
   // Global item data
   ItemList* itemList = loadItems();
