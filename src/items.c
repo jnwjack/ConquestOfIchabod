@@ -62,6 +62,28 @@ Item* ItemListGetItem(ItemList* list, int index) {
   return &list->items[index];
 }
 
+char* ItemListStringFromItemID(int item) {
+  switch (item) {
+  case ITEM_ID_RUSTY_SWORD:
+    return "Rusty Sword";
+    break;
+  case ITEM_ID_RUSTY_BATTLEAXE:
+    return "Rusty Battleaxe";
+    break;
+  case ITEM_ID_SHABBY_BOW:
+    return "Shabby Bow";
+    break;
+  case ITEM_ID_CRACKED_SHIELD:
+    return "Cracked Shield";
+    break;
+  case ITEM_ID_STRENGTH_POTION:
+    return "Strength Potion";
+    break;
+  default:
+    return "-";
+  }
+}
+
 void ItemListDestroy(ItemList* list) {
   if (list == NULL) {
     return;

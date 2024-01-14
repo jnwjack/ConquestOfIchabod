@@ -24,6 +24,28 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer) {
   return menu;
 }
 
+// Like COIMenuDestroy but also destroy sprites and strings in menu.
+// Assumes sprites are dynamic sprites.
+void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board) {
+  if (menu == NULL) {
+    return;
+  }
+  COISprite* frame = menu->_frame;
+  COIBoardRemoveDynamicSprite(board, frame);
+  COISpriteDestroy(frame);
+  COISprite* pointer = menu->_pointer;
+  COIBoardRemoveDynamicSprite(board, pointer);
+  COISpriteDestroy(pointer);
+  if (menu->_strings != NULL) {
+    for (int i = 0; i < menu->_stringCount; i++) {
+      COIString* str = menu->_strings[i];
+      COIBoardRemoveString(board, str);
+      COIStringDestroy(str);
+    }
+  }
+  COIMenuDestroy(menu);
+}
+
 void COIMenuDestroy(COIMenu* menu) {
   if (menu == NULL) {
     return;
@@ -140,3 +162,23 @@ void COIMenuIncrement(COIMenu* menu, int step) {
 
   COIMenuAdjustFrame(menu);
 }
+
+bool COIMenuHandleInput(COIMenu* menu, int event) {
+  bool selection = false;
+  switch (event) {
+    case MOVING_UP:
+      COIMenuIncrement(menu, -1);
+      COIMenuSetVisible(menu);
+      break;
+    case MOVING_DOWN:
+      COIMenuIncrement(menu, 1);
+      COIMenuSetVisible(menu);
+      break;
+    case MOVING_SELECT:
+      selection = true;
+      break;
+  }
+
+  return selection;
+}
+

@@ -4,6 +4,7 @@
 #include "COISprite.h"
 #include "COIString.h"
 #include "COITextType.h"
+#include "COIBoard.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -29,6 +30,7 @@ typedef struct COIMenu {
 
 COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer);
 void COIMenuDestroy(COIMenu* menu);
+void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board);
 
 void COIMenuSetVisible(COIMenu* menu);
 void COIMenuSetInvisible(COIMenu* menu);
@@ -36,5 +38,6 @@ void COIMenuSetTexts(COIMenu* menu, COIString* stringPointers[], int numIndices)
 void COIMenuAdjustFrame(COIMenu* menu);
 void COIMenuReset(COIMenu* menu);
 void COIMenuIncrement(COIMenu* menu, int step);
+bool COIMenuHandleInput(COIMenu* menu, int event);
 
 #endif

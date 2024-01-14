@@ -1,5 +1,22 @@
 #include "inputloops.h"
 
+// Can extend this to support joystick, etc. later.
+static int _sdlEventToDirectionalInput(SDL_Event* event) {
+  switch (event->key.keysym.sym) {
+  case SDLK_UP:
+    return MOVING_UP;
+  case SDLK_DOWN:
+    return MOVING_DOWN;
+  case SDLK_LEFT:
+    return MOVING_LEFT;
+  case SDLK_RIGHT:
+    return MOVING_RIGHT;
+  case SDLK_SPACE:
+    return MOVING_SELECT;
+  default:
+    return MOVING_NONE;
+  }
+}
 
 bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
   bool selection = false;

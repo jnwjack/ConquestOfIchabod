@@ -162,9 +162,14 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
 
 
 void townProcessDirectionalInput(TownContext* context, int direction) {
-  Actor* player = context->pInfo->party[0];
-  bool canAcceptInput = player->_stepsLeft == 0;
-  _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
+  if (context->pauseOverlay->visible) {
+    PauseOverlayProcessInput(context->pauseOverlay, direction);
+    context->board->_shouldDraw = true;
+  } else {
+    Actor* player = context->pInfo->party[0];
+    //bool canAcceptInput = player->_stepsLeft == 0;
+    _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
+  }
 }
 
 void townProcessCollisionType(TownContext* context, int collision) {

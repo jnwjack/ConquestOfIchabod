@@ -12,12 +12,6 @@
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8
 
-#define MOVING_NONE 0
-#define MOVING_LEFT 1
-#define MOVING_RIGHT 2
-#define MOVING_UP 3
-#define MOVING_DOWN 4
-
 // Holds data about a character in the world
 // Sprite, stats, walking behaviors, etc.
 

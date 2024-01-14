@@ -48,5 +48,6 @@ typedef struct ItemList {
 ItemList* loadItems();
 Item* ItemListGetItem(ItemList* list, int index);
 void ItemListDestroy(ItemList* list);
+char* ItemListStringFromItemID(int item);
 
 #endif

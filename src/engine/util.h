@@ -12,6 +12,13 @@
 #define COI_PADDING 10
 #define COIBOARD_GRID_SIZE 32
 
+#define MOVING_NONE 0
+#define MOVING_LEFT 1
+#define MOVING_RIGHT 2
+#define MOVING_UP 3
+#define MOVING_DOWN 4
+#define MOVING_SELECT 5
+
 struct LinkedListNode;
 typedef struct LinkedListNode {
   void* data;
