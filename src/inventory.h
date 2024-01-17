@@ -26,6 +26,7 @@ Inventory* inventoryCreate(ItemList* items);
 void inventoryDestroy(Inventory* inventory);
 bool inventoryAddItem(Inventory* inventory, int itemID);
 bool inventoryRemoveBackpackItem(Inventory* inventory, int index);
+bool inventoryRemoveBackpackItemFirstInstance(Inventory* inventory, Item* item);
 bool inventoryRemoveEquippedItem(Inventory* inventory, int slot);
 Item** inventoryGetEquippedItems(Inventory* inventory);
 

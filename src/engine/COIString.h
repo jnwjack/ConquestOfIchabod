@@ -25,6 +25,7 @@ void COIStringSetPos(COIString* obj, int x, int y);
 void COIStringSetVisible(COIString* obj, bool visible);
 void COIStringConfineToSprite(COIString* obj, COISprite* sprite);
 void COIStringPositionBelowString(COIString* below, COIString* above);
+void COIStringPositionRightOfString(COIString* right, COIString* left, int space);
 COIString** COIStringCopyList(COIString** src, int size);
 
 #endif

@@ -1,7 +1,6 @@
 #include "Town.h"
 
 int _testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
-  //printf("checking collision...\n");
   // Probably want this to only look  at visible sprites
   int maxSpriteIndex = board->_spriteCount;
   COISprite* currentSprite = NULL;
@@ -172,6 +171,14 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   }
 }
 
+void townProcessSelectionInput(TownContext* context) {
+  if (context->pauseOverlay->visible) {
+    PauseOverlaySelect(context->pauseOverlay);
+    context->board->_shouldDraw = true;
+  }
+}
+
+
 void townProcessCollisionType(TownContext* context, int collision) {
   Actor* player = context->pInfo->party[0];
   switch (collision) {
@@ -210,7 +217,6 @@ int townCheckForCollision(TownContext* context) {
 void townMovePlayer(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   COIBoard* board = context->board;
-  
   int playerCenterX, playerCenterY;
   bool inNextGridCell;
   switch (player->movementDirection) {
@@ -246,6 +252,7 @@ void townMovePlayer(TownContext* context) {
     break;
   }
 
+  
   if (inNextGridCell) {
     townCheckForBattle(context);
   }

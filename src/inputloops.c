@@ -232,6 +232,9 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case SDLK_ESCAPE:
       townTogglePauseOverlay(townContext);
       break;
+    case SDLK_SPACE:
+      townProcessSelectionInput(townContext);
+      break;
     }
     break;
   case SDL_KEYUP:

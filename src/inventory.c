@@ -42,6 +42,19 @@ bool inventoryRemoveBackpackItem(Inventory* inventory, int index) {
   return true;
 }
 
+// Like the above function, but we don't care about the specific index.
+// Just search the list for the index of the
+// first instance of the provided item, then remove it.
+bool inventoryRemoveBackpackItemFirstInstance(Inventory* inventory, Item* item) {
+  for (int i = 0; i < inventory->numBackpackItems; i++) {
+    if (inventory->backpack[i]->id == item->id) {
+      return inventoryRemoveBackpackItem(inventory, i);
+    }
+  }
+
+  return false;
+}
+
 bool inventoryRemoveEquippedItem(Inventory* inventory, int slot) {
   switch (slot) {
   case ITEM_SLOT_WEAPON:

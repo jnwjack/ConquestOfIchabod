@@ -41,8 +41,7 @@ int townCheckForCollision(TownContext* context);
 void townMovePlayer(TownContext* context);
 bool townShouldCheckForCollision(TownContext* context);
 void townTogglePauseOverlay(TownContext* context);
-
-
+void townProcessSelectionInput(TownContext* context);
 void townDestroyBoard(TownContext* context);
 
 #endif

@@ -126,7 +126,29 @@ void COIStringConfineToSprite(COIString* obj, COISprite* sprite) {
 void COIStringPositionBelowString(COIString* below, COIString* above) {
   // Position string 'below' below string 'above'.
   // Use the y-position of 'above' as the base.
-  // Do nothing to x-coordinate.
+  // Use the x-position of 'above' as x for 'below'.
 
-  COIStringSetPos(below, below->x, above->yBottomLine + above->fontSize);
+  COIStringSetPos(below, above->x, above->yBottomLine + above->fontSize);
+}
+
+static int _findRightMostPixel(COIString* string) {
+  COIChar* cur = string->_head;
+  int rightmost = -1;
+  while (cur != NULL) {
+    if (cur->x + cur->w > rightmost) {
+      rightmost = cur->x + cur->w;
+    }
+    cur = cur->next;
+  }
+
+  return rightmost;
+}
+
+void COIStringPositionRightOfString(COIString* right, COIString* left, int space) {
+  // Position 'right' to the right of 'left' with 'space' pixels in between.
+
+  // Need to find the rightmost pixel of 'left'. Add pixels of space after
+  // this.
+  int startingX = _findRightMostPixel(left) + space;
+  COIStringSetPos(right, startingX, right->y);
 }

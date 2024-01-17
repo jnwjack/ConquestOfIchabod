@@ -24,6 +24,7 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 
   actor->movementDirection = MOVING_NONE;
   actor->nextMovementDirection = MOVING_NONE;
+  actor->_speed = 0;
   actor->_stepsLeft = 0;
 
   actor->_ticks = 0;
@@ -45,23 +46,10 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
 }
 
 Actor* actorCreatePlayer(COISprite* sprite) {
-  Actor* actor = malloc(sizeof(Actor));
-  actor->actorType = ACTOR_PLAYER;
-  actor->sprite = sprite;
-  COISpriteSetSheetIndex(actor->sprite, 3, 0);
-
   // Process for random stat generation, maybe specific for each class?
-  actor->atk = 15;
-  actor->def = 10;
-  actor->agi = 8;
-  actor->hp = 25;
-  actor->tp = 10;
-  actor->sp = 30;
-  actor->hpMax = actor->hp;
-  actor->tpMax = actor->tp;
-  actor->spMax = actor->sp;
-  actor->movementDirection = MOVING_NONE;
-  actor->nextMovementDirection = MOVING_NONE;
+  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 15, 10, 8, 25, 10, 30);
+  
+  COISpriteSetSheetIndex(actor->sprite, 3, 0);
 
   actor->techList = techCreateList(MAX_TECH_COUNT_ALLY);
   techAddToList(actor->techList, TECH_ID_FOCUS);
@@ -120,7 +108,6 @@ void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board) {
     actor->_spriteSheetColIndex = (actor->_spriteSheetColIndex + 1) % 4;
     actor->_ticks = 0;
   }
-
   int spriteSheetCol = _spriteSheetOrderCols[actor->_spriteSheetColIndex];
   COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, spriteSheetCol);
   COIBoardMoveSprite(board, actor->sprite, xOffset, yOffset);

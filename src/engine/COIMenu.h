@@ -19,7 +19,9 @@ typedef struct COIMenu {
   int _width;
   int _height;
   COIString** _strings;
+  int* _values;
   int _stringCount;
+  int _maxStrings;
   int _visibleTextCount;
   int _current;
   int _fontSize;
@@ -29,6 +31,7 @@ typedef struct COIMenu {
 }COIMenu;
 
 COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer);
+COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int capacity);
 void COIMenuDestroy(COIMenu* menu);
 void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board);
 
@@ -39,5 +42,8 @@ void COIMenuAdjustFrame(COIMenu* menu);
 void COIMenuReset(COIMenu* menu);
 void COIMenuIncrement(COIMenu* menu, int step);
 bool COIMenuHandleInput(COIMenu* menu, int event);
+bool COIMenuAddString(COIMenu* menu, COIString* string, int val);
+void COIMenuRemoveString(COIMenu* menu, int index, COIBoard* board);
+int COIMenuGetCurrentValue(COIMenu* menu);
 
 #endif

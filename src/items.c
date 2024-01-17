@@ -77,7 +77,7 @@ char* ItemListStringFromItemID(int item) {
     return "Cracked Shield";
     break;
   case ITEM_ID_STRENGTH_POTION:
-    return "Strength Potion";
+    return "STR Potion";
     break;
   default:
     return "-";

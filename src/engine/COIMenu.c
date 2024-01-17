@@ -10,6 +10,8 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer) {
   menu->_height = frame->_height;
   menu->_stringCount = 0;
   menu->_strings = NULL;
+  menu->_values = NULL;
+  menu->_maxStrings = 1000; // Added for new version of COIMenu
   menu->_current = 0;
   menu->_fontSize = 0;
   menu->_visibleTextCount = 0;
@@ -22,6 +24,15 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer) {
   COIMenuAdjustFrame(menu);
 
   return menu;
+}
+
+// New initializer. Trying to get a version of COIMenu where
+// we can add strings one by one instead of all at once.
+COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int capacity) {
+  COIMenu* menu = COIMenuCreate(frame, pointer);
+  menu->_strings = malloc(capacity * sizeof(COIString*));
+  menu->_values = malloc(capacity * sizeof(COIString*));
+  menu->_maxStrings = capacity;
 }
 
 // Like COIMenuDestroy but also destroy sprites and strings in menu.
@@ -94,7 +105,30 @@ void COIMenuSetInvisible(COIMenu* menu) {
   }
 }
 
+static void _updateBoundsAndNumVisibleStrings(COIMenu* menu) {
+  // Update bounds and visible text count to be based off of string fonts.
+  // Using first string in list, assuming all to be same font weight.
+  if (menu->_stringCount > 0) {
+    menu->_fontSize = menu->_strings[0]->fontSize;
+    menu->_visibleTextCount = (menu->_height - COI_MENU_OFFSET_Y) / (menu->_fontSize + COI_PADDING);
+    menu->_upperFrameBound = menu->_visibleTextCount - 1;
+    // Can't have upper bound greater than lower
+    if (menu->_lowerFrameBound > menu->_upperFrameBound) {
+      printf("Error when creating menu\n");
+      free(menu);
+      return;
+    }
+  } else {
+    printf("Setting menu text with zero strings\n");
+    return;
+  }
+
+  // Font size may have changed. Readjust frame.
+  COIMenuAdjustFrame(menu);
+}
+
 void COIMenuSetTexts(COIMenu* menu, COIString** strings, int numStrings) {
+  /*
   // Update bounds and visible text count to be based off of string fonts.
   // Using first string in list, assuming all to be same font weight.
   if (numStrings > 0) {
@@ -111,23 +145,34 @@ void COIMenuSetTexts(COIMenu* menu, COIString** strings, int numStrings) {
     printf("Setting menu text with zero strings\n");
     return;
   }
+  */
+
+  // We don't care about values when using the old way of handling
+  // things.
+  if (menu->_values != NULL) {
+    free(menu->_values);
+    menu->_values = NULL;
+  }
   
   if (menu->_strings != NULL) {
     free(menu->_strings);
   }
   menu->_strings = malloc(numStrings * sizeof(COIString*));
   menu->_stringCount = numStrings;
+  menu->_maxStrings = numStrings;
   for (int i = 0; i < menu->_stringCount; i++) {
     menu->_strings[i] = strings[i];
   }
 
+  _updateBoundsAndNumVisibleStrings(menu);
+
+  // Maybe this isn't needed?
+  /*
   if (menu->_stringCount < menu->_visibleTextCount) {
     menu->_visibleTextCount = menu->_stringCount;
     menu->_upperFrameBound = menu->_visibleTextCount - 1;
   }
-
-  // Font size may have changed. Readjust frame.
-  COIMenuAdjustFrame(menu);
+  */
 }
 
 void COIMenuAdjustFrame(COIMenu* menu) {
@@ -180,5 +225,39 @@ bool COIMenuHandleInput(COIMenu* menu, int event) {
   }
 
   return selection;
+}
+
+// Add string and associated value that's returned when the
+// string is selected
+bool COIMenuAddString(COIMenu* menu, COIString* string, int val) {
+  if (menu->_stringCount >= menu->_maxStrings) {
+    return false;
+  }
+
+  menu->_strings[menu->_stringCount] = string;
+  menu->_values[menu->_stringCount] = val;
+  menu->_stringCount++;
+
+  _updateBoundsAndNumVisibleStrings(menu);
+
+  return true;
+}
+
+void COIMenuRemoveString(COIMenu* menu, int index, COIBoard* board) {
+  COIBoardRemoveString(board, menu->_strings[index]);
+  COIStringDestroy(menu->_strings[index]);
+  for (int i = index; i + 1 < menu->_stringCount; i++) {
+    menu->_strings[i] = menu->_strings[i + 1];
+    menu->_values[i] = menu->_values[i + 1];
+  }
+
+  _updateBoundsAndNumVisibleStrings(menu);
+}
+
+int COIMenuGetCurrentValue(COIMenu* menu) {
+  if (menu->_values != NULL) {
+    return menu->_values[menu->_current];
+  }
+  return -1;
 }
 
