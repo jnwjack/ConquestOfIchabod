@@ -36,7 +36,15 @@ typedef struct PauseOverlay {
   COIMenu* itemsMenu;
   COIMenu* weaponsMenu;
   COIMenu* armorMenu;
-  COIMenu* currentMenu;
+  
+  COIMenu* topRightMenu;
+
+  // Center
+  COIMenu* useItemMenu;
+  COIMenu* equipMenu;
+  COIMenu* unequipMenu;
+  
+  COIMenu* centerMenu;
 
   // Bottom
   COISprite* gearWindow;
@@ -52,6 +60,10 @@ typedef struct PauseOverlay {
   COIString* offHand;
   
   bool visible;
+  bool dirty; // True when we need to rebuild the menus due to changed inventory
+  COITextType* textType;
+  COIBoard* board;
+  PlayerInfo* pInfo;
 } PauseOverlay;
 
 PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBoard* board);

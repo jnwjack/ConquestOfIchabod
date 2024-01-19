@@ -5,7 +5,7 @@ Inventory* createTestInventory(ItemList* items) {
 
   inventory->weapon = ItemListGetItem(items, ITEM_ID_RUSTY_SWORD);
   inventory->offHand = ItemListGetItem(items, ITEM_ID_CRACKED_SHIELD);
-  inventory->head = ItemListGetItem(items, ITEM_ID_UNARMORED_HEAD);
+  inventory->head = ItemListGetItem(items, ITEM_ID_BRONZE_HELM);
   inventory->body = ItemListGetItem(items, ITEM_ID_UNARMORED_BODY);
   inventory->legs = ItemListGetItem(items, ITEM_ID_UNARMORED_LEGS);
 

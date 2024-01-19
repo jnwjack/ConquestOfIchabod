@@ -35,14 +35,23 @@ void LinkedListRemove(LinkedList* list, void* data) {
     list->head = current->next;
     free(current);
   } else {
+    printf("before foo\n");
     LinkedListNode* previous = current;
     current = current->next;
     while (current != NULL) {
+      printf("foo\n");
       if (current->data == data) {
+	if (current == list->tail) {
+	  // If it's the last element, then tail needs to be adjusted.
+	  list->tail = previous;
+	}
 	previous->next = current->next;
 	free(current);
 	return;
       }
+      previous = current;
+      current = current->next;
+      printf("bar\n");
     }
 
     printf("Attempted to remove element from list that is not present in list.\n");

@@ -41,12 +41,14 @@ void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board) {
   if (menu == NULL) {
     return;
   }
+  
   COISprite* frame = menu->_frame;
   COIBoardRemoveDynamicSprite(board, frame);
   COISpriteDestroy(frame);
   COISprite* pointer = menu->_pointer;
   COIBoardRemoveDynamicSprite(board, pointer);
   COISpriteDestroy(pointer);
+  
   if (menu->_strings != NULL) {
     for (int i = 0; i < menu->_stringCount; i++) {
       COIString* str = menu->_strings[i];

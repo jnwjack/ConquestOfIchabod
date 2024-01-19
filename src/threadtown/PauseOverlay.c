@@ -109,10 +109,15 @@ static void _makeItemsMenu(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType
   overlay->weaponsMenu = _makeMenu(board);
   overlay->armorMenu = _makeMenu(board);
   Inventory* inventory = pInfo->inventory;
-  
+
+  printf("items in backpack: %i\n", inventory->numBackpackItems);
+
+  // Items in backpack
   for (int i = 0; i < inventory->numBackpackItems; i++) {
     Item* item = inventory->backpack[i];
+    printf("got item %i\n", i);
     COIString* string = COIStringCreate(ItemListStringFromItemID(item->id), 0, 0, textType);
+    printf("create string %i\n", i);
     COIBoardAddString(board, string);
 
     if (item->type == CONSUMABLE) {
@@ -124,6 +129,39 @@ static void _makeItemsMenu(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType
       COIMenuAddString(overlay->armorMenu, string, i);
     }
   }
+
+  // Equipped items
+  char temp[MAX_STRING_SIZE];
+  if (inventory->head->id != ITEM_ID_UNARMORED_HEAD) {
+    snprintf(temp, MAX_STRING_SIZE, "%s (e)", ItemListStringFromItemID(inventory->head->id));
+    COIString* string = COIStringCreate(temp, 0, 0, textType);
+    COIBoardAddString(board, string);
+    COIMenuAddString(overlay->armorMenu, string, -1);
+  }
+  if (inventory->body->id != ITEM_ID_UNARMORED_BODY) {
+    snprintf(temp, MAX_STRING_SIZE, "%s (e)", ItemListStringFromItemID(inventory->body->id));
+    COIString* string = COIStringCreate(temp, 0, 0, textType);
+    COIBoardAddString(board, string);
+    COIMenuAddString(overlay->armorMenu, string, -1);
+  }
+  if (inventory->legs->id != ITEM_ID_UNARMORED_LEGS) {
+    snprintf(temp, MAX_STRING_SIZE, "%s (e)", ItemListStringFromItemID(inventory->legs->id));
+    COIString* string = COIStringCreate(temp, 0, 0, textType);    
+    COIBoardAddString(board, string);
+    COIMenuAddString(overlay->armorMenu, string, -1);
+  }
+  if (inventory->weapon->id != ITEM_ID_UNARMED) {
+    snprintf(temp, MAX_STRING_SIZE, "%s (e)", ItemListStringFromItemID(inventory->weapon->id));
+    COIString* string = COIStringCreate(temp, 0, 0, textType);        
+    COIBoardAddString(board, string);
+    COIMenuAddString(overlay->weaponsMenu, string, -1);    
+  }
+  if (inventory->offHand->id != ITEM_ID_UNARMED_OFF) {
+    snprintf(temp, MAX_STRING_SIZE, "%s (e)", ItemListStringFromItemID(inventory->offHand->id));
+    COIString* string = COIStringCreate(temp, 0, 0, textType);    
+    COIBoardAddString(board, string);
+    COIMenuAddString(overlay->weaponsMenu, string, -1);    
+  }  
 }
 
 
@@ -182,44 +220,55 @@ static void _makeGearWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
 
 static void _baseMenuSelect(PauseOverlay* overlay) {
   COIMenuSetInvisible(overlay->baseMenu);
-  switch (overlay->currentMenu->_current) {
+  switch (overlay->topRightMenu->_current) {
   case PAUSE_OVERLAY_ITEMS:
-    overlay->currentMenu = overlay->itemsMenu;
+    overlay->topRightMenu = overlay->itemsMenu;
     break;
   case PAUSE_OVERLAY_WEAPONS:
-    overlay->currentMenu = overlay->weaponsMenu;
+    overlay->topRightMenu = overlay->weaponsMenu;
     break;
   case PAUSE_OVERLAY_ARMOR:
-    overlay->currentMenu = overlay->armorMenu;
+    overlay->topRightMenu = overlay->armorMenu;
     break;
   default:
-    overlay->currentMenu = overlay->baseMenu;
+    overlay->topRightMenu = overlay->baseMenu;
   }
-  COIMenuSetVisible(overlay->currentMenu);
+  COIMenuSetVisible(overlay->topRightMenu);
 }
 
 PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBoard* board) {
   // May want to have several separate boxes, not just the single big one
   
   PauseOverlay* overlay = malloc(sizeof(PauseOverlay));
+  overlay->dirty = false;
+  overlay->textType = textType;
+  overlay->board = board;
+  overlay->pInfo = pInfo;
 
   _makeStatWindow(overlay, pInfo, textType, board);
   _makeBaseMenu(overlay, textType, board);
   _makeItemsMenu(overlay, pInfo, textType, board);
   _makeGearWindow(overlay, pInfo, textType, board);
 
-  overlay->currentMenu = overlay->baseMenu;
+  overlay->topRightMenu = overlay->baseMenu;
 
   PauseOverlaySetVisible(overlay, false);
+  
   return overlay;
 }
 
 PauseOverlay* PauseOverlaySelect(PauseOverlay* overlay) {
-  if (overlay->currentMenu == overlay->baseMenu) {
+  if (overlay->topRightMenu == overlay->baseMenu) {
     _baseMenuSelect(overlay);
   } else {
     printf("invalid option\n");
   }
+}
+
+static void _destroySubMenus(PauseOverlay* overlay) {
+  COIMenuDestroyAndFreeComponents(overlay->itemsMenu, overlay->board);
+  COIMenuDestroyAndFreeComponents(overlay->weaponsMenu, overlay->board);
+  COIMenuDestroyAndFreeComponents(overlay->armorMenu, overlay->board);
 }
 
 void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board) {
@@ -279,9 +328,7 @@ void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board) {
   COISpriteDestroy(overlay->gearWindow);
 
   COIMenuDestroyAndFreeComponents(overlay->baseMenu, board);
-  COIMenuDestroyAndFreeComponents(overlay->itemsMenu, board);
-  COIMenuDestroyAndFreeComponents(overlay->weaponsMenu, board);
-  COIMenuDestroyAndFreeComponents(overlay->armorMenu, board);
+  _destroySubMenus(overlay);
 
   free(overlay);
 }
@@ -321,15 +368,23 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
     COIMenuSetInvisible(overlay->baseMenu);
   }
 
+  if (overlay->dirty) {
+    _destroySubMenus(overlay);
+    printf("menus destroyed\n");
+    _makeItemsMenu(overlay, overlay->pInfo, overlay->textType, overlay->board);
+    printf("made items menus\n");
+    overlay->dirty = false;
+  }
+
   // Secondary menus always start out invisible
   COIMenuSetInvisible(overlay->itemsMenu);
   COIMenuSetInvisible(overlay->weaponsMenu);
   COIMenuSetInvisible(overlay->armorMenu);
 
   overlay->visible = visible;
-  overlay->currentMenu = overlay->baseMenu;
+  overlay->topRightMenu = overlay->baseMenu;
 }
 
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
-  COIMenuHandleInput(overlay->currentMenu, event);
+  COIMenuHandleInput(overlay->topRightMenu, event);
 }

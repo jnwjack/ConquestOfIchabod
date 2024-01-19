@@ -66,19 +66,21 @@ char* ItemListStringFromItemID(int item) {
   switch (item) {
   case ITEM_ID_RUSTY_SWORD:
     return "Rusty Sword";
-    break;
   case ITEM_ID_RUSTY_BATTLEAXE:
     return "Rusty Battleaxe";
-    break;
   case ITEM_ID_SHABBY_BOW:
     return "Shabby Bow";
-    break;
   case ITEM_ID_CRACKED_SHIELD:
     return "Cracked Shield";
-    break;
   case ITEM_ID_STRENGTH_POTION:
     return "STR Potion";
     break;
+  case ITEM_ID_BRONZE_HELM:
+    return "Bronze Helm";
+  case ITEM_ID_BRONZE_CHEST:
+    return "Bronze Chestplate";
+  case ITEM_ID_BRONZE_LEGS:
+    return "Bronze Greaves";
   default:
     return "-";
   }

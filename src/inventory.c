@@ -1,4 +1,5 @@
 #include "inventory.h"
+#include <stdio.h>
 
 Inventory* inventoryCreate(ItemList* items) {
   Inventory* inventory = malloc(sizeof(Inventory));
@@ -17,6 +18,7 @@ bool inventoryAddItem(Inventory* inventory, int itemID) {
   if (inventory->numBackpackItems == BACKPACK_SIZE) {
     return false;
   }
+  printf("set item in inventory %i\n", inventory->numBackpackItems);
   inventory->backpack[inventory->numBackpackItems] = ItemListGetItem(inventory->items, itemID);
   inventory->numBackpackItems++;
   return true;

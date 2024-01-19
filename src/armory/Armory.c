@@ -12,9 +12,9 @@ void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int sto
   char buf[MAX_STRING_SIZE];
   if (slot != ITEM_SLOT_NA) {
     // This is an equipped item
-    sprintf(buf, "%i - %s(E)", item->price, _stringFromItemID(itemID));
+    sprintf(buf, "%i - %s(E)", item->price, ItemListStringFromItemID(itemID));
   } else {
-    sprintf(buf, "%i - %s", item->price, _stringFromItemID(itemID));
+    sprintf(buf, "%i - %s", item->price, ItemListStringFromItemID(itemID));
   }
   item->string = COIStringCreate(buf, 0, 0, context->textType);
 }
@@ -122,7 +122,12 @@ void armoryBuyItem(COIBoard* board) {
     COIMenuSetInvisible(context->sellMenu);
     COIMenuSetVisible(context->buyMenu);
     armoryUpdateBoardText(board);
+
+    // Mark down that we need to update our pause menu
+    TownContext* townContext = (TownContext*)context->outsideBoard->context;
+    townContext->pauseOverlay->dirty = true;
   }
+  
   armoryDisableConfirmMenu(context);
 }
 
@@ -147,6 +152,10 @@ void armorySellItem(COIBoard* board) {
     COIMenuReset(context->sellMenu);
     COIMenuSetVisible(context->sellMenu);
     armoryUpdateBoardText(board);
+
+    // Mark down that we need to update our pause menu
+    TownContext* townContext = (TownContext*)context->outsideBoard->context;
+    townContext->pauseOverlay->dirty = true;
   }
   armoryDisableConfirmMenu(context);
 }
@@ -271,8 +280,17 @@ int _priceFromItemID(int item) {
   case ITEM_ID_STRENGTH_POTION:
     return 10;
     break;
+  case ITEM_ID_BRONZE_HELM:
+    return 30;
+    break;
+  case ITEM_ID_BRONZE_CHEST:
+    return 50;
+    break;
+  case ITEM_ID_BRONZE_LEGS:
+    return 30;
+    break;
   default:
-    printf("Error: No valid text ID\n");
+    printf("Error: No valid text ID %i\n", item);
     return -1;
   }
 }
