@@ -172,6 +172,7 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
 }
 
 void townProcessSelectionInput(TownContext* context) {
+  Actor* player = context->pInfo->party[0];
   if (context->pauseOverlay->visible) {
     PauseOverlaySelect(context->pauseOverlay);
     context->board->_shouldDraw = true;
@@ -264,8 +265,11 @@ void townMovePlayer(TownContext* context) {
 }
 
 void townTogglePauseOverlay(TownContext* context) {
-  PauseOverlaySetVisible(context->pauseOverlay, !context->pauseOverlay->visible);
-  context->board->_shouldDraw = true;
+  Actor* player = context->pInfo->party[0];
+  if (player->movementDirection == MOVING_NONE) {
+    PauseOverlaySetVisible(context->pauseOverlay, !context->pauseOverlay->visible);
+    context->board->_shouldDraw = true;
+  }
 }
 
 

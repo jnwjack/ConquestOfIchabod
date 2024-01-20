@@ -12,6 +12,13 @@
 #define PAUSE_OVERLAY_ARMOR   2
 #define PAUSE_OVERLAY_QUIT    3
 
+// Used as return values for equipped items in menus
+#define PAUSE_OVERLAY_WEAPON -1
+#define PAUSE_OVERLAY_OFFHAND -2
+#define PAUSE_OVERLAY_HEAD -3
+#define PAUSE_OVERLAY_BODY -4
+#define PAUSE_OVERLAY_LEGS -5
+
 typedef struct PauseOverlay {
   COISprite* box;
   // Top left
@@ -43,8 +50,6 @@ typedef struct PauseOverlay {
   COIMenu* useItemMenu;
   COIMenu* equipMenu;
   COIMenu* unequipMenu;
-  
-  COIMenu* centerMenu;
 
   // Bottom
   COISprite* gearWindow;
@@ -58,6 +63,8 @@ typedef struct PauseOverlay {
   COIString* weapon;
   COIString* offHandLabel;
   COIString* offHand;
+
+  Item* selectedItem;
   
   bool visible;
   bool dirty; // True when we need to rebuild the menus due to changed inventory

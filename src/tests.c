@@ -10,7 +10,7 @@ Inventory* createTestInventory(ItemList* items) {
   inventory->legs = ItemListGetItem(items, ITEM_ID_UNARMORED_LEGS);
 
   inventory->numBackpackItems = 4;
-  inventory->numEquippedItems = 2;
+  inventory->numEquippedItems = 3;
   
   inventory->backpack[0] = ItemListGetItem(items, ITEM_ID_STRENGTH_POTION);
   inventory->backpack[1] = ItemListGetItem(items, ITEM_ID_SHABBY_BOW);
