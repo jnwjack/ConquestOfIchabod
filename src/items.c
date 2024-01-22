@@ -62,6 +62,10 @@ Item* ItemListGetItem(ItemList* list, int index) {
   return &list->items[index];
 }
 
+int ItemAdjustStat(int baseStat, int itemStrength) {
+  return baseStat * (float)(itemStrength / 10.0);
+}
+
 char* ItemListStringFromItemID(int item) {
   switch (item) {
   case ITEM_ID_RUSTY_SWORD:
@@ -74,7 +78,6 @@ char* ItemListStringFromItemID(int item) {
     return "Cracked Shield";
   case ITEM_ID_STRENGTH_POTION:
     return "STR Potion";
-    break;
   case ITEM_ID_BRONZE_HELM:
     return "Bronze Helm";
   case ITEM_ID_BRONZE_CHEST:
@@ -84,6 +87,11 @@ char* ItemListStringFromItemID(int item) {
   default:
     return "-";
   }
+}
+
+// True if this item represents an unfilled item slot
+bool ItemIsUnarmedItem(Item* item) {
+  return (item->id >= ITEM_ID_UNARMED && item->id <= ITEM_ID_UNARMED_OFF);
 }
 
 void ItemListDestroy(ItemList* list) {

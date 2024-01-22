@@ -18,7 +18,6 @@ bool inventoryAddItem(Inventory* inventory, int itemID) {
   if (inventory->numBackpackItems == BACKPACK_SIZE) {
     return false;
   }
-  printf("set item in inventory %i\n", inventory->numBackpackItems);
   inventory->backpack[inventory->numBackpackItems] = ItemListGetItem(inventory->items, itemID);
   inventory->numBackpackItems++;
   return true;
@@ -98,6 +97,45 @@ bool inventoryRemoveEquippedItem(Inventory* inventory, int slot) {
   return true;
 }
 
+// Equip item and return the item it replaced
+Item* inventoryEquipItem(Inventory* inventory, Item* item) {
+  Item* oldItem;
+  switch (item->slot) {
+  case ITEM_SLOT_WEAPON:
+    oldItem = inventory->weapon;
+    inventory->weapon = item;
+    break;
+  case ITEM_SLOT_OFFHAND:
+    oldItem = inventory->offHand;
+    inventory->offHand = item;
+    break;
+  case ITEM_SLOT_HEAD:
+    oldItem = inventory->head;
+    inventory->head = item;
+    break;
+  case ITEM_SLOT_BODY:
+    oldItem = inventory->body;
+    inventory->body = item;
+    break;
+  case ITEM_SLOT_LEGS:
+    oldItem = inventory->legs;
+    inventory->legs = item;
+    break;
+  }
+
+  // If slot was previously empty and now isn't, we now have 1 more equipped item.
+  if (ItemIsUnarmedItem(oldItem)) {
+    inventory->numEquippedItems++;
+  }
+
+  // Of course, we may have equipped one of these 'empty slot' items, which we mean we have 1 less equipped item
+  if (ItemIsUnarmedItem(item)) {
+    inventory->numEquippedItems--;
+  }
+
+  return oldItem;
+}
+
 Item** inventoryGetEquippedItems(Inventory* inventory) {
   Item** equippedItems = malloc(sizeof(Item*) * inventory->numEquippedItems);
 
@@ -119,5 +157,16 @@ Item** inventoryGetEquippedItems(Inventory* inventory) {
   }
 
   return equippedItems;
+}
+
+int inventoryDEFItemTotalStrength(Inventory* inventory) {
+  int total = (inventory->head->strength +
+	       inventory->body->strength +
+	       inventory->legs->strength);
+  if (inventory->offHand->type == ARMOR) {
+    total += inventory->offHand->strength;
+  }
+
+  return total;
 }
 

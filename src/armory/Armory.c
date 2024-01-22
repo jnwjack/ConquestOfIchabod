@@ -86,7 +86,9 @@ void armoryPopulateSell(ArmoryContext* context) {
   }
   free(equipped);
 
+  printf("before update menu text\n");
   armoryUpdateMenuText(context->sellMenu, context->sellItems, context->numSellItems);
+  printf("after update menu text\n");
 }
 
 // Initialize the "buy" menu items
@@ -95,7 +97,7 @@ void armoryPopulateBuy(ArmoryContext* context) {
     free(context->sellItems);
   }
   
-  context->numBuyItems = 5;
+  context->numBuyItems = 8;
   context->buyItems = malloc(context->numBuyItems * sizeof(ArmoryItem));
 
   for (int i = 0; i < context->numBuyItems; i++) {
@@ -108,6 +110,9 @@ void armoryPopulateBuy(ArmoryContext* context) {
   armorySetItem(context, &context->buyItems[2], ITEM_ID_SHABBY_BOW, 1, false, ITEM_SLOT_NA);
   armorySetItem(context, &context->buyItems[3], ITEM_ID_CRACKED_SHIELD, 1, false, ITEM_SLOT_NA);
   armorySetItem(context, &context->buyItems[4], ITEM_ID_STRENGTH_POTION, 5, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[5], ITEM_ID_BRONZE_HELM, 1, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[6], ITEM_ID_BRONZE_CHEST, 1, false, ITEM_SLOT_NA);
+  armorySetItem(context, &context->buyItems[7], ITEM_ID_BRONZE_LEGS, 1, false, ITEM_SLOT_NA);
 
   armoryUpdateMenuText(context->buyMenu, context->buyItems, context->numBuyItems);
 }
@@ -120,6 +125,7 @@ void armoryBuyItem(COIBoard* board) {
     armoryPopulateSell(context);
     armoryUpdateMoneyString(context);
     COIMenuSetInvisible(context->sellMenu);
+    COIMenuReset(context->buyMenu);
     COIMenuSetVisible(context->buyMenu);
     armoryUpdateBoardText(board);
 
@@ -139,12 +145,14 @@ void armorySellItem(COIBoard* board) {
   bool successful;
   if (item.slot != ITEM_SLOT_NA) {
     // Item is equipped
+    printf("trying to remove equip item...\n");
     successful = inventoryRemoveEquippedItem(context->inventory, item.slot);
   } else {
     // Item is in backpack
     successful = inventoryRemoveBackpackItem(context->inventory, itemIndex);
   }
   if (successful) {
+    printf("removed equipped item!\n");
     context->inventory->money = MIN(MAX_MONEY, context->inventory->money + item.price);
     armoryPopulateSell(context);
     armoryUpdateMoneyString(context);

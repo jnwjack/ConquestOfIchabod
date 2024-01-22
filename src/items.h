@@ -1,8 +1,10 @@
-#include <string.h>
-#include <stdlib.h>
-
 #ifndef ITEMS_H
 #define ITEMS_H
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
 
 #define ITEM_SLOT_WEAPON 0
 #define ITEM_SLOT_HEAD 1
@@ -52,5 +54,11 @@ ItemList* loadItems();
 Item* ItemListGetItem(ItemList* list, int index);
 void ItemListDestroy(ItemList* list);
 char* ItemListStringFromItemID(int item);
+
+// General function for affecting stat values via item
+int ItemAdjustStat(int baseStat, int itemStrength);
+
+bool ItemIsUnarmedItem(Item* item);
+
 
 #endif

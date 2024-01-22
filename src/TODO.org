@@ -1,6 +1,6 @@
 * TODO
-
 + Add guards around #malloc
 + Settle on style conventions
 + All sprites should be handled like DynamicSprites (remove original sprites and persistent sprites)
 + Remove old handleMenuInput function in inputloops.c
++ Can we reduce the number of dynamic allocations?

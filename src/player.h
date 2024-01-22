@@ -26,4 +26,12 @@ void playerAddXP(PlayerInfo* info, unsigned long xp);
 PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory);
 void playerInfoDestroy(PlayerInfo* info);
 
+// Stat values affected by gear
+int playerAdjustedATK(PlayerInfo* info);
+int playerAdjustedDEF(PlayerInfo* info);
+int playerAdjustedAGI(PlayerInfo* info);
+int playerAdjustedHP(PlayerInfo* info);
+int playerAdjustedSP(PlayerInfo* info);
+int playerAdjustedTP(PlayerInfo* info);
+
 #endif

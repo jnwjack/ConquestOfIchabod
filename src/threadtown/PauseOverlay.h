@@ -38,6 +38,16 @@ typedef struct PauseOverlay {
   COIString* defLabel;
   COIString* def;
 
+  // Displays potential change to stats when scrolling through gear
+  COIString* atkChange;
+  COIString* defChange;
+  COIString* agiChange;
+  COIString* hpChange;
+  COIString* spChange;
+  COIString* tpChange;
+  COITextType* posTextType;
+  COITextType* negTextType;
+
   // Top right
   COIMenu* baseMenu;
   COIMenu* itemsMenu;

@@ -29,5 +29,7 @@ bool inventoryRemoveBackpackItem(Inventory* inventory, int index);
 bool inventoryRemoveBackpackItemFirstInstance(Inventory* inventory, Item* item);
 bool inventoryRemoveEquippedItem(Inventory* inventory, int slot);
 Item** inventoryGetEquippedItems(Inventory* inventory);
+Item* inventoryEquipItem(Inventory* inventory, Item* item);
+int inventoryDEFItemTotalStrength(Inventory* inventory);
 
 #endif

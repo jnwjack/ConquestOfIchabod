@@ -113,10 +113,14 @@ static void _updateBoundsAndNumVisibleStrings(COIMenu* menu) {
   if (menu->_stringCount > 0) {
     menu->_fontSize = menu->_strings[0]->fontSize;
     menu->_visibleTextCount = (menu->_height - COI_MENU_OFFSET_Y) / (menu->_fontSize + COI_PADDING);
+    menu->_lowerFrameBound = 0; // JNW - added this line 01/21/2024, seems to fix
+                                // crash due to lowerbound > higherbound?
     menu->_upperFrameBound = menu->_visibleTextCount - 1;
     // Can't have upper bound greater than lower
     if (menu->_lowerFrameBound > menu->_upperFrameBound) {
-      printf("Error when creating menu\n");
+      printf("menu->_lowerFrameBound: %i\n", menu->_lowerFrameBound);
+      printf("menu->_upperFrameBound: %i\n", menu->_upperFrameBound);
+      printf("Error lower frame bound higher than upper frame bound in COIMenu.\n");
       free(menu);
       return;
     }
@@ -252,12 +256,13 @@ void COIMenuRemoveString(COIMenu* menu, int index, COIBoard* board) {
     menu->_strings[i] = menu->_strings[i + 1];
     menu->_values[i] = menu->_values[i + 1];
   }
+  menu->_stringCount--;
 
   _updateBoundsAndNumVisibleStrings(menu);
 }
 
 int COIMenuGetCurrentValue(COIMenu* menu) {
-  if (menu->_values != NULL) {
+  if (menu->_values != NULL && menu->_stringCount > 0) {
     return menu->_values[menu->_current];
   }
   return -1;

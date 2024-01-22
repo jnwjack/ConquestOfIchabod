@@ -37,6 +37,40 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
   }
 }
 
+int playerAdjustedATK(PlayerInfo* info) {
+  Actor* player = info->party[0];
+  Inventory* inventory = info->inventory;
+  return ItemAdjustStat(player->atk, inventory->weapon->strength);
+}
+
+int playerAdjustedDEF(PlayerInfo* info) {
+  Actor* player = info->party[0];
+  Inventory* inventory = info->inventory;
+  int defItemTotal = inventoryDEFItemTotalStrength(inventory);
+  return ItemAdjustStat(player->atk, defItemTotal);
+}
+
+int playerAdjustedAGI(PlayerInfo* info) {
+  Actor* player = info->party[0];
+  return player->agi;
+}
+
+int playerAdjustedHP(PlayerInfo* info) {
+  Actor* player = info->party[0];
+  return player->hp;
+}
+
+int playerAdjustedSP(PlayerInfo* info) {
+  Actor* player = info->party[0];
+  return player->sp;
+}
+
+int playerAdjustedTP(PlayerInfo* info) {
+  Actor* player = info->party[0];
+  return player->tp;
+}
+
+
 void playerInfoDestroy(PlayerInfo* info) {
   inventoryDestroy(info->inventory);
   for (int i = 0; i < info->partySize; i++) {

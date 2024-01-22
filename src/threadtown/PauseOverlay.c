@@ -1,5 +1,175 @@
 #include "PauseOverlay.h"
 
+static void _removeStringIfExists(PauseOverlay* overlay, COIString* string) {
+  if (string != NULL) {
+    COIBoardRemoveString(overlay->board, string);
+    COIStringDestroy(string);
+  }
+}
+
+static void _setStringVisibleIfExists(COIString* string, bool visible) {
+  if (string != NULL) {
+    COIStringSetVisible(string, visible);
+  }
+}
+
+
+static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
+  // We only want to show a stat change if the item isn't equipped.
+  if (menuValue >= 0) {
+    Inventory* inventory = overlay->pInfo->inventory;
+    Item* item = inventory->backpack[menuValue];
+    char temp[MAX_STRING_SIZE];
+    
+    // Temporarily 'equip' the item so we can see how it would affect stats.
+    int oldHP = playerAdjustedHP(overlay->pInfo);
+    int oldSP = playerAdjustedSP(overlay->pInfo);
+    int oldTP = playerAdjustedTP(overlay->pInfo);
+    int oldATK = playerAdjustedATK(overlay->pInfo);
+    int oldDEF = playerAdjustedDEF(overlay->pInfo);
+    int oldAGI = playerAdjustedAGI(overlay->pInfo);
+    Item* oldItem = inventoryEquipItem(inventory, item);
+    int newHP = playerAdjustedHP(overlay->pInfo);
+    int newSP = playerAdjustedSP(overlay->pInfo);
+    int newTP = playerAdjustedTP(overlay->pInfo);
+    int newATK = playerAdjustedATK(overlay->pInfo);
+    int newDEF = playerAdjustedDEF(overlay->pInfo);
+    int newAGI = playerAdjustedAGI(overlay->pInfo);    
+    inventoryEquipItem(inventory, oldItem);
+
+    // We should only display a stat change string if there's an actual stat change.
+    if (newHP != oldHP) {
+      _removeStringIfExists(overlay, overlay->hpChange);
+      snprintf(temp, MAX_STRING_SIZE, "%i", newHP);
+      overlay->atkChange = COIStringCreate(temp, 0, 0,
+					   newHP > oldHP ? overlay->posTextType : overlay->negTextType);
+      COIStringConfineToSprite(overlay->hpChange, overlay->statWindow);
+      COIStringPositionBelowString(overlay->hpChange, overlay->class);
+      COIStringPositionRightOfString(overlay->hpChange, overlay->hp, 10);
+      COIBoardAddString(overlay->board, overlay->hpChange);
+      _setStringVisibleIfExists(overlay->hpChange, true);      
+    } else {
+      _setStringVisibleIfExists(overlay->hpChange, false);
+    }
+
+    if (newSP != oldSP) {
+      _removeStringIfExists(overlay, overlay->spChange);
+      snprintf(temp, MAX_STRING_SIZE, "%i", newSP);
+      overlay->atkChange = COIStringCreate(temp, 0, 0,
+					   newSP > oldSP ? overlay->posTextType : overlay->negTextType);
+      COIStringConfineToSprite(overlay->spChange, overlay->statWindow);
+      COIStringPositionBelowString(overlay->spChange, overlay->hp);
+      COIStringPositionRightOfString(overlay->spChange, overlay->sp, 10);
+      COIBoardAddString(overlay->board, overlay->spChange);
+      _setStringVisibleIfExists(overlay->spChange, true);      
+    } else {
+      _setStringVisibleIfExists(overlay->spChange, false);
+    }
+
+    if (newTP != oldTP) {
+      _removeStringIfExists(overlay, overlay->tpChange);
+      snprintf(temp, MAX_STRING_SIZE, "%i", newTP);
+      overlay->atkChange = COIStringCreate(temp, 0, 0,
+					   newTP > oldTP ? overlay->posTextType : overlay->negTextType);
+      COIStringConfineToSprite(overlay->tpChange, overlay->statWindow);
+      COIStringPositionBelowString(overlay->tpChange, overlay->sp);
+      COIStringPositionRightOfString(overlay->tpChange, overlay->tp, 10);
+      COIBoardAddString(overlay->board, overlay->tpChange);
+      _setStringVisibleIfExists(overlay->tpChange, true);      
+    } else {
+      _setStringVisibleIfExists(overlay->tpChange, false);
+    }
+
+    if (newATK != oldATK) {
+      _removeStringIfExists(overlay, overlay->atkChange);
+      snprintf(temp, MAX_STRING_SIZE, "%i", newATK);
+      overlay->atkChange = COIStringCreate(temp, 0, 0,
+					   newATK > oldATK ? overlay->posTextType : overlay->negTextType);
+      COIStringConfineToSprite(overlay->atkChange, overlay->statWindow);
+      COIStringPositionBelowString(overlay->atkChange, overlay->tp);
+      COIStringPositionRightOfString(overlay->atkChange, overlay->atk, 10);
+      COIBoardAddString(overlay->board, overlay->atkChange);
+      _setStringVisibleIfExists(overlay->atkChange, true);      
+    } else {
+      _setStringVisibleIfExists(overlay->atkChange, false);
+    }
+
+    if (newDEF != oldDEF) {
+      _removeStringIfExists(overlay, overlay->defChange);
+      snprintf(temp, MAX_STRING_SIZE, "%i", newDEF);
+      overlay->defChange = COIStringCreate(temp, 0, 0,
+					   newDEF > oldDEF ? overlay->posTextType : overlay->negTextType);
+      COIStringConfineToSprite(overlay->defChange, overlay->statWindow);
+      COIStringPositionBelowString(overlay->defChange, overlay->atk);
+      COIStringPositionRightOfString(overlay->defChange, overlay->def, 10);
+      COIBoardAddString(overlay->board, overlay->defChange);
+      _setStringVisibleIfExists(overlay->defChange, true);
+    } else {
+      _setStringVisibleIfExists(overlay->defChange, false);
+    }
+
+    if (newAGI != oldAGI) {
+      _removeStringIfExists(overlay, overlay->agiChange);
+      snprintf(temp, MAX_STRING_SIZE, "%i", newAGI);
+      overlay->defChange = COIStringCreate(temp, 0, 0,
+					   newAGI > oldAGI ? overlay->posTextType : overlay->negTextType);
+      COIStringConfineToSprite(overlay->agiChange, overlay->statWindow);
+      COIStringPositionBelowString(overlay->agiChange, overlay->def);
+      COIStringPositionRightOfString(overlay->agiChange, overlay->agi, 10);
+      COIBoardAddString(overlay->board, overlay->defChange);
+      _setStringVisibleIfExists(overlay->agiChange, true);
+    } else {
+      _setStringVisibleIfExists(overlay->agiChange, false);
+    }
+
+  } else {
+    // Item is equipped. No visible change strings.
+    _setStringVisibleIfExists(overlay->hpChange, false);
+    _setStringVisibleIfExists(overlay->spChange, false);
+    _setStringVisibleIfExists(overlay->tpChange, false);
+    _setStringVisibleIfExists(overlay->atkChange, false);
+    _setStringVisibleIfExists(overlay->defChange, false);
+    _setStringVisibleIfExists(overlay->agiChange, false);
+  }
+}
+
+
+static void _makeStatStrings(PauseOverlay* overlay) {
+  Actor* player = overlay->pInfo->party[0];
+  char temp[MAX_STRING_SIZE];
+  
+  snprintf(temp, MAX_STRING_SIZE, "%i/%i", player->hp, player->hpMax);  
+  overlay->hp = COIStringCreate(temp, 0, 0, overlay->textType);
+  COIStringPositionBelowString(overlay->hp, overlay->class);
+  COIStringPositionRightOfString(overlay->hp, overlay->hpLabel, 50);
+  COIBoardAddString(overlay->board, overlay->hp);
+
+  snprintf(temp, MAX_STRING_SIZE, "%i/%i", player->sp, player->spMax);
+  overlay->sp = COIStringCreate(temp, 0, 0, overlay->textType);
+  COIStringPositionBelowString(overlay->sp, overlay->hp);
+  COIBoardAddString(overlay->board, overlay->sp);
+
+  snprintf(temp, MAX_STRING_SIZE, "%i/%i", player->tp, player->tpMax);
+  overlay->tp = COIStringCreate(temp, 0, 0, overlay->textType);
+  COIStringPositionBelowString(overlay->tp, overlay->sp);
+  COIBoardAddString(overlay->board, overlay->tp);
+
+  snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedATK(overlay->pInfo));
+  overlay->atk = COIStringCreate(temp, 0, 0, overlay->textType);
+  COIStringPositionBelowString(overlay->atk, overlay->tp);
+  COIBoardAddString(overlay->board, overlay->atk);
+
+  snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedDEF(overlay->pInfo));
+  overlay->def = COIStringCreate(temp, 0, 0, overlay->textType);
+  COIStringPositionBelowString(overlay->def, overlay->atk);
+  COIBoardAddString(overlay->board, overlay->def);
+
+  snprintf(temp, MAX_STRING_SIZE, "%i", player->agi);
+  overlay->agi = COIStringCreate(temp, 0, 0, overlay->textType);
+  COIStringPositionBelowString(overlay->agi, overlay->def);
+  COIBoardAddString(overlay->board, overlay->agi);
+}
+
 static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType* textType, COIBoard* board) {
   Actor* player = pInfo->party[0];
   
@@ -23,56 +193,33 @@ static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
   COIStringConfineToSprite(overlay->hpLabel, overlay->statWindow);
   COIStringPositionBelowString(overlay->hpLabel, overlay->class);
   COIBoardAddString(board, overlay->hpLabel);
-  snprintf(temp, MAX_STRING_SIZE, "%i / %i", player->hp, player->hpMax);
-  overlay->hp = COIStringCreate(temp, 0, 0, textType);
-  COIStringPositionBelowString(overlay->hp, overlay->class);
-  COIStringPositionRightOfString(overlay->hp, overlay->hpLabel, 50);
-  COIBoardAddString(board, overlay->hp);
 
   overlay->spLabel = COIStringCreate("SP:", 0, 0, textType);
   COIStringConfineToSprite(overlay->spLabel, overlay->statWindow);
   COIStringPositionBelowString(overlay->spLabel, overlay->hpLabel);
   COIBoardAddString(board, overlay->spLabel);
-  snprintf(temp, MAX_STRING_SIZE, "%i / %i", player->sp, player->spMax);
-  overlay->sp = COIStringCreate(temp, 0, 0, textType);
-  COIStringPositionBelowString(overlay->sp, overlay->hp);
-  COIBoardAddString(board, overlay->sp);
 
   overlay->tpLabel = COIStringCreate("TP:", 0, 0, textType);
   COIStringConfineToSprite(overlay->tpLabel, overlay->statWindow);
   COIStringPositionBelowString(overlay->tpLabel, overlay->spLabel);
   COIBoardAddString(board, overlay->tpLabel);
-  snprintf(temp, MAX_STRING_SIZE, "%i / %i", player->tp, player->tpMax);
-  overlay->tp = COIStringCreate(temp, 0, 0, textType);
-  COIStringPositionBelowString(overlay->tp, overlay->sp);
-  COIBoardAddString(board, overlay->tp);
-
+  
   overlay->atkLabel = COIStringCreate("ATK:", 0, 0, textType);
   COIStringConfineToSprite(overlay->atkLabel, overlay->statWindow);
   COIStringPositionBelowString(overlay->atkLabel, overlay->tpLabel);
   COIBoardAddString(board, overlay->atkLabel);
-  snprintf(temp, MAX_STRING_SIZE, "%i", player->atk);
-  overlay->atk = COIStringCreate(temp, 0, 0, textType);
-  COIStringPositionBelowString(overlay->atk, overlay->tp);
-  COIBoardAddString(board, overlay->atk);
   
   overlay->defLabel = COIStringCreate("DEF:", 0, 0, textType);
   COIStringConfineToSprite(overlay->defLabel, overlay->statWindow);
   COIStringPositionBelowString(overlay->defLabel, overlay->atkLabel);
   COIBoardAddString(board, overlay->defLabel);
-  snprintf(temp, MAX_STRING_SIZE, "%i", player->def);
-  overlay->def = COIStringCreate(temp, 0, 0, textType);
-  COIStringPositionBelowString(overlay->def, overlay->atk);
-  COIBoardAddString(board, overlay->def);
   
   overlay->agiLabel = COIStringCreate("AGI:", 0, 0, textType);
   COIStringConfineToSprite(overlay->agiLabel, overlay->statWindow);
   COIStringPositionBelowString(overlay->agiLabel, overlay->defLabel);
   COIBoardAddString(board, overlay->agiLabel);
-  snprintf(temp, MAX_STRING_SIZE, "%i", player->agi);
-  overlay->agi = COIStringCreate(temp, 0, 0, textType);
-  COIStringPositionBelowString(overlay->agi, overlay->def);
-  COIBoardAddString(board, overlay->agi);
+
+  _makeStatStrings(overlay);
 }
 
 static COIMenu* _makeTopRightMenu(COIBoard* board) {
@@ -110,14 +257,10 @@ static void _makeItemsMenu(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType
   overlay->armorMenu = _makeTopRightMenu(board);
   Inventory* inventory = pInfo->inventory;
 
-  printf("items in backpack: %i\n", inventory->numBackpackItems);
-
   // Items in backpack
   for (int i = 0; i < inventory->numBackpackItems; i++) {
     Item* item = inventory->backpack[i];
-    printf("got item %i\n", i);
     COIString* string = COIStringCreate(ItemListStringFromItemID(item->id), 0, 0, textType);
-    printf("create string %i\n", i);
     COIBoardAddString(board, string);
 
     if (item->type == CONSUMABLE) {
@@ -247,6 +390,27 @@ static void _makeGearWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
   COIBoardAddString(board, overlay->legs);
 }
 
+static void _destroyStatStrings(PauseOverlay* overlay) {
+  COIBoardRemoveString(overlay->board, overlay->atk);
+  COIStringDestroy(overlay->atk);
+  overlay->atk = NULL;
+  COIBoardRemoveString(overlay->board, overlay->def);
+  COIStringDestroy(overlay->def);
+  overlay->def = NULL;
+  COIBoardRemoveString(overlay->board, overlay->agi);
+  COIStringDestroy(overlay->agi);
+  overlay->agi = NULL;
+  COIBoardRemoveString(overlay->board, overlay->hp);
+  COIStringDestroy(overlay->hp);
+  overlay->hp = NULL;
+  COIBoardRemoveString(overlay->board, overlay->sp);
+  COIStringDestroy(overlay->sp);
+  overlay->sp = NULL;
+  COIBoardRemoveString(overlay->board, overlay->tp);
+  COIStringDestroy(overlay->tp);
+  overlay->tp = NULL;
+}
+
 static void _updateGearString(PauseOverlay* overlay, int slot) {
   COIString* oldString;
   Inventory* inventory = overlay->pInfo->inventory;
@@ -293,9 +457,11 @@ static void _baseMenuSelect(PauseOverlay* overlay) {
     break;
   case PAUSE_OVERLAY_WEAPONS:
     overlay->topRightMenu = overlay->weaponsMenu;
+    _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
     break;
   case PAUSE_OVERLAY_ARMOR:
     overlay->topRightMenu = overlay->armorMenu;
+    _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
     break;
   default:
     overlay->topRightMenu = overlay->baseMenu;
@@ -356,6 +522,22 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
   overlay->board = board;
   overlay->pInfo = pInfo;
   overlay->selectedItem = NULL;
+  overlay->atkChange = NULL;
+  overlay->defChange = NULL;
+  overlay->agiChange = NULL;
+  overlay->hpChange = NULL;
+  overlay->spChange = NULL;
+  overlay->tpChange = NULL;
+ 
+
+  // Used to show how an item will affect the player's stats.
+  overlay->posTextType = COITextTypeCreate(textType->fontSize,
+						    0, 255, 0,
+						    COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  overlay->negTextType = COITextTypeCreate(textType->fontSize,
+						    255, 0, 0,
+						    COIWindowGetRenderer(COI_GLOBAL_WINDOW));						    
+						    
 
   _makeStatWindow(overlay, pInfo, textType, board);
   _makeBaseMenu(overlay, textType, board);
@@ -394,6 +576,7 @@ static void _destroyConfirmMenus(PauseOverlay* overlay) {
   COIMenuDestroyAndFreeComponents(overlay->unequipMenu, overlay->board);
 }
 
+
 void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board) {
   // Stat Window
   COIBoardRemoveString(board, overlay->name);
@@ -402,28 +585,17 @@ void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board) {
   COIStringDestroy(overlay->class);
   COIBoardRemoveString(board, overlay->hpLabel);
   COIStringDestroy(overlay->hpLabel);
-  COIBoardRemoveString(board, overlay->hp);
-  COIStringDestroy(overlay->hp);
   COIBoardRemoveString(board, overlay->spLabel);
   COIStringDestroy(overlay->spLabel);
-  COIBoardRemoveString(board, overlay->sp);
-  COIStringDestroy(overlay->sp);
   COIBoardRemoveString(board, overlay->tpLabel);
   COIStringDestroy(overlay->tpLabel);
-  COIBoardRemoveString(board, overlay->tp);
-  COIStringDestroy(overlay->tp);  
   COIBoardRemoveString(board, overlay->atkLabel);
   COIStringDestroy(overlay->atkLabel);
-  COIBoardRemoveString(board, overlay->atk);
-  COIStringDestroy(overlay->atk);
   COIBoardRemoveString(board, overlay->agiLabel);
   COIStringDestroy(overlay->agiLabel);
-  COIBoardRemoveString(board, overlay->agi);
-  COIStringDestroy(overlay->agi);
   COIBoardRemoveString(board, overlay->defLabel);
   COIStringDestroy(overlay->defLabel);
-  COIBoardRemoveString(board, overlay->def);
-  COIStringDestroy(overlay->def);
+  _destroyStatStrings(overlay);
   COIBoardRemoveDynamicSprite(board, overlay->statWindow);
   COISpriteDestroy(overlay->statWindow);
 
@@ -446,13 +618,23 @@ void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board) {
   COIBoardRemoveString(board, overlay->offHandLabel);
   COIStringDestroy(overlay->offHandLabel);
   COIBoardRemoveString(board, overlay->offHand);
-  COIStringDestroy(overlay->offHand);
+  COIStringDestroy(overlay->offHand);  
   COIBoardRemoveDynamicSprite(board, overlay->gearWindow);
   COISpriteDestroy(overlay->gearWindow);
 
   COIMenuDestroyAndFreeComponents(overlay->baseMenu, board);
   _destroySubMenus(overlay);
   _destroyConfirmMenus(overlay);
+
+  _removeStringIfExists(overlay, overlay->atkChange);
+  _removeStringIfExists(overlay, overlay->defChange);
+  _removeStringIfExists(overlay, overlay->agiChange);
+  _removeStringIfExists(overlay, overlay->hpChange);
+  _removeStringIfExists(overlay, overlay->spChange);
+  _removeStringIfExists(overlay, overlay->tpChange);
+
+  COITextTypeDestroy(overlay->posTextType);
+  COITextTypeDestroy(overlay->negTextType);
 
   free(overlay);
 }
@@ -503,6 +685,10 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
     _updateGearString(overlay, ITEM_SLOT_BODY);
     _updateGearString(overlay, ITEM_SLOT_LEGS);
     overlay->dirty = false;
+
+    // Update stats
+    _destroyStatStrings(overlay);
+    _makeStatStrings(overlay);
   }
 
   // Secondary menus always start out invisible
@@ -513,10 +699,31 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
   COIMenuSetInvisible(overlay->equipMenu);
   COIMenuSetInvisible(overlay->unequipMenu);
 
+  // Stat change string starts out invisible because we don't start out looking at items.
+  _setStringVisibleIfExists(overlay->atkChange, false);
+  _setStringVisibleIfExists(overlay->defChange, false);
+  _setStringVisibleIfExists(overlay->agiChange, false);
+  _setStringVisibleIfExists(overlay->hpChange, false);
+  _setStringVisibleIfExists(overlay->spChange, false);
+  _setStringVisibleIfExists(overlay->tpChange, false);
+
   overlay->visible = visible;
   overlay->topRightMenu = overlay->baseMenu;
 }
 
+
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
+  int valueBefore = COIMenuGetCurrentValue(overlay->topRightMenu);
   COIMenuHandleInput(overlay->topRightMenu, event);
+  int valueAfter = COIMenuGetCurrentValue(overlay->topRightMenu);
+  
+  // Only update stat change string if we're in the weapons or armor menu. Only these types of items
+  // affect stats.
+  // Also only update stat change string if we've moved to a different item in the menu.
+  if ((overlay->topRightMenu == overlay->weaponsMenu ||
+       overlay->topRightMenu == overlay->armorMenu) &&
+      (valueBefore != valueAfter)) {
+    _updateStatChanges(overlay, valueAfter);
+  }
+
 }
