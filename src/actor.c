@@ -20,7 +20,11 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   actor->tpMax = tp;
   actor->spMax = sp;
 
-  actor->techList = techCreateList(MAX_TECH_COUNT_NPC);
+  if (actor->actorType == ACTOR_PLAYER) {
+    actor->techList = techCreateList(MAX_TECH_COUNT_ALLY);
+  } else {
+    actor->techList = techCreateList(MAX_TECH_COUNT_NPC);
+  }
 
   actor->movementDirection = MOVING_NONE;
   actor->nextMovementDirection = MOVING_NONE;
@@ -50,8 +54,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 15, 10, 8, 25, 10, 30);
   
   COISpriteSetSheetIndex(actor->sprite, 3, 0);
-
-  actor->techList = techCreateList(MAX_TECH_COUNT_ALLY);
+  
   techAddToList(actor->techList, TECH_ID_FOCUS);
   techAddToList(actor->techList, TECH_ID_COUNTER);
   techAddToList(actor->techList, TECH_ID_BRACE);

@@ -98,6 +98,11 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
     board->_sprites[i] = sprite;
     i++;
   }
+
+  if (line) {
+    free(line);
+  }
+  fclose(fp);
 }
 
 void COIBoardSetPersistentSprites(COIBoard* board, COISprite** sprites, int count) {

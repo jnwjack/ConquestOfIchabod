@@ -219,36 +219,36 @@ void townMovePlayer(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   COIBoard* board = context->board;
   int playerCenterX, playerCenterY;
-  bool inNextGridCell;
+  bool inNextGridCell = false;
   switch (player->movementDirection) {
-    case MOVING_LEFT:
-      inNextGridCell = townContinueMovement(player, context->board);
-      playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
-      if (playerCenterX <= board->_frameWidth / 2) {
-        COIBoardShiftFrameX(board, -1 * TOWN_MOVE_SPEED);
-      }
-      break;
-    case MOVING_RIGHT:
-      inNextGridCell = townContinueMovement(player, context->board);
-      playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
-      if (playerCenterX >= board->_frameWidth / 2) {
-        COIBoardShiftFrameX(board, TOWN_MOVE_SPEED);
-      }
-      break;
-    case MOVING_UP:
-      inNextGridCell = townContinueMovement(player, context->board);
-      playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
-      if (playerCenterY <= board->_frameHeight / 2) {
-        COIBoardShiftFrameY(board, -1 * TOWN_MOVE_SPEED);
-      }
-      break;
-    case MOVING_DOWN:
-      inNextGridCell = townContinueMovement(player, context->board);
-      playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
-      if (playerCenterY >= board->_frameHeight / 2) {
-        COIBoardShiftFrameY(board, TOWN_MOVE_SPEED);
-      }
-      break;
+  case MOVING_LEFT:
+    inNextGridCell = townContinueMovement(player, context->board);
+    playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
+    if (playerCenterX <= board->_frameWidth / 2) {
+      COIBoardShiftFrameX(board, -1 * TOWN_MOVE_SPEED);
+    }
+    break;
+  case MOVING_RIGHT:
+    inNextGridCell = townContinueMovement(player, context->board);
+    playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
+    if (playerCenterX >= board->_frameWidth / 2) {
+      COIBoardShiftFrameX(board, TOWN_MOVE_SPEED);
+    }
+    break;
+  case MOVING_UP:
+    inNextGridCell = townContinueMovement(player, context->board);
+    playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
+    if (playerCenterY <= board->_frameHeight / 2) {
+      COIBoardShiftFrameY(board, -1 * TOWN_MOVE_SPEED);
+    }
+    break;
+  case MOVING_DOWN:
+    inNextGridCell = townContinueMovement(player, context->board);
+    playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
+    if (playerCenterY >= board->_frameHeight / 2) {
+      COIBoardShiftFrameY(board, TOWN_MOVE_SPEED);
+    }
+    break;
   default:
     break;
   }

@@ -37,16 +37,17 @@ COIAssetLoader* COIAssetLoaderCreate() {
     }
     i++;
   }
-
-  fclose(fp);
+  
   if (line) {
     free(line);
   }
+  fclose(fp);
 
   int assetID, tlX, tlY, brX, brY, ret;
   COIExtraCollision* collision;
-  FILE* fpCol;
+  FILE* fpCol =  NULL;
   char* lineCol = NULL;
+  len = 0;
   fpCol = fopen(collisionsFilename, "r");
   if (fpCol == NULL) {
     free(loader);
@@ -54,17 +55,19 @@ COIAssetLoader* COIAssetLoaderCreate() {
     free(collisions);
     return NULL;
   }
-  
-  while (getline(&lineCol, &len, fpCol) != -1) {
-    line[strcspn(lineCol, "\n")] = '\0';
 
+    
+  while (getline(&lineCol, &len, fpCol) != -1) {
+    lineCol[strcspn(lineCol, "\n")] = '\0';
+
+    
     assetID = atoi(strtok(lineCol, " "));
     tlX = atoi(strtok(NULL, " "));
     tlY = atoi(strtok(NULL, " "));
     brX = atoi(strtok(NULL, " "));
     brY = atoi(strtok(NULL, " "));
     ret = atoi(strtok(NULL, " "));
-
+    
     if (assetID >= assetCount) {
       printf("Error loading collisions: asset ID is out of range.\n");
       continue;
@@ -80,15 +83,14 @@ COIAssetLoader* COIAssetLoaderCreate() {
     collisions[assetID] = collision;
   }
   
-  fclose(fpCol);
   if (lineCol) {
     free(lineCol);
   }
+  fclose(fpCol);
 
   loader->_assets = surfaces;
   loader->_assetCount = assetCount;
   loader->_extraCollisions = collisions;
-  
   
   return loader;
 }

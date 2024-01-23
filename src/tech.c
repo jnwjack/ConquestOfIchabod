@@ -31,7 +31,7 @@ Tech* techCreate(int id) {
 }
 
 TechList* techCreateList(int maxCount) {
-  TechList* list = malloc(sizeof(TechList*));
+  TechList* list = malloc(sizeof(TechList));
   list->techs = malloc(sizeof(Tech*) * maxCount);
   list->count = 0;
   list->maxCount = maxCount;

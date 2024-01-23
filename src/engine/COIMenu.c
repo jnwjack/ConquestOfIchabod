@@ -31,7 +31,7 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer) {
 COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int capacity) {
   COIMenu* menu = COIMenuCreate(frame, pointer);
   menu->_strings = malloc(capacity * sizeof(COIString*));
-  menu->_values = malloc(capacity * sizeof(COIString*));
+  menu->_values = malloc(capacity * sizeof(int));
   menu->_maxStrings = capacity;
 }
 

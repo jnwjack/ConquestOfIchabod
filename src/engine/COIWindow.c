@@ -20,17 +20,14 @@ COIWindow* COIWindowCreate() {
 
 void COIWindowDestroy(COIWindow* window) {
   IMG_Quit();
-  
   SDL_DestroyRenderer(window->_renderer);
   SDL_DestroyWindow(window->_screen);
 
   SDL_Quit();
-
+  
   TTF_Quit();
 
-  if (window != NULL) {
-    free(window);
-  }
+  free(window);
 }
 
 void COIWindowLoop(COIWindow* window) {

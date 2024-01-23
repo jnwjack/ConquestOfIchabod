@@ -15,6 +15,7 @@ COIChar* COICharCreate(char c, int x, int y, COITextType* textType) {
   str[1] = '\0';
   SDL_Surface* surface = TTF_RenderText_Solid(textType->font, (const char*)&str, textType->color);
   obj->texture = SDL_CreateTextureFromSurface(textType->renderer, surface);
+  SDL_FreeSurface(surface);
 
   SDL_QueryTexture(obj->texture, NULL, NULL, &obj->w, &obj->h);
   obj->drawRect->x = x;
