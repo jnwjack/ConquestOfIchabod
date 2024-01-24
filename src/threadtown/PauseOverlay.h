@@ -88,6 +88,6 @@ void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board);
 
 void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible);
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event);
-PauseOverlay* PauseOverlaySelect(PauseOverlay* overlay);
+void PauseOverlaySelect(PauseOverlay* overlay);
 
 #endif

@@ -92,10 +92,10 @@ switch (id) {
 }
 
 // Destructors ---------------------------------
-Tech* techDestroy(Tech* tech) {
+void techDestroy(Tech* tech) {
   free(tech);
 }
-TechList* techDestroyList(TechList* list) {
+void techDestroyList(TechList* list) {
   for (int i = 0; i < list->count; i++) {
     techDestroy(list->techs[i]);
   }

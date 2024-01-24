@@ -552,7 +552,7 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
   return overlay;
 }
 
-PauseOverlay* PauseOverlaySelect(PauseOverlay* overlay) {
+void PauseOverlaySelect(PauseOverlay* overlay) {
   if (overlay->topRightMenu == overlay->baseMenu) {
     _baseMenuSelect(overlay);
   } else if (overlay->topRightMenu == overlay->itemsMenu ||

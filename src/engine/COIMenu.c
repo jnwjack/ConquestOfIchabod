@@ -33,6 +33,8 @@ COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int cap
   menu->_strings = malloc(capacity * sizeof(COIString*));
   menu->_values = malloc(capacity * sizeof(int));
   menu->_maxStrings = capacity;
+
+  return menu;
 }
 
 // Like COIMenuDestroy but also destroy sprites and strings in menu.

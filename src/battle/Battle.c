@@ -1,13 +1,13 @@
 #include "Battle.h"
 #include "../actor.h"
 
-int _getNumStrings(BattleContext* context) {
+static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
 
   return count;
 }
 
-COIString** _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* board) {
+static void _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* board) {
   context->numStrings = _getNumStrings(context);
   
   COIString** allStrings = malloc(sizeof(COIString*) * context->numStrings);
@@ -49,14 +49,14 @@ COIString** _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
   COIBoardSetStrings(board, allStrings, context->numStrings);
 }
 
-void _updateStatuses(BattleContext* context) {
+static void _updateStatuses(BattleContext* context) {
   for (int i = 0; i < context->numAllies; i++) {
     AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
   }
 }
 
 
-COISprite** _getPersistentSprites(BattleContext* context) {
+static COISprite** _getPersistentSprites(BattleContext* context) {
   COISprite** enemySprites = actorGetSpriteList(context->enemies, context->numEnemies);
   COISprite** allySprites = actorGetSpriteList(context->allies, context->numAllies);
 
@@ -75,7 +75,7 @@ COISprite** _getPersistentSprites(BattleContext* context) {
   return allSprites;
 }
 
-void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
+static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
   int boxCenterX = box->_x + box->_width / 2;
   for (int i = 0; i < numAllies; i++) {
     COISprite* actor = allies[i]->sprite;
@@ -184,7 +184,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 }
 
 // Adjust pointer sprite coords to be pointing at targeted actor
-void _adjustPointer(BattleContext* context) {
+static void _adjustPointer(BattleContext* context) {
   Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
   
   COISprite* target =  actors[context->targetedActorIndex]->sprite;
@@ -195,13 +195,13 @@ void _adjustPointer(BattleContext* context) {
   COISpriteSetPos(pointer, newX, newY);
 }
 
-COISprite* _toggleTargetNameVisibility(BattleContext* context, bool visible) {
+static void _toggleTargetNameVisibility(BattleContext* context, bool visible) {
   COIString** names = context->pointingAtEnemies ? context->enemyNames : context->allyNames;
   COIString* name = names[context->targetedActorIndex];
   COIStringSetVisible(name, visible);
 }
 
-int _getIndexAfterOffset(int index, int offset, int n) {
+static int _getIndexAfterOffset(int index, int offset, int n) {
   // Loop around if we need to
   int newTargetIndex = index + offset;
   if (newTargetIndex < 0) {
@@ -396,7 +396,7 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
 }
 
-bool _showSplash(BattleContext* context, BattleResult result) {
+static void _showSplash(BattleContext* context, BattleResult result) {
   COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
   context->splash = BattleSplashCreate(context->board,
 				       context->textType,
@@ -408,7 +408,7 @@ bool _showSplash(BattleContext* context, BattleResult result) {
 				    
 }
 
-int _countAliveActors(Actor** actors, int numActors) {
+static int _countAliveActors(Actor** actors, int numActors) {
   int aliveActors = 0;
   for (int i = 0; i < numActors; i++) {
     if (!actorIsDead(actors[i])) {

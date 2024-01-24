@@ -37,8 +37,8 @@ typedef struct TechList {
 
 Tech* techCreate(int id);
 TechList* techCreateList(int maxCount);
-Tech* techDestroy(Tech* tech);
-TechList* techDestroyList(TechList* list);
+void techDestroy(Tech* tech);
+void techDestroyList(TechList* list);
 
 void techAddToList(TechList* list, int id);
 char* techNameFromID(int id);
