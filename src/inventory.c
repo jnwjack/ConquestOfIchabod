@@ -18,7 +18,13 @@ bool inventoryAddItem(Inventory* inventory, int itemID) {
   if (inventory->numBackpackItems == BACKPACK_SIZE) {
     return false;
   }
-  inventory->backpack[inventory->numBackpackItems] = ItemListGetItem(inventory->items, itemID);
+  
+  Item* item = ItemListGetItem(inventory->items, itemID);
+  if (ItemIsUnarmedItem(item)) {
+    return false;
+  }
+  
+  inventory->backpack[inventory->numBackpackItems] = item;
   inventory->numBackpackItems++;
   return true;
 }

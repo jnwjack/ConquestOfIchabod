@@ -19,6 +19,7 @@ typedef struct COIWindow {
   int _height;
   COILoop _loop;
   void* _loopContext;
+  bool shouldQuit;
 }COIWindow;
 
 COIWindow* COIWindowCreate();

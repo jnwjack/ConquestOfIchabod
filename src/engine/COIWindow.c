@@ -15,6 +15,7 @@ COIWindow* COIWindowCreate() {
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
+  window->shouldQuit = false;
   return window;
 }
 
@@ -31,17 +32,16 @@ void COIWindowDestroy(COIWindow* window) {
 }
 
 void COIWindowLoop(COIWindow* window) {
-  bool quit = false;
   SDL_Event event;
   bool shouldDraw = true;
 
-  while (!quit){
+  while (!window->shouldQuit){
     SDL_Delay(20);
     SDL_PollEvent(&event);
 
     switch (event.type){
       case SDL_QUIT:
-	      quit = true;
+	      window->shouldQuit = true;
 	      break;
       default:
 	if (window->_loop) {

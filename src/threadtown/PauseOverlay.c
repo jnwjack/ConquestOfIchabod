@@ -13,6 +13,11 @@ static void _setStringVisibleIfExists(COIString* string, bool visible) {
   }
 }
 
+static void _destroySubMenus(PauseOverlay* overlay) {
+  COIMenuDestroyAndFreeComponents(overlay->itemsMenu, overlay->board);
+  COIMenuDestroyAndFreeComponents(overlay->weaponsMenu, overlay->board);
+  COIMenuDestroyAndFreeComponents(overlay->armorMenu, overlay->board);
+}
 
 static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
   // We only want to show a stat change if the item isn't equipped.
@@ -334,6 +339,14 @@ static void _makeConfirmMenus(PauseOverlay* overlay) {
   cancel = COIStringCreate("Cancel\0", 0, 0, overlay->textType);
   COIBoardAddString(overlay->board, cancel);
   COIMenuAddString(overlay->unequipMenu, cancel, 1);
+
+  overlay->quitMenu = _makeTopRightMenu(overlay->board);
+  primary = COIStringCreate("I'm Sure\0", 0, 0, overlay->textType);
+  COIBoardAddString(overlay->board, primary);
+  COIMenuAddString(overlay->quitMenu, primary, 0);
+  cancel = COIStringCreate("Cancel\0", 0, 0, overlay->textType);
+  COIBoardAddString(overlay->board, cancel);
+  COIMenuAddString(overlay->quitMenu, cancel, 1);
 }
 
 
@@ -463,6 +476,9 @@ static void _baseMenuSelect(PauseOverlay* overlay) {
     overlay->topRightMenu = overlay->armorMenu;
     _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
     break;
+  case PAUSE_OVERLAY_QUIT:
+    overlay->topRightMenu = overlay->quitMenu;
+    break;
   default:
     overlay->topRightMenu = overlay->baseMenu;
   }
@@ -513,9 +529,54 @@ static void _subMenuSelect(PauseOverlay* overlay) {
   COIMenuSetVisible(overlay->topRightMenu);
 }
 
+static void _quitMenuSelect(PauseOverlay* overlay) {
+  if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
+    COI_GLOBAL_WINDOW->shouldQuit = true;
+  }
+}
+
+static void _equipMenuSelect(PauseOverlay* overlay) {
+  if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
+    Inventory* inventory = overlay->pInfo->inventory;
+    inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
+    Item* oldItem = inventoryEquipItem(inventory, overlay->selectedItem);
+    inventoryAddItem(inventory, oldItem->id);
+
+    _destroySubMenus(overlay);
+    _makeItemsMenu(overlay, overlay->pInfo, overlay->textType, overlay->board);
+    COIMenuSetInvisible(overlay->itemsMenu);
+    COIMenuSetInvisible(overlay->weaponsMenu);
+    COIMenuSetInvisible(overlay->armorMenu);
+    _destroyStatStrings(overlay);
+    _makeStatStrings(overlay);
+    _updateGearString(overlay, overlay->selectedItem->slot);
+    // A bit hacky with the second argument, but we know we want to turn the stat strings off.
+    _updateStatChanges(overlay, -1);
+  } 
+}
+
+static void _unequipMenuSelect(PauseOverlay* overlay) {
+  if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
+    Inventory* inventory = overlay->pInfo->inventory;
+    inventoryRemoveEquippedItem(inventory, overlay->selectedItem->slot);
+    inventoryAddItem(inventory, overlay->selectedItem->id);
+
+    _destroySubMenus(overlay);
+    _makeItemsMenu(overlay, overlay->pInfo, overlay->textType, overlay->board);
+    COIMenuSetInvisible(overlay->itemsMenu);
+    COIMenuSetInvisible(overlay->weaponsMenu);
+    COIMenuSetInvisible(overlay->armorMenu);
+    _destroyStatStrings(overlay);
+    _makeStatStrings(overlay);
+    _updateGearString(overlay, overlay->selectedItem->slot);
+    _updateStatChanges(overlay, -1);
+  }
+}
+
+
+
 PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBoard* board) {
   // May want to have several separate boxes, not just the single big one
-  
   PauseOverlay* overlay = malloc(sizeof(PauseOverlay));
   overlay->dirty = false;
   overlay->textType = textType;
@@ -559,21 +620,23 @@ void PauseOverlaySelect(PauseOverlay* overlay) {
 	     overlay->topRightMenu == overlay->weaponsMenu ||
 	     overlay->topRightMenu == overlay->armorMenu) {
     _subMenuSelect(overlay);
+  } else if (overlay->topRightMenu == overlay->quitMenu) {
+    _quitMenuSelect(overlay);
+  } else if (overlay->topRightMenu == overlay->equipMenu) {
+    _equipMenuSelect(overlay);
+  } else if (overlay->topRightMenu == overlay->unequipMenu) {
+    _unequipMenuSelect(overlay);
   } else {
-    printf("invalid option\n");
+    printf("wack\n");
   }
 }
 
-static void _destroySubMenus(PauseOverlay* overlay) {
-  COIMenuDestroyAndFreeComponents(overlay->itemsMenu, overlay->board);
-  COIMenuDestroyAndFreeComponents(overlay->weaponsMenu, overlay->board);
-  COIMenuDestroyAndFreeComponents(overlay->armorMenu, overlay->board);
-}
 
 static void _destroyConfirmMenus(PauseOverlay* overlay) {
   COIMenuDestroyAndFreeComponents(overlay->useItemMenu, overlay->board);
   COIMenuDestroyAndFreeComponents(overlay->equipMenu, overlay->board);
   COIMenuDestroyAndFreeComponents(overlay->unequipMenu, overlay->board);
+  COIMenuDestroyAndFreeComponents(overlay->quitMenu, overlay->board);
 }
 
 
@@ -698,6 +761,7 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
   COIMenuSetInvisible(overlay->useItemMenu);
   COIMenuSetInvisible(overlay->equipMenu);
   COIMenuSetInvisible(overlay->unequipMenu);
+  COIMenuSetInvisible(overlay->quitMenu);
 
   // Stat change string starts out invisible because we don't start out looking at items.
   _setStringVisibleIfExists(overlay->atkChange, false);

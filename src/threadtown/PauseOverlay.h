@@ -60,6 +60,7 @@ typedef struct PauseOverlay {
   COIMenu* useItemMenu;
   COIMenu* equipMenu;
   COIMenu* unequipMenu;
+  COIMenu* quitMenu;
 
   // Bottom
   COISprite* gearWindow;
