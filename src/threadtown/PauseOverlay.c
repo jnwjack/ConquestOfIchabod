@@ -308,7 +308,11 @@ static void _makeItemsMenu(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType
     snprintf(temp, MAX_STRING_SIZE, "%s (e)", ItemListStringFromItemID(inventory->offHand->id));
     COIString* string = COIStringCreate(temp, 0, 0, textType);    
     COIBoardAddString(board, string);
-    COIMenuAddString(overlay->weaponsMenu, string, PAUSE_OVERLAY_OFFHAND);    
+    if (inventory->offHand->type == WEAPON) {
+      COIMenuAddString(overlay->weaponsMenu, string, PAUSE_OVERLAY_OFFHAND);    
+    } else {
+      COIMenuAddString(overlay->armorMenu, string, PAUSE_OVERLAY_OFFHAND);    
+    }
   }  
 }
 
@@ -529,10 +533,29 @@ static void _subMenuSelect(PauseOverlay* overlay) {
   COIMenuSetVisible(overlay->topRightMenu);
 }
 
+static void _returnToBaseMenu(PauseOverlay* overlay) {
+  COIMenuSetInvisible(overlay->topRightMenu);
+  overlay->topRightMenu = overlay->baseMenu;
+  COIMenuSetVisible(overlay->topRightMenu);
+}
+
 static void _quitMenuSelect(PauseOverlay* overlay) {
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     COI_GLOBAL_WINDOW->shouldQuit = true;
+  } else {
+    _returnToBaseMenu(overlay);
   }
+}
+
+static void _returnToEquipableMenu(PauseOverlay* overlay) {
+  COIMenuSetInvisible(overlay->topRightMenu);
+  if (overlay->selectedItem->type == ARMOR) {
+    overlay->topRightMenu = overlay->armorMenu;
+  } else {
+    overlay->topRightMenu = overlay->weaponsMenu;
+  }
+  _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));  
+  COIMenuSetVisible(overlay->topRightMenu);
 }
 
 static void _equipMenuSelect(PauseOverlay* overlay) {
@@ -552,7 +575,9 @@ static void _equipMenuSelect(PauseOverlay* overlay) {
     _updateGearString(overlay, overlay->selectedItem->slot);
     // A bit hacky with the second argument, but we know we want to turn the stat strings off.
     _updateStatChanges(overlay, -1);
-  } 
+  }
+  
+  _returnToEquipableMenu(overlay);
 }
 
 static void _unequipMenuSelect(PauseOverlay* overlay) {
@@ -571,6 +596,8 @@ static void _unequipMenuSelect(PauseOverlay* overlay) {
     _updateGearString(overlay, overlay->selectedItem->slot);
     _updateStatChanges(overlay, -1);
   }
+
+  _returnToEquipableMenu(overlay);
 }
 
 
@@ -628,6 +655,15 @@ void PauseOverlaySelect(PauseOverlay* overlay) {
     _unequipMenuSelect(overlay);
   } else {
     printf("wack\n");
+  }
+}
+
+void PauseOverlayBack(PauseOverlay* overlay) {
+  if ((overlay->topRightMenu == overlay->equipMenu) ||
+      (overlay->topRightMenu == overlay->unequipMenu)) {
+    _returnToEquipableMenu(overlay);
+  } else if (overlay->topRightMenu != overlay->baseMenu) {
+    _returnToBaseMenu(overlay);
   }
 }
 
@@ -777,17 +813,20 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
 
 
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
-  int valueBefore = COIMenuGetCurrentValue(overlay->topRightMenu);
-  COIMenuHandleInput(overlay->topRightMenu, event);
-  int valueAfter = COIMenuGetCurrentValue(overlay->topRightMenu);
+  if (event == MOVING_LEFT) {
+    PauseOverlayBack(overlay);
+  } else {
+    int valueBefore = COIMenuGetCurrentValue(overlay->topRightMenu);
+    COIMenuHandleInput(overlay->topRightMenu, event);
+    int valueAfter = COIMenuGetCurrentValue(overlay->topRightMenu);
   
-  // Only update stat change string if we're in the weapons or armor menu. Only these types of items
-  // affect stats.
-  // Also only update stat change string if we've moved to a different item in the menu.
-  if ((overlay->topRightMenu == overlay->weaponsMenu ||
-       overlay->topRightMenu == overlay->armorMenu) &&
-      (valueBefore != valueAfter)) {
-    _updateStatChanges(overlay, valueAfter);
+    // Only update stat change string if we're in the weapons or armor menu. Only these types of items
+    // affect stats.
+    // Also only update stat change string if we've moved to a different item in the menu.
+    if ((overlay->topRightMenu == overlay->weaponsMenu ||
+	 overlay->topRightMenu == overlay->armorMenu) &&
+	(valueBefore != valueAfter)) {
+      _updateStatChanges(overlay, valueAfter);
+    }
   }
-
 }
