@@ -188,7 +188,7 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
   }
   va_end(list);
   
-  return summary;;
+  return summary;
 }
 
 void ActionSummaryAdvance(ActionSummary* summary) {
