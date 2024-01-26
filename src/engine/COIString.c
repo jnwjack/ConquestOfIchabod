@@ -32,6 +32,9 @@ COIString* COIStringCreate(char* string, int x, int y, COITextType* textType) {
     c = string[i];
   }
 
+  obj->_typingAnimationHead = obj->_head;
+  obj->_typingAnimationTicks = 0;
+
   return obj;
 }
 
@@ -151,4 +154,20 @@ void COIStringPositionRightOfString(COIString* right, COIString* left, int space
   // this.
   int startingX = _findRightMostPixel(left) + space;
   COIStringSetPos(right, startingX, right->y);
+}
+
+// Continue the typing animation. If we're done, return true.
+// When calling this, the string should start out invisible.
+bool COIStringAnimateTyping(COIString* string) {
+  if (string->_typingAnimationHead == NULL) {
+    return true;
+  }
+  string->visible = true; // Regardless of where we are in animation, we say the string is visible
+  string->_typingAnimationTicks++;
+  if (string->_typingAnimationTicks >= TYPING_TICKS_PER_CHAR) {
+    string->_typingAnimationHead->visible = true;
+    string->_typingAnimationHead = string->_typingAnimationHead->next;
+    string->_typingAnimationTicks = 0;
+  }
+  return false;
 }

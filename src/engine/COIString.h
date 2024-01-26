@@ -5,9 +5,12 @@
 #include "COISprite.h"
 
 #define MAX_STRING_SIZE 100
+#define TYPING_TICKS_PER_CHAR 3
 
 typedef struct COIString {
   COIChar* _head;
+  COIChar* _typingAnimationHead; // Most recent visible COIChar
+  int _typingAnimationTicks;
   
   int x;
   int y;
@@ -26,6 +29,7 @@ void COIStringSetVisible(COIString* obj, bool visible);
 void COIStringConfineToSprite(COIString* obj, COISprite* sprite);
 void COIStringPositionBelowString(COIString* below, COIString* above);
 void COIStringPositionRightOfString(COIString* right, COIString* left, int space);
+bool COIStringAnimateTyping(COIString* string);
 COIString** COIStringCopyList(COIString** src, int size);
 
 #endif

@@ -34,7 +34,8 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->board = board;
   context->willEnterBattle = false;
   context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
-  context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board); 
+  context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board);
+  context->textBox = TextBoxCreate(context->board, context->textType);
   // Only 1 persistent sprite: the player
   COISprite** perSprites = actorGetSpriteList(context->pInfo->party, 1);
   COIBoardSetPersistentSprites(board, perSprites, 1);
@@ -171,10 +172,25 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   }
 }
 
+bool _nextToActor(Actor* player, Actor** actors) {
+  return true;
+}
+
 void townProcessSelectionInput(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   if (context->pauseOverlay->visible) {
     PauseOverlaySelect(context->pauseOverlay);
+    context->board->_shouldDraw = true;
+  } else if (context->textBox->box->_visible) {
+    // Advance text box
+    TextBoxNextString(context->textBox);
+    context->board->_shouldDraw = true;
+  } else if (_nextToActor(NULL, NULL)) {
+    TextBoxSetStrings(context->textBox,
+		      "This is the first string",
+		      "Hi! How are you?",
+		      "The quick brown fox jumps over the lazy dog.",
+		      NULL);
     context->board->_shouldDraw = true;
   }
 }
@@ -213,6 +229,13 @@ int townCheckForCollision(TownContext* context) {
   }
 
   return COI_NO_COLLISION;
+}
+
+void townTick(TownContext* context) {
+  if (context->textBox->box->_visible && !context->textBox->currentStringDone) {
+    TextBoxAnimate(context->textBox);
+    context->board->_shouldDraw = true;
+  }
 }
 
 void townMovePlayer(TownContext* context) {
@@ -276,6 +299,7 @@ void townTogglePauseOverlay(TownContext* context) {
 
 void townDestroyBoard(TownContext* context) {
   PauseOverlayDestroy(context->pauseOverlay, context->board);
+  TextBoxDestroy(context->textBox);
   COIBoardDestroy(context->board);
   free(context);
 }

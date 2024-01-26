@@ -8,10 +8,14 @@ typedef struct TextBox {
   COISprite* box;
   COIBoard* board;
   COITextType* textType;
+  COIString* currentString;
+  bool currentStringDone;
 } TextBox;
 
 TextBox* TextBoxCreate(COIBoard* board, COITextType* textType);
 void TextBoxSetStrings(TextBox* textBox, char* firstString, ...);
+void TextBoxAnimate(TextBox* textBox);
+void TextBoxNextString(TextBox* textBox);
 void TextBoxDestroy(TextBox* textBox);
 
 #endif

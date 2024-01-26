@@ -269,6 +269,9 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   
   townMovePlayer(townContext);
 
+  // Handle other tasks (moving NPCs, animating text)
+  townTick(townContext);
+
   if (townContext->willEnterBattle) {
     COIBoard* armory = battleCreateBoard(townContext->window,
 					 board->loader,

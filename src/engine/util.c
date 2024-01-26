@@ -33,6 +33,10 @@ void LinkedListRemove(LinkedList* list, void* data) {
     return;
   } else if (current->data == data) {
     list->head = current->next;
+    if (current == list->tail) {
+      // If tail = head (1 element)
+      list->tail = current->next;
+    }
     free(current);
   } else {
     LinkedListNode* previous = current;
