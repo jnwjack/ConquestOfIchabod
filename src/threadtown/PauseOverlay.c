@@ -182,7 +182,7 @@ static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
 						   COI_GLOBAL_LOADER,
 						   5,
 						   COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  overlay->statWindow->_autoHandle = true;
+  overlay->statWindow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, overlay->statWindow);
   overlay->name = COIStringCreate(pInfo->name, 0, 0, textType);
   overlay->class = COIStringCreate("Fighter", 0, 0, textType);
@@ -359,7 +359,7 @@ static void _makeGearWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
 						   COI_GLOBAL_LOADER,
 						   5,
 						   COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  overlay->gearWindow->_autoHandle = true;
+  overlay->gearWindow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, overlay->gearWindow);
 
 

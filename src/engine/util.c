@@ -109,3 +109,8 @@ bool generateRandomBoolWeighted(double weight) {
   return generateRandomChar() <= low;
 }
 
+// Randomly pick between left, right, up, or down
+int generateRandomDirectionalMovement() {
+  return (generateRandomChar() % 4) + 1;
+}
+

@@ -44,6 +44,9 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_SKELETON:
     sprite = COISpriteCreateFromAssetID(x, y, 64, 64, loader, 1, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
+  case ACTOR_CHAGGAI:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   }
 
   return NULL;

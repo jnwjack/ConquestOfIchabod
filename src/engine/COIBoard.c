@@ -125,40 +125,39 @@ int COIBoardGetSpriteCount(COIBoard* board) {
   return board->_spriteCount;
 }
 
+void _adjustSprite(COIBoard* board, COISprite* sprite, int farEdgeX, int farEdgeY) {
+  if (sprite->_autoHandle) {
+    if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
+	  && ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
+	sprite->_drawRect->x = sprite->_x - board->_frameX;
+	sprite->_drawRect->y = sprite->_y - board->_frameY;
+	sprite->_visible = true;
+    } else {
+      sprite->_visible = false;
+    }
+  }
+}
+
 void COIBoardUpdateSpriteVisibility(COIBoard* board) {
   int farEdgeX = board->_frameX + board->_frameWidth;
   int farEdgeY = board->_frameY + board->_frameHeight;
-  COISprite* sprite = NULL;
+
+  // Static sprites
   for (int i = 0; i < board->_spriteCount; i++) {
-    sprite = board->_sprites[i];
-    if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
-	&& ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
-      if (sprite->_autoHandle) {
-	sprite->_visible = true;
-      }
-      sprite->_drawRect->x = sprite->_x - board->_frameX;
-      sprite->_drawRect->y = sprite->_y - board->_frameY;
-    } else {
-      if (sprite->_autoHandle) {
-	sprite->_visible = false;
-      }
-    }
+    _adjustSprite(board, board->_sprites[i], farEdgeX, farEdgeY);
   }
-  
+
+  // Persistent sprites
   for (int i = 0; i < board->perSpriteCount; i++) {
-    sprite = board->persistentSprites[i];
-    if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
-	&& ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
-      if (sprite->_autoHandle) {
-	sprite->_visible = true;
-      }
-      sprite->_drawRect->x = sprite->_x - board->_frameX;
-      sprite->_drawRect->y = sprite->_y - board->_frameY;
-    } else {
-      if (sprite->_autoHandle) {
-	sprite->_visible = false;
-      }
-    }
+    _adjustSprite(board, board->persistentSprites[i], farEdgeX, farEdgeY);
+  }
+
+  // Dynamic sprites
+  LinkedListResetCursor(board->dynamicSprites);
+  COISprite* sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
+  while (sprite != NULL) {
+    _adjustSprite(board, sprite, farEdgeX, farEdgeY);
+    sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
   }
 }
 

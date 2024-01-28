@@ -4,7 +4,7 @@ COIString* COIStringCreate(char* string, int x, int y, COITextType* textType) {
   COIString* obj = malloc(sizeof(COIString));
 
   obj->fontSize = textType->fontSize;
-  obj->visible = false;
+  obj->visible = true;
   obj->index = -1;
   obj->x = x;
   obj->y = y;

@@ -1,7 +1,8 @@
 #include "Town.h"
 
-int _testForCollision(COIBoard* board, COISprite* player, int changeX, int changeY) {
-  // Probably want this to only look  at visible sprites
+int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
+  // Probably want this to only look at visible sprites
+  COIBoard* board = context->board;
   int maxSpriteIndex = board->_spriteCount;
   COISprite* currentSprite = NULL;
   int i;
@@ -9,16 +10,69 @@ int _testForCollision(COIBoard* board, COISprite* player, int changeX, int chang
   for (i = 0; i < maxSpriteIndex; i++) {
     currentSprite = board->_sprites[i];
     collisionResult = COISpriteCollision(currentSprite,
-					 player->_x + changeX,
-					 player->_y + changeY,
-					 player->_width,
-					 player->_height);
+					 actorSprite->_x + changeX,
+					 actorSprite->_y + changeY,
+					 actorSprite->_width,
+					 actorSprite->_height);
     if (collisionResult != COI_NO_COLLISION) {
       return collisionResult;
     }
   }
 
+  // Check for collision against NPCs
+  for (i = 0; i < TOWN_NUM_NPCS; i++) {
+    currentSprite = context->npcs[i]->sprite;
+    // Don't check for collision against self
+    if (currentSprite == actorSprite) {
+      continue;
+    }
+    collisionResult = COISpriteCollision(currentSprite,
+					 actorSprite->_x + changeX,
+					 actorSprite->_y + changeY,
+					 actorSprite->_width,
+					 actorSprite->_height);
+    if (collisionResult != COI_NO_COLLISION) {
+      return collisionResult;
+    }
+  }
+
+  // Check for collision against player
+  currentSprite = context->pInfo->party[0]->sprite;
+  if (currentSprite != currentSprite) {
+    collisionResult = COISpriteCollision(currentSprite,
+					 actorSprite->_x + changeX,
+					 actorSprite->_y + changeY,
+					 actorSprite->_width,
+					 actorSprite->_height);
+  }
+
   return COI_NO_COLLISION;
+}
+
+void _createNPCs(TownContext* context) {
+  context->npcs[0] = actorCreateOfType(ACTOR_CHAGGAI,
+				       1408,
+				       1856,
+				       COI_GLOBAL_LOADER,
+				       COI_GLOBAL_WINDOW);
+  COIBoardAddDynamicSprite(context->board, context->npcs[0]->sprite);
+  actorFaceRight(context->npcs[0]);
+
+  context->npcs[1] = actorCreateOfType(ACTOR_CHAGGAI,
+				       1664,
+				       2176,
+				       COI_GLOBAL_LOADER,
+				       COI_GLOBAL_WINDOW);
+  COIBoardAddDynamicSprite(context->board, context->npcs[1]->sprite);
+  actorFaceRight(context->npcs[1]);
+
+  context->npcs[2] = actorCreateOfType(ACTOR_CHAGGAI,
+				       1920,
+				       2048,
+				       COI_GLOBAL_LOADER,
+				       COI_GLOBAL_WINDOW);
+  COIBoardAddDynamicSprite(context->board, context->npcs[2]->sprite);
+  actorFaceRight(context->npcs[2]);
 }
 
 
@@ -30,12 +84,11 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
   context->terrain = TT_SAFE;
-  context->terrainTicks = 0;
   context->board = board;
   context->willEnterBattle = false;
+  context->_npcTicks = 0;
   context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
-  context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board);
-  context->textBox = TextBoxCreate(context->board, context->textType);
+  
   // Only 1 persistent sprite: the player
   COISprite** perSprites = actorGetSpriteList(context->pInfo->party, 1);
   COIBoardSetPersistentSprites(board, perSprites, 1);
@@ -46,6 +99,12 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   COIBoardShiftFrameX(board, playerCenterX);
   int playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
   COIBoardShiftFrameY(board, playerCenterY);
+
+  _createNPCs(context);
+  
+  context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board);
+
+  context->textBox = TextBoxCreate(context->board, context->textType);
   
   COIBoardSetContext(board, (void*)context);
 
@@ -64,7 +123,6 @@ void _queueMovement(TownContext* context, Actor* actor, int direction, int speed
     context->board->_shouldDraw = true;
   } else {
     actor->nextMovementDirection = direction;
-    //actor->nextMovementDirection = direction;
   }
 }
 
@@ -113,7 +171,6 @@ bool townContinueMovement(Actor* actor, COIBoard* board) {
 // After a certain amount of ticks, check if we should enter a battle (random encounter).
 // The likelihood of entering a battle is based off of the current terrain.
 void townCheckForBattle(TownContext* context) {
-  context->terrainTicks = 0;
   switch (context->terrain) {
   case TT_THICK_GRASS:
     context->willEnterBattle = generateRandomBoolWeighted(0.05);
@@ -157,7 +214,7 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
   default:
     return COI_NO_COLLISION;
   }
-  return  _testForCollision(context->board, actor->sprite, changeX, changeY);
+  return  _testForCollision(context, actor->sprite, changeX, changeY);
 }
 
 
@@ -219,22 +276,54 @@ bool townShouldCheckForCollision(TownContext* context) {
 }
 
 
-int townCheckForCollision(TownContext* context) {
-  Actor* player = context->pInfo->party[0];
+int townCheckForCollision(TownContext* context, Actor* actor) {
   // We haven't started moving from our current square yet if the x and y of the sprite
   // are cleanly divisible by the size of a grid square.
-  if (player->sprite->_x % COIBOARD_GRID_SIZE == 0 &&
-      player->sprite->_y % COIBOARD_GRID_SIZE == 0) {
-    return _getNextCollision(context, player, player->movementDirection);
+  if (actor->sprite->_x % COIBOARD_GRID_SIZE == 0 &&
+      actor->sprite->_y % COIBOARD_GRID_SIZE == 0) {
+    return _getNextCollision(context, actor, actor->movementDirection);
   }
 
   return COI_NO_COLLISION;
 }
 
 void townTick(TownContext* context) {
+  // Text box
   if (context->textBox->box->_visible && !context->textBox->currentStringDone) {
     TextBoxAnimate(context->textBox);
     context->board->_shouldDraw = true;
+  }
+
+  // NPCs
+  if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
+    for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+      // 80% chance they don't move at all
+      if (generateRandomBoolWeighted(0.3)) {
+	// If we do move, pick 1 of the 4 directions
+	_queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
+	// Cancel movement if there's a collision
+	if (townCheckForCollision(context, context->npcs[i]) != COI_NO_COLLISION) {
+	  context->npcs[i]->movementDirection = MOVING_NONE;
+	}
+      } else {
+	//	_queueMovement(context, context->npcs[i], MOVING_NONE, TOWN_MOVE_SPEED);
+      }
+    }
+    
+    context->_npcTicks = 0;
+  }
+  context->_npcTicks++;
+}
+
+void townMoveNPCs(TownContext* context) {
+  for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+    Actor* npc = context->npcs[i];
+    bool inNextGridCell = townContinueMovement(npc, context->board);
+    if (inNextGridCell) {
+      npc->nextMovementDirection = MOVING_NONE;
+      npc->movementDirection = MOVING_NONE;
+      actorStandStill(npc);
+    }
   }
 }
 

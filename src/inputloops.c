@@ -249,7 +249,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   }
 
   if (townShouldCheckForCollision(context)) {
-    int collision = townCheckForCollision(context);
+    int collision = townCheckForCollision(context, player);
     // Town context handle generic collision, moving actors around, etc.
     townProcessCollisionType(townContext, collision);
     // Input loop handles collisions that lead to changes in the input loop (going into a shop, etc.)
@@ -268,9 +268,11 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   }
   
   townMovePlayer(townContext);
-
-  // Handle other tasks (moving NPCs, animating text)
+  
+  // Handle other tasks (generate NPC movements, animating text)
   townTick(townContext);
+  
+  townMoveNPCs(townContext);
 
   if (townContext->willEnterBattle) {
     COIBoard* armory = battleCreateBoard(townContext->window,

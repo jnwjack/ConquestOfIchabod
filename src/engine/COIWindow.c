@@ -84,9 +84,11 @@ void COIWindowLoop(COIWindow* window) {
       // New method of handling strings
       COIString** strings = window->_currentBoard->strings;
       for (int i = 0; i < window->_currentBoard->stringCount; i++) {
-	COIStringDraw(strings[i], window->_renderer);
+	if (strings[i]->visible) {
+	  COIStringDraw(strings[i], window->_renderer);
+	}
       }
-      
+
       SDL_RenderPresent(window->_renderer);
       window->_currentBoard->_shouldDraw = false;
     }

@@ -42,5 +42,6 @@ void LinkedListDestroy(LinkedList* list);
 int countLines(const char* filename);
 int generateRandomChar();
 bool generateRandomBoolWeighted(double weight);
+int generateRandomDirectionalMovement();
 
 #endif

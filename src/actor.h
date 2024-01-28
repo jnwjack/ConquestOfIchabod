@@ -8,6 +8,7 @@
 
 #define ACTOR_SKELETON 0
 #define ACTOR_PLAYER 1
+#define ACTOR_CHAGGAI 2
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8
