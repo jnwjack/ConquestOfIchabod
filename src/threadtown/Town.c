@@ -38,7 +38,7 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
 
   // Check for collision against player
   currentSprite = context->pInfo->party[0]->sprite;
-  if (currentSprite != currentSprite) {
+  if (currentSprite != actorSprite) {
     collisionResult = COISpriteCollision(currentSprite,
 					 actorSprite->_x + changeX,
 					 actorSprite->_y + changeY,
