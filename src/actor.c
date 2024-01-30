@@ -150,6 +150,7 @@ void actorFaceUp(Actor* actor) {
 }
 
 void actorFaceDown(Actor* actor) {
+  printf("face down!\n");
   COISpriteSetSheetIndex(actor->sprite, 3, 2);
 }
 

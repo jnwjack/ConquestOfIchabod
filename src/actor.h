@@ -6,6 +6,7 @@
 #include "engine/COIWindow.h"
 #include "tech.h"
 
+#define ACTOR_NONE -1
 #define ACTOR_SKELETON 0
 #define ACTOR_PLAYER 1
 #define ACTOR_CHAGGAI 2

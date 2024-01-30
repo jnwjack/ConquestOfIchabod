@@ -49,6 +49,37 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
   return COI_NO_COLLISION;
 }
 
+int _facingNPC(Actor* player, Actor** npcs) {
+  int facingX = player->sprite->_x;
+  int facingY = player->sprite->_y;
+  switch (player->_spriteSheetRow) {
+  case 0:
+    facingX += COIBOARD_GRID_SIZE;
+    break;
+  case 1:
+    facingX -= COIBOARD_GRID_SIZE;
+    break;
+  case 2:
+    facingY -= COIBOARD_GRID_SIZE;
+    break;
+  case 3:
+    facingY += COIBOARD_GRID_SIZE;
+    break;
+  default:
+    printf("Problem when checking player direction.\n");
+    break;
+  }
+  
+  for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+    if (npcs[i]->sprite->_x == facingX &&
+	npcs[i]->sprite->_y == facingY) {
+      return npcs[i]->actorType;
+    }
+  }
+
+  return ACTOR_NONE;
+}
+
 void _createNPCs(TownContext* context) {
   context->npcs[0] = actorCreateOfType(ACTOR_CHAGGAI,
 				       1408,
@@ -229,8 +260,8 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   }
 }
 
-bool _nextToActor(Actor* player, Actor** actors) {
-  return true;
+bool _nextToActor(Actor* player, Actor** npcs) {
+  return _facingNPC(player, npcs) != ACTOR_NONE;
 }
 
 void townProcessSelectionInput(TownContext* context) {
@@ -242,7 +273,7 @@ void townProcessSelectionInput(TownContext* context) {
     // Advance text box
     TextBoxNextString(context->textBox);
     context->board->_shouldDraw = true;
-  } else if (_nextToActor(NULL, NULL)) {
+  } else if (_nextToActor(context->pInfo->party[0], context->npcs)) {
     TextBoxSetStrings(context->textBox,
 		      "This is the first string",
 		      "Hi! How are you?",
@@ -257,6 +288,7 @@ void townProcessCollisionType(TownContext* context, int collision) {
   Actor* player = context->pInfo->party[0];
   switch (collision) {
   case COI_COLLISION:
+    actorFaceDirection(player, player->movementDirection);
     player->movementDirection = MOVING_NONE;
     actorStandStill(player);
     break;
@@ -295,24 +327,27 @@ void townTick(TownContext* context) {
   }
 
   // NPCs
-  if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
-    for (int i = 0; i < TOWN_NUM_NPCS; i++) {
-      // 80% chance they don't move at all
-      if (generateRandomBoolWeighted(0.3)) {
-	// If we do move, pick 1 of the 4 directions
-	_queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
-	// Cancel movement if there's a collision
-	if (townCheckForCollision(context, context->npcs[i]) != COI_NO_COLLISION) {
-	  context->npcs[i]->movementDirection = MOVING_NONE;
+  if (!context->textBox->box->_visible) {
+    if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
+      for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+	// 80% chance they don't move at all
+	if (generateRandomBoolWeighted(0.3)) {
+	  // If we do move, pick 1 of the 4 directions
+	  _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
+	  // Cancel movement if there's a collision
+	  if (townCheckForCollision(context, context->npcs[i]) != COI_NO_COLLISION) {
+	    context->npcs[i]->movementDirection = MOVING_NONE;
+	  }
+	} else {
+	  //	_queueMovement(context, context->npcs[i], MOVING_NONE, TOWN_MOVE_SPEED);
 	}
-      } else {
-	//	_queueMovement(context, context->npcs[i], MOVING_NONE, TOWN_MOVE_SPEED);
       }
+      context->_npcTicks = 0;
+    } else {
+      context->_npcTicks++;
     }
-    
-    context->_npcTicks = 0;
   }
-  context->_npcTicks++;
+
 }
 
 void townMoveNPCs(TownContext* context) {
