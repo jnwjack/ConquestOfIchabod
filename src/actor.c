@@ -139,19 +139,45 @@ void actorStandStill(Actor* actor) {
 
 void actorFaceLeft(Actor* actor) {
   COISpriteSetSheetIndex(actor->sprite, 1, 2);
+  actor->_spriteSheetRow = 1;
+  
 }
 
 void actorFaceRight(Actor* actor) {
   COISpriteSetSheetIndex(actor->sprite, 0, 2);
+  actor->_spriteSheetRow = 0;
 }
 
 void actorFaceUp(Actor* actor) {
   COISpriteSetSheetIndex(actor->sprite, 2, 2);
+  actor->_spriteSheetRow = 2;
 }
 
 void actorFaceDown(Actor* actor) {
-  printf("face down!\n");
   COISpriteSetSheetIndex(actor->sprite, 3, 2);
+  actor->_spriteSheetRow = 3;
+}
+
+// Face 'a' in the opposite direction that 'b' is facing.
+// If 'a' and 'b' are adjacent, this makes 'a' and 'b' look like they're
+// talking.
+void actorMeetGaze(Actor* a, Actor* b) {
+  switch (b->_spriteSheetRow) {
+  case 0:
+    actorFaceLeft(a);
+    break;
+  case 1:
+    actorFaceRight(a);
+    break;
+  case 2:
+    actorFaceDown(a);
+    break;
+  case 3:
+    actorFaceUp(a);
+    break;
+  default:
+    printf("Error. Invalid sprite sheet index.\n");
+  }
 }
 
 void actorFaceDirection(Actor* actor, int direction) {

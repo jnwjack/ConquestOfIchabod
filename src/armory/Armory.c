@@ -86,9 +86,7 @@ void armoryPopulateSell(ArmoryContext* context) {
   }
   free(equipped);
 
-  printf("before update menu text\n");
   armoryUpdateMenuText(context->sellMenu, context->sellItems, context->numSellItems);
-  printf("after update menu text\n");
 }
 
 // Initialize the "buy" menu items

@@ -67,6 +67,7 @@ void actorFaceLeft(Actor* actor);
 void actorFaceRight(Actor* actor);
 void actorFaceUp(Actor* actor);
 void actorFaceDown(Actor* actor);
+void actorMeetGaze(Actor* a, Actor* b);
 void actorFaceDirection(Actor* actor, int direction);
 void actorTurnAround(Actor* actor);
 

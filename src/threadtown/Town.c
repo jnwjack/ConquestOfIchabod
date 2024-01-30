@@ -49,7 +49,7 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
   return COI_NO_COLLISION;
 }
 
-int _facingNPC(Actor* player, Actor** npcs) {
+Actor* _facingNPC(Actor* player, Actor** npcs) {
   int facingX = player->sprite->_x;
   int facingY = player->sprite->_y;
   switch (player->_spriteSheetRow) {
@@ -73,11 +73,11 @@ int _facingNPC(Actor* player, Actor** npcs) {
   for (int i = 0; i < TOWN_NUM_NPCS; i++) {
     if (npcs[i]->sprite->_x == facingX &&
 	npcs[i]->sprite->_y == facingY) {
-      return npcs[i]->actorType;
+      return npcs[i];
     }
   }
 
-  return ACTOR_NONE;
+  return NULL;
 }
 
 void _createNPCs(TownContext* context) {
@@ -253,15 +253,11 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   if (context->pauseOverlay->visible) {
     PauseOverlayProcessInput(context->pauseOverlay, direction);
     context->board->_shouldDraw = true;
-  } else {
+  } else if (!context->textBox->box->_visible) {
     Actor* player = context->pInfo->party[0];
     //bool canAcceptInput = player->_stepsLeft == 0;
     _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
   }
-}
-
-bool _nextToActor(Actor* player, Actor** npcs) {
-  return _facingNPC(player, npcs) != ACTOR_NONE;
 }
 
 void townProcessSelectionInput(TownContext* context) {
@@ -273,14 +269,27 @@ void townProcessSelectionInput(TownContext* context) {
     // Advance text box
     TextBoxNextString(context->textBox);
     context->board->_shouldDraw = true;
-  } else if (_nextToActor(context->pInfo->party[0], context->npcs)) {
+  } else {
+    Actor* talkingNPC = _facingNPC(player, context->npcs);
+    if (talkingNPC != NULL) {
+      actorMeetGaze(talkingNPC, player);
+      TextBoxSetStrings(context->textBox,
+		      "This is the first string",
+		      "Hi! How are you?",
+		      "The quick brown fox jumps over the lazy dog.",
+		      NULL);
+      context->board->_shouldDraw = true;
+    }
+  }
+
+  /*else if (_nextToActor(context->pInfo->party[0], context->npcs)) {
     TextBoxSetStrings(context->textBox,
 		      "This is the first string",
 		      "Hi! How are you?",
 		      "The quick brown fox jumps over the lazy dog.",
 		      NULL);
     context->board->_shouldDraw = true;
-  }
+    }*/
 }
 
 
@@ -330,7 +339,7 @@ void townTick(TownContext* context) {
   if (!context->textBox->box->_visible) {
     if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
       for (int i = 0; i < TOWN_NUM_NPCS; i++) {
-	// 80% chance they don't move at all
+	// 30% chance they move
 	if (generateRandomBoolWeighted(0.3)) {
 	  // If we do move, pick 1 of the 4 directions
 	  _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
