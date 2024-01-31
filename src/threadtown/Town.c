@@ -109,6 +109,7 @@ void _createNPCs(TownContext* context) {
 
 COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo* pInfo) {
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 5000, 5000, loader);
+  
   COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
   TownContext* context = malloc(sizeof(TownContext));
   context->window = window;

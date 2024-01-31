@@ -59,7 +59,12 @@ void COIBoardDestroy(COIBoard* board) {
 }
 
 int COIBoardBGColor(COIBoard* board, int index) {
-  return board->_bgColor[index];
+  // Scale color based on phase of day.
+  // pix_value_scaled = pix_value / (2^p)
+  // where p = { 0, 1, 2, 3 } for each of { MORNING, DAY, EVENING, NIGHT }
+  return board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase);
+
+  // May want to do something more specific later, but this is fine for now.
 }
 
 void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* filename) {

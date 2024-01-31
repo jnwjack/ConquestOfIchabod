@@ -38,6 +38,7 @@ void* LinkedListNext(LinkedList* list);
 void LinkedListResetCursor(LinkedList* list);
 void LinkedListDestroy(LinkedList* list);
 
+int POW_INT(int x, int y);
 
 int countLines(const char* filename);
 int generateRandomChar();

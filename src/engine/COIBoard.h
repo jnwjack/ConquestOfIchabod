@@ -5,6 +5,7 @@
 #include "COISprite.h"
 #include "COIAssetLoader.h"
 #include "util.h"
+#include "../TimeState.h"
 #include <stdbool.h>
 
 #define INDEX_RED   0

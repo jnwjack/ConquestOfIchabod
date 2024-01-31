@@ -8,7 +8,7 @@
 #define TIMESTATE_NIGHT_THRESHOLD 22
 */
 
-#define TIMESTATE_PHASE_LENGTH 6
+#define TIMESTATE_PHASE_LENGTH 2
 
 typedef enum {
   TS_MORNING = 0,
