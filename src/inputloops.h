@@ -9,6 +9,7 @@
 #include "battle/Battle.h"
 #include "gameover/GameOver.h"
 #include "threadtown/Town.h"
+#include "TimeState.h"
 #include <stdbool.h>
 
 

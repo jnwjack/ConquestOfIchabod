@@ -49,6 +49,7 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
     COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
     battleDestroyBoard(board);
+    TimeStateIncrement(1);
     break;
   default:
     board->_shouldDraw = true;

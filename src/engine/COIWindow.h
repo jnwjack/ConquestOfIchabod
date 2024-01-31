@@ -1,3 +1,6 @@
+#ifndef COIWINDOW_H
+#define COIWINDOW_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -5,9 +8,6 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "COIBoard.h"
-
-#ifndef COIWINDOW_H
-#define COIWINDOW_H
 
 typedef void (*COILoop)(COIBoard*, SDL_Event* event, void* context);
 

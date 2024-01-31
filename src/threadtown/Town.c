@@ -6,7 +6,7 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
   int maxSpriteIndex = board->_spriteCount;
   COISprite* currentSprite = NULL;
   int i;
-  int collisionResult;
+  int collisionResult = COI_NO_COLLISION;;
   for (i = 0; i < maxSpriteIndex; i++) {
     currentSprite = board->_sprites[i];
     collisionResult = COISpriteCollision(currentSprite,
@@ -46,7 +46,7 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
 					 actorSprite->_height);
   }
 
-  return COI_NO_COLLISION;
+  return collisionResult;
 }
 
 Actor* _facingNPC(Actor* player, Actor** npcs) {
@@ -151,7 +151,7 @@ void _queueMovement(TownContext* context, Actor* actor, int direction, int speed
     actor->nextMovementDirection = direction;
     actor->_speed = speed;
     actorFaceDirection(actor, direction);
-    context->board->_shouldDraw = true;
+    COIBoardQueueDraw(context->board);
   } else {
     actor->nextMovementDirection = direction;
   }
@@ -252,7 +252,7 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
 void townProcessDirectionalInput(TownContext* context, int direction) {
   if (context->pauseOverlay->visible) {
     PauseOverlayProcessInput(context->pauseOverlay, direction);
-    context->board->_shouldDraw = true;
+    COIBoardQueueDraw(context->board);
   } else if (!context->textBox->box->_visible) {
     Actor* player = context->pInfo->party[0];
     //bool canAcceptInput = player->_stepsLeft == 0;
@@ -264,34 +264,24 @@ void townProcessSelectionInput(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   if (context->pauseOverlay->visible) {
     PauseOverlaySelect(context->pauseOverlay);
-    context->board->_shouldDraw = true;
+    COIBoardQueueDraw(context->board);
   } else if (context->textBox->box->_visible) {
     // Advance text box
     TextBoxNextString(context->textBox);
-    context->board->_shouldDraw = true;
+    COIBoardQueueDraw(context->board);
   } else {
     Actor* talkingNPC = _facingNPC(player, context->npcs);
     if (talkingNPC != NULL) {
       actorMeetGaze(talkingNPC, player);
       TextBoxSetStrings(context->textBox,
-		      "This is the first string",
+		      "This is the first string.",
 		      "Hi! How are you?",
 		      "The quick brown fox jumps over the lazy dog.",
 		      NULL);
-      context->board->_shouldDraw = true;
+      COIBoardQueueDraw(context->board);
     }
   }
-
-  /*else if (_nextToActor(context->pInfo->party[0], context->npcs)) {
-    TextBoxSetStrings(context->textBox,
-		      "This is the first string",
-		      "Hi! How are you?",
-		      "The quick brown fox jumps over the lazy dog.",
-		      NULL);
-    context->board->_shouldDraw = true;
-    }*/
 }
-
 
 void townProcessCollisionType(TownContext* context, int collision) {
   Actor* player = context->pInfo->party[0];
@@ -332,7 +322,7 @@ void townTick(TownContext* context) {
   // Text box
   if (context->textBox->box->_visible && !context->textBox->currentStringDone) {
     TextBoxAnimate(context->textBox);
-    context->board->_shouldDraw = true;
+    COIBoardQueueDraw(context->board);
   }
 
   // NPCs
@@ -424,7 +414,7 @@ void townTogglePauseOverlay(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   if (player->movementDirection == MOVING_NONE) {
     PauseOverlaySetVisible(context->pauseOverlay, !context->pauseOverlay->visible);
-    context->board->_shouldDraw = true;
+    COIBoardQueueDraw(context->board);
   }
 }
 
