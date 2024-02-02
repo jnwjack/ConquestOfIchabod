@@ -5,7 +5,7 @@
 
 #define STRING_SIZE 100
 
-static char** assetStrings = NULL;
+static const char** assetStrings = NULL;
 static int currentAsset = 0;
 static int currentAssetWidth = 32;
 static int currentAssetHeight = 32;
@@ -78,12 +78,12 @@ static void loadSpritemap(char* filename) {
 }
 
 
-static char** readAssetStrings(const char* filename) {
+static const char** readAssetStrings(const char* filename) {
   char* line = NULL;
   FILE* fp = NULL;
   size_t len;
   int numStrings = countLines(filename) + 1;
-  char** strings = malloc(sizeof(char*) * numStrings);
+  const char** strings = malloc(sizeof(const char*) * numStrings);
   fp = fopen(filename, "r");
   int i = 0;
   while(getline(&line, &len, fp) != -1) {
@@ -132,7 +132,7 @@ static void removeAssetFromSquare (GtkGestureClick *gesture,
     int areaX, areaY;
     gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
 
-    const char* altText = gtk_picture_get_alternative_text(GTK_PICTURE(area));
+    char* altText = gtk_picture_get_alternative_text(GTK_PICTURE(area));
     int index = atoi(strsep(&altText, " "));
     int width = atoi(strsep(&altText, " "));
     int height = atoi(strsep(&altText, " "));
@@ -158,7 +158,7 @@ static void generateSpritemap(GtkWidget* button, gpointer data) {
       GtkWidget* picture = gtk_grid_get_child_at(GTK_GRID(data), x, y);
       if (gtk_picture_get_file(GTK_PICTURE(picture)) != NULL) {
 	// Get index, width, and height from accessibility text
-	const char* altText = gtk_picture_get_alternative_text(GTK_PICTURE(picture));
+	char* altText = gtk_picture_get_alternative_text(GTK_PICTURE(picture));
 	int index = atoi(strsep(&altText, " "));
 	int w = atoi(strsep(&altText, " "));
 	int h = atoi(strsep(&altText, " "));
@@ -327,9 +327,9 @@ int main (int argc, char **argv) {
   // Clean up malloced strings
   if (assetStrings != NULL) {
     int i = 0;
-    char* string = assetStrings[i];
+    const char* string = assetStrings[i];
     while (string != NULL) {
-      free(string);
+      free((void*)string);
       i++;
       string = assetStrings[i];
     }

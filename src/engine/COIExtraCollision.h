@@ -10,6 +10,7 @@
 #define ARMORY_DOOR 2
 #define BATTLE 3
 #define THICK_GRASS 4
+#define RENTABLE_HOUSE_DOOR 5
 
 
 typedef struct COIExtraCollision {
