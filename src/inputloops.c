@@ -254,13 +254,17 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     // Town context handle generic collision, moving actors around, etc.
     townProcessCollisionType(townContext, collision);
     // Input loop handles collisions that lead to changes in the input loop (going into a shop, etc.)
-
     COIBoard* otherBoard;
     switch (collision) {
     case ARMORY_DOOR:
       player->movementDirection = MOVING_NONE;
       otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
       COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      break;
+    case RENTABLE_HOUSE_DOOR:
+      player->movementDirection = MOVING_NONE;
+      otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
+      COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
       break;
     default:
       //townMovePlayer(townContext);
@@ -284,6 +288,34 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
 					 townContext->pInfo);
     COIWindowSetBoard(townContext->window, armory, &battle);
     townContext->willEnterBattle = false;
+  }
+}
+
+void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
+  RentHouseContext* rhContext = (RentHouseContext*)context;
+
+  bool shouldExit = false;
+  switch (event->type) {
+  case SDL_KEYDOWN:
+    switch (event->key.keysym.sym) {
+    case SDLK_SPACE:
+      shouldExit = RentHouseProcessSelectionInput(rhContext);
+      break;
+    case SDLK_LEFT:
+    case SDLK_RIGHT:
+    case SDLK_UP:
+    case SDLK_DOWN:
+      RentHouseProcessDirectionalInput(rhContext,
+				       _sdlEventToDirectionalInput(event));
+      break;
+    }
+  }
+
+  RentHouseTick(rhContext);
+
+  if (shouldExit) {
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, rhContext->outsideBoard, &threadTown);
+    RentHouseDestroyBoard(rhContext);
   }
 }
 

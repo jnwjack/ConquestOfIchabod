@@ -9,6 +9,7 @@
 #include "battle/Battle.h"
 #include "gameover/GameOver.h"
 #include "threadtown/Town.h"
+#include "renthouse/RentHouse.h"
 #include "TimeState.h"
 #include <stdbool.h>
 
@@ -17,5 +18,6 @@
 void threadTown(COIBoard* board, SDL_Event* event, void* context);
 void armory(COIBoard* board, SDL_Event* event, void* context);
 void battle(COIBoard* board, SDL_Event* event, void* context);
+void rentHouse(COIBoard* board, SDL_Event* event, void* context);
 
 #endif

@@ -10,6 +10,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->level = 1;
   info->xp = 0;
   info->xpForLevelUp = 500;
+  info->alreadyHealed = false;
 
   // Copy name from argument
   int nameIndex = 0;

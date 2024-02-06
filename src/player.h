@@ -11,6 +11,8 @@
 // Party members, inventory, etc.
 typedef struct PlayerInfo {
   char name[MAX_NAME_SIZE];
+
+  bool alreadyHealed; // Can only heal once per rest via house.
   
   Actor** party;
   int partySize;

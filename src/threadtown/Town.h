@@ -7,7 +7,7 @@
 #include "../engine/util.h"
 #include "../engine/COIExtraCollision.h"
 #include "PauseOverlay.h"
-#include "TextBox.h"
+#include "../TextBox.h"
 
 // After how many ticks should we check for battle?
 #define TOWN_BATTLE_TICKS 50
