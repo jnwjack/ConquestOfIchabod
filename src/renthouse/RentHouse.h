@@ -14,13 +14,25 @@
 #define RENT_HOUSE_PAY 2
 #define RENT_HOUSE_EXIT 3
 
+#define RENT_HOUSE_PRICE 300
+
+// JNW: Try to make this a "flat" structure, no unnecessary mallocs
+typedef struct RHStatusWindow {
+  COISprite* frame;
+  COIString* currentGold;
+  COIString* daysLeft;
+  COIString* price;
+} RHStatusWindow;
+
 typedef struct RentHouseContext {
   PlayerInfo* pInfo;
   COIMenu* baseMenu;
+  COIMenu* confirmMenu;
   COIBoard* board;
   COIBoard* outsideBoard;
   COITextType* textType;
   TextBox* textBox;
+  RHStatusWindow statusWindow;
 } RentHouseContext;
 
 COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard);

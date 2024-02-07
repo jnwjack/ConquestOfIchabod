@@ -8,7 +8,7 @@
 #define TIMESTATE_NIGHT_THRESHOLD 22
 */
 
-#define TIMESTATE_PHASE_LENGTH 2
+#define TIMESTATE_PHASE_LENGTH 6
 
 typedef enum {
   TS_MORNING = 0,
@@ -17,10 +17,10 @@ typedef enum {
   TS_NIGHT
 } TimeStatePhase;
 
-
 typedef struct TimeState {
   TimeStatePhase phase;
   unsigned char val;
+  unsigned long day;
 } TimeState;
 
 void TimeStateIncrement(unsigned char val);
