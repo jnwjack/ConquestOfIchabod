@@ -1,9 +1,6 @@
 #ifndef ALLYSTATUS_H
 #define ALLYSTATUS_H
 
-#include "../engine/COIString.h"
-#include "../engine/COIBoard.h"
-#include "../engine/COIWindow.h"
 #include "../actor.h"
 
 // UI component that displays an ally's

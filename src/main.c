@@ -1,6 +1,4 @@
 // Should have a better system for includes
-#include "engine/COIMenu.h"
-#include "engine/COIWindow.h"
 #include "inputloops.h"
 #include "armory/Armory.h"
 #include "items.h"

@@ -1,7 +1,8 @@
 #ifndef TEXTBOX_H
 #define TEXTBOX_H
 
-#include "engine/COIWindow.h"
+/*#include "engine/COIWindow.h"*/
+#include "engine/COI.h"
 
 typedef struct TextBox {
   LinkedList* strings;

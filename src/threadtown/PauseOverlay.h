@@ -2,10 +2,6 @@
 #define PAUSEOVERLAY_H
 
 #include "../player.h"
-#include "../engine/COISprite.h"
-#include "../engine/COIString.h"
-#include "../engine/COIBoard.h"
-#include "../engine/COIMenu.h"
 
 #define PAUSE_OVERLAY_ITEMS   0
 #define PAUSE_OVERLAY_WEAPONS 1

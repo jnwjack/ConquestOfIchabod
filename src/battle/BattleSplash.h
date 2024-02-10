@@ -2,8 +2,6 @@
 #define BATTLESPLASH_H
 
 #include <stdbool.h>
-#include "../engine/COIString.h"
-#include "../engine/COIBoard.h"
 #include "../player.h"
 
 typedef enum {

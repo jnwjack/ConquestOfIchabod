@@ -1,7 +1,7 @@
 #ifndef GAMEOVER_H
 #define GAMEOVER_H
 
-#include "../engine/COIWindow.h"
+#include "../engine/COI.h"
 
 typedef struct GameOverContext {
   int test;

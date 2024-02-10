@@ -1,9 +1,6 @@
 #ifndef ARMORY_H
 #define ARMORY_H
 
-#include "../engine/COIMenu.h"
-#include "../engine/COIBoard.h"
-#include "../engine/COIWindow.h"
 #include "../inventory.h"
 #include "../inputloops.h"
 

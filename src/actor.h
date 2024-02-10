@@ -1,9 +1,7 @@
 #ifndef ACTOR_H
 #define ACTOR_H
 
-#include "engine/COISprite.h"
-#include "engine/COIAssetLoader.h"
-#include "engine/COIWindow.h"
+#include "engine/COI.h"
 #include "tech.h"
 
 #define ACTOR_NONE -1

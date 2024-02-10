@@ -1,12 +1,13 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
-#include "../engine/COIBoard.h"
+/*#include "../engine/COIBoard.h"
 #include "../engine/COIWindow.h"
 #include "../engine/COIMenu.h"
 #include "../engine/COIString.h"
 #include "../engine/COISprite.h"
-#include "../player.h"
+*/
+//#include "../player.h"
 #include "BattleBehavior.h"
 #include "Status.h"
 #include "BattleSplash.h"

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "constants.h"
-#include "engine/COIString.h"
+#include "engine/COI.h"
 
 
 // Holds data about a technique (TECH)

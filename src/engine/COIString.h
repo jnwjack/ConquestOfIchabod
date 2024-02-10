@@ -1,11 +1,33 @@
 #ifndef COISTRING_H
 #define COISTRING_H
 
-#include "COIChar.h"
 #include "COISprite.h"
+#include "COITextType.h"
+#include <SDL2/SDL.h>
+#include <stdbool.h>
+
 
 #define MAX_STRING_SIZE 100
 #define TYPING_TICKS_PER_CHAR 3
+
+typedef struct COIChar {
+  SDL_Rect* drawRect;
+  SDL_Texture* texture;
+  
+  int x;
+  int y;
+  int w;
+  int h;
+  bool visible;
+  char value;
+  struct COIChar* next;
+}COIChar;
+
+COIChar* COICharCreate(char c, int x, int y, COITextType* textType);
+void COICharDestroy(COIChar* coiChar);
+
+void COICharSetPos(COIChar* coiChar, int x, int y);
+
 
 typedef struct COIString {
   COIChar* _head;

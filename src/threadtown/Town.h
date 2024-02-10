@@ -1,11 +1,7 @@
 #ifndef TOWN_H
 #define TOWN_H
 
-#include "../engine/COIBoard.h"
-#include "../engine/COIWindow.h"
 #include "../player.h"
-#include "../engine/util.h"
-#include "../engine/COIExtraCollision.h"
 #include "PauseOverlay.h"
 #include "../TextBox.h"
 
