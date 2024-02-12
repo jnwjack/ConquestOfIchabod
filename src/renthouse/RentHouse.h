@@ -11,12 +11,17 @@
 
 #define RENT_HOUSE_PRICE 300
 
+#define RENT_HOUSE_REFRESH_MONEY 1
+#define RENT_HOUSE_REFRESH_DAYS 2
+#define RENT_HOUSE_REFRESH_PRICE 4
+
 // JNW: Try to make this a "flat" structure, no unnecessary mallocs
 typedef struct RHStatusWindow {
   COISprite* frame;
   COIString* currentGold;
   COIString* daysLeft;
   COIString* price;
+  char _refreshFlags;
 } RHStatusWindow;
 
 typedef struct RentHouseContext {

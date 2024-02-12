@@ -1,5 +1,12 @@
 #include "RentHouse.h"
 
+static void _destroyString(COIBoard* board, COIString* string) {
+  if (string != NULL) {
+    COIBoardRemoveString(board, string);
+    COIStringDestroy(string);
+  }
+}
+
 static void _heal(RentHouseContext* context) {
   Actor* player = context->pInfo->party[0];
   
@@ -25,17 +32,31 @@ static void _sleep(RentHouseContext* context) {
 		    "You sleep...",
 		    NULL);
   TimeStateIncrement(12);
+  context->statusWindow._refreshFlags |= RENT_HOUSE_REFRESH_DAYS;
   context->pInfo->alreadyHealed = false;
+}
+
+bool _tooEarlyForPayment(PlayerInfo* pInfo) {
+  return pInfo->nextRentDate - GLOBAL_TIME.day >= 30;
 }
 
 static void _pay(RentHouseContext* context) {
   char temp[MAX_STRING_SIZE];
-  if (context->pInfo->inventory->money >= RENT_HOUSE_PRICE) {
+  if (_tooEarlyForPayment(context->pInfo)) {
+    TextBoxSetStrings(context->textBox,
+		      "It is too early to pay.",
+		      NULL);
+  } else if (context->pInfo->inventory->money >= RENT_HOUSE_PRICE &&
+      !_tooEarlyForPayment(context->pInfo)) {
     snprintf(temp, MAX_STRING_SIZE, "Rent paid (%i gold).", RENT_HOUSE_PRICE);
     TextBoxSetStrings(context->textBox,
 		      temp,
 		      NULL);
     context->pInfo->inventory->money -= RENT_HOUSE_PRICE;
+    context->pInfo->nextRentDate += 30;
+    context->statusWindow._refreshFlags |= (RENT_HOUSE_REFRESH_MONEY |
+					     RENT_HOUSE_REFRESH_DAYS);
+
   } else {
     snprintf(temp, MAX_STRING_SIZE, "You are not able to afford rent (%i gold).", RENT_HOUSE_PRICE);
     TextBoxSetStrings(context->textBox,
@@ -45,6 +66,37 @@ static void _pay(RentHouseContext* context) {
 }
 
 // JNW: Can pull this similar structures (_make[BLANK]Window, etc.) into a structure
+static void _makeStatWindowStrings(RentHouseContext* context) {
+  RHStatusWindow* window = &context->statusWindow;
+  char temp[MAX_STRING_SIZE];
+  if (window->_refreshFlags & RENT_HOUSE_REFRESH_MONEY) {
+    _destroyString(context->board, window->currentGold);
+    snprintf(temp, MAX_STRING_SIZE, "Gold: %i", context->pInfo->inventory->money);
+    window->currentGold = COIStringCreate(temp, 0, 0, context->textType);
+    COIStringConfineToSprite(window->currentGold, window->frame);
+    COIStringSetVisible(window->currentGold, true);
+    COIBoardAddString(context->board, window->currentGold);
+  }
+  if ((window->_refreshFlags & RENT_HOUSE_REFRESH_PRICE) > 0) {
+    _destroyString(context->board, window->price);
+    snprintf(temp, MAX_STRING_SIZE, "Rent: %i", RENT_HOUSE_PRICE);
+    window->price = COIStringCreate(temp, 0, 0, context->textType);
+    COIStringPositionBelowString(window->price, window->currentGold);
+    COIStringSetVisible(window->price, true);
+    COIBoardAddString(context->board, window->price);
+  }
+  if (window->_refreshFlags & RENT_HOUSE_REFRESH_DAYS) {
+    _destroyString(context->board, window->daysLeft);
+    snprintf(temp, MAX_STRING_SIZE, "Days Left: %lu", context->pInfo->nextRentDate - GLOBAL_TIME.day);
+    window->daysLeft = COIStringCreate(temp, 0, 0, context->textType);
+    COIStringPositionBelowString(window->daysLeft, window->price);
+    COIStringSetVisible(window->daysLeft, true);
+    COIBoardAddString(context->board, window->daysLeft);
+  }
+
+  window->_refreshFlags = 0;
+}
+
 static void _makeStatWindow(RentHouseContext* context) {
   RHStatusWindow* window = &context->statusWindow;
   
@@ -54,32 +106,17 @@ static void _makeStatWindow(RentHouseContext* context) {
 					     COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   window->frame->_autoHandle = false;
   window->frame->_visible = true;
+  // Update everything on first time
+  window->_refreshFlags = (RENT_HOUSE_REFRESH_MONEY |
+			   RENT_HOUSE_REFRESH_DAYS |
+			   RENT_HOUSE_REFRESH_PRICE);
+  window->currentGold = NULL;
+  window->daysLeft = NULL;
+  window->price = NULL;
+  _makeStatWindowStrings(context);
   COIBoardAddDynamicSprite(context->board, window->frame);
-  
-  char temp[MAX_STRING_SIZE];
-  snprintf(temp, MAX_STRING_SIZE, "Gold: %i", context->pInfo->inventory->money);
-  window->currentGold = COIStringCreate(temp, 0, 0, context->textType);
-  COIStringConfineToSprite(window->currentGold, window->frame);
-  COIStringSetVisible(window->currentGold, true);
-  COIBoardAddString(context->board, window->currentGold);
-
-  snprintf(temp, MAX_STRING_SIZE, "Rent: %i", RENT_HOUSE_PRICE);
-  window->price = COIStringCreate(temp, 0, 0, context->textType);
-  COIStringPositionBelowString(window->price, window->currentGold);
-  COIStringSetVisible(window->price, true);
-  COIBoardAddString(context->board, window->price);
-
-  snprintf(temp, MAX_STRING_SIZE, "Days Left: %lu", context->pInfo->nextRentDate - GLOBAL_TIME.day);
-  window->daysLeft = COIStringCreate(temp, 0, 0, context->textType);
-  COIStringPositionBelowString(window->daysLeft, window->price);
-  COIStringSetVisible(window->daysLeft, true);
-  COIBoardAddString(context->board, window->daysLeft);
 }
 
-static void _destroyString(COIBoard* board, COIString* string) {
-  COIBoardRemoveString(board, string);
-  COIStringDestroy(string);
-}
 
 COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard) {
   RentHouseContext* context = malloc(sizeof(RentHouseContext));
@@ -148,6 +185,9 @@ bool RentHouseProcessSelectionInput(RentHouseContext* context) {
     case RENT_HOUSE_SLEEP:
       _sleep(context);
       break;
+    case RENT_HOUSE_PAY:
+      _pay(context);
+      break;
     case RENT_HOUSE_EXIT:
       return true;
     default:
@@ -159,8 +199,9 @@ bool RentHouseProcessSelectionInput(RentHouseContext* context) {
 }
 
 void RentHouseTick(RentHouseContext* context) {
-  if (context->textBox->box->_visible &&
-      !context->textBox->currentStringDone) {
+  if (!context->textBox->box->_visible) {
+    _makeStatWindowStrings(context);
+  } else if (!context->textBox->currentStringDone) {
     TextBoxAnimate(context->textBox);
     COIBoardQueueDraw(context->board);
   }
