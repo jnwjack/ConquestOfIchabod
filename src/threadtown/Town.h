@@ -13,7 +13,7 @@
 // After this many ticks, chance for each NPC to move
 #define TOWN_NPC_MOVEMENT_TICKS 40
 
-#define TOWN_TENTACLE_MOVEMENT_TICKS 4
+#define TOWN_TENTACLE_MOVEMENT_TICKS 20
 
 // What kind of terrain are we on? Used when determining if we should have an encounter
 typedef enum TownTerrain {

@@ -49,7 +49,23 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
   return collisionResult;
 }
 
-void _animateTentacle(TownContext* context) {
+// Need to make only run when tentacles in viewframe.
+// Move to COISprite. Add "isAnimated" field in COISprite
+// CBB can flag sprites as animated
+void _animateTentacles(TownContext* context) {
+  LinkedListResetCursor(context->topTentacles);
+  COISprite* tentacle = (COISprite*)LinkedListNext(context->topTentacles);
+  while (tentacle) {
+    tentacle->_animationTicks++;
+    if (tentacle->_animationTicks > TOWN_TENTACLE_MOVEMENT_TICKS) {
+      int oldCol = tentacle->_srcRect->x / tentacle->_srcRect->w;
+      COISpriteSetSheetIndex(tentacle, 0, (oldCol + 1) % 3);
+      tentacle->_animationTicks = 0;
+      COIBoardQueueDraw(context->board);
+    }
+
+    tentacle = (COISprite*)LinkedListNext(context->topTentacles);
+  }
 }
 
 Actor* _facingNPC(Actor* player, Actor** npcs) {
@@ -124,6 +140,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->_npcTicks = 0;
   context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
   
+  
   // Only 1 persistent sprite: the player
   COISprite** perSprites = actorGetSpriteList(context->pInfo->party, 1);
   COIBoardSetPersistentSprites(board, perSprites, 1);
@@ -143,7 +160,17 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
 
   // Gather animated tentacle sprites
   context->topTentacles = LinkedListCreate();
-  //LinkedListAdd(context->topTentacles, 
+  int startingCol = 0;
+  for (int i = 0; i < board->_spriteCount; i++) {
+    if (board->_sprites[i]->_assetID == 21) {
+      COISpriteSetSheetIndex(board->_sprites[i], 0, startingCol);
+      LinkedListAdd(context->topTentacles,
+		    (void*)board->_sprites[i]);
+      startingCol = (startingCol + 1) % 3;
+    }
+    
+  }
+
   
   COIBoardSetContext(board, (void*)context);
 
@@ -355,6 +382,9 @@ void townTick(TownContext* context) {
     }
   }
 
+  // Animated sprites
+  _animateTentacles(context);
+
 }
 
 void townMoveNPCs(TownContext* context) {
@@ -431,6 +461,7 @@ void townTogglePauseOverlay(TownContext* context) {
 void townDestroyBoard(TownContext* context) {
   PauseOverlayDestroy(context->pauseOverlay, context->board);
   TextBoxDestroy(context->textBox);
+  LinkedListDestroy(context->topTentacles);
   COIBoardDestroy(context->board);
   free(context);
 }

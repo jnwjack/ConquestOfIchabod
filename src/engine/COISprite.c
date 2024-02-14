@@ -15,9 +15,7 @@ bool COISpriteAnimateInPlace(COISprite* sprite) {
 	COISpriteSetSheetIndex(sprite, 0, (oldCol + 1) % 3);
 	sprite->_animationTicks = 0;
       }
-    } else {
-      COISpriteSetSheetIndex(sprite, 0, 0);
-    }
+    } 
   }
   
 }

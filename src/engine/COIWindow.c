@@ -59,7 +59,6 @@ void COIWindowLoop(COIWindow* window) {
       for (int i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
 	sprite = sprites[i];
 	if (sprite->_visible) {
-	  COISpriteAnimateInPlace(sprite);
 	  SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
 	}
       }
