@@ -169,6 +169,8 @@ static void generateSpritemap(GtkWidget* button, gpointer data) {
     }
   }
 
+  printf("Done!\n");
+
   fclose(fp);
 }
 

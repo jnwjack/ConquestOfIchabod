@@ -9,8 +9,11 @@
 #define TOWN_BATTLE_TICKS 50
 #define TOWN_MOVE_SPEED 4
 #define TOWN_NUM_NPCS 3
+
 // After this many ticks, chance for each NPC to move
 #define TOWN_NPC_MOVEMENT_TICKS 40
+
+#define TOWN_TENTACLE_MOVEMENT_TICKS 4
 
 // What kind of terrain are we on? Used when determining if we should have an encounter
 typedef enum TownTerrain {
@@ -29,6 +32,7 @@ typedef struct TownContext {
   TextBox* textBox;
   COIBoard* board;
   Actor* npcs[TOWN_NUM_NPCS];
+  LinkedList* topTentacles;
   
   unsigned int _npcTicks;
 } TownContext;

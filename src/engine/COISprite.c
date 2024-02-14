@@ -8,11 +8,15 @@ int _pixelsToGridSquare(int px) {
 // Better place to put this?
 bool COISpriteAnimateInPlace(COISprite* sprite) {
   if (sprite->_assetID == 21) {
-    sprite->_animationTicks++;
-    if (sprite->_animationTicks > 4) {
-      int oldCol = sprite->_srcRect->x / sprite->_srcRect->w;
-      COISpriteSetSheetIndex(sprite, 0, oldCol + 1 % 3);
-      sprite->_animationTicks = 0;
+    if (sprite->_srcRect) {
+      sprite->_animationTicks++;
+      if (sprite->_animationTicks > 4) {
+	int oldCol = sprite->_srcRect->x / sprite->_srcRect->w;
+	COISpriteSetSheetIndex(sprite, 0, (oldCol + 1) % 3);
+	sprite->_animationTicks = 0;
+      }
+    } else {
+      COISpriteSetSheetIndex(sprite, 0, 0);
     }
   }
   

@@ -49,6 +49,9 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
   return collisionResult;
 }
 
+void _animateTentacle(TownContext* context) {
+}
+
 Actor* _facingNPC(Actor* player, Actor** npcs) {
   int facingX = player->sprite->_x;
   int facingY = player->sprite->_y;
@@ -137,6 +140,10 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board);
 
   context->textBox = TextBoxCreate(context->board, context->textType);
+
+  // Gather animated tentacle sprites
+  context->topTentacles = LinkedListCreate();
+  //LinkedListAdd(context->topTentacles, 
   
   COIBoardSetContext(board, (void*)context);
 
