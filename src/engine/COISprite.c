@@ -4,6 +4,20 @@ int _pixelsToGridSquare(int px) {
   return px / COIBOARD_GRID_SIZE;
 }
 
+// Improvement: In cbb, option to set animation duration, etc.
+// Better place to put this?
+bool COISpriteAnimateInPlace(COISprite* sprite) {
+  if (sprite->_assetID == 21) {
+    sprite->_animationTicks++;
+    if (sprite->_animationTicks > 4) {
+      int oldCol = sprite->_srcRect->x / sprite->_srcRect->w;
+      COISpriteSetSheetIndex(sprite, 0, oldCol + 1 % 3);
+      sprite->_animationTicks = 0;
+    }
+  }
+  
+}
+
 COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int assetID) {
   COISprite* sprite = malloc(sizeof(COISprite));
   sprite->_x = x;
@@ -19,7 +33,8 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int
   sprite->_drawRect->h = h;
   sprite->_srcRect = NULL;
   sprite->_sheetCount = 0;
-  sprite->_moving = false;
+  sprite->alwaysAnimate = false;
+  sprite->_animationTicks = 0;
   sprite->_autoHandle = true;
   sprite->_extraCollision = NULL;
   sprite->_assetID = assetID;
@@ -45,7 +60,7 @@ COISprite* COISpriteCopy(COISprite* original, COIAssetLoader* loader, SDL_Render
   sprite->_drawRect->h = sprite->_height;
   sprite->_srcRect = NULL;
   sprite->_sheetCount = 0;
-  sprite->_moving = false;
+  sprite->alwaysAnimate = false;
   sprite->_autoHandle = true;
   sprite->_extraCollision = NULL;
 
@@ -84,18 +99,7 @@ void COISpriteSetSheetIndex(COISprite* sprite, int row, int col) {
   sprite->_sheetCount = 1;
 }
 
-void COISpriteSetSheetDimensions(COISprite* sprite, int w, int h) {
-  if(sprite->_srcRect == NULL) {
-    sprite->_srcRect = malloc(sizeof(SDL_Rect));
-    sprite->_srcRect->x = 0;
-    sprite->_srcRect->y = 0;
-  }
-  sprite->_srcRect->w = w;
-  sprite->_srcRect->h = h;
-  sprite->_sheetCount = sprite->_width / w;
-}
-
-void COISpriteSheetIncrementIndex(COISprite* sprite) {
+/*void COISpriteSheetIncrementIndex(COISprite* sprite) {
   if (sprite->_srcRect == NULL) {
     return;
   }
@@ -103,6 +107,7 @@ void COISpriteSheetIncrementIndex(COISprite* sprite) {
   int nextIndex = (currentIndex + 1) % sprite->_sheetCount; 
   sprite->_srcRect->x = nextIndex * sprite->_srcRect->w;
 }
+*/
 
 // Assumes that otherRect is smaller than or equal to the sprite's rect
 int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height) {

@@ -11,6 +11,7 @@
 #define BATTLE 3
 #define THICK_GRASS 4
 #define RENTABLE_HOUSE_DOOR 5
+#define TENTACLE 6
 
 
 typedef struct COIExtraCollision {
