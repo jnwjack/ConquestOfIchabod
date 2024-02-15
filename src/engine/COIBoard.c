@@ -86,6 +86,7 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
   int y;
   int w;
   int h;
+  int a;
   int i = 0;
   COISprite* sprite = NULL;
   while (getline(&line, &len, fp) != -1) {

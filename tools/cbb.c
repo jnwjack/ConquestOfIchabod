@@ -9,6 +9,8 @@ static const char** assetStrings = NULL;
 static int currentAsset = 0;
 static int currentAssetWidth = 32;
 static int currentAssetHeight = 32;
+static int currentAssetAnimated = 0; // boolean
+static int currentAssetFrames = 1;
 static GtkWidget* grid;
 
 // Returns true if square is occupied by an asset originating in another square.
@@ -23,13 +25,13 @@ static bool squareHasAsset(GtkWidget* square) {
   return (gtk_picture_get_file(GTK_PICTURE(square)) != NULL);
 }
 
-static void updateSquare(GtkWidget* square, int assetIndex, int width, int height) {
+static void updateSquare(GtkWidget* square, int assetIndex, int width, int height, int animated, int frames) {
   // Store the index of the asset - used when we write to file
   // Also store the width and height of the asset.
   // Pretty bad way of doing this. We're storing it in the accessibility text.
   char indexString[100];
   gtk_picture_set_filename(GTK_PICTURE(square), assetStrings[assetIndex]);
-  sprintf(indexString, "%i %i %i", assetIndex, width, height);
+  sprintf(indexString, "%i %i %i %i %i", assetIndex, width, height, animated, frames);
   gtk_picture_set_alternative_text(GTK_PICTURE(square), indexString);
 }
 
@@ -57,6 +59,7 @@ static void loadSpritemap(char* filename) {
   char* line = NULL;
   int assetIndex;
   int x, y, w, h;
+  int a, f; // animation values
   int col, row;
   int i = 0;
 
@@ -69,10 +72,12 @@ static void loadSpritemap(char* filename) {
     y = atoi(strtok(NULL, " "));
     w = atoi(strtok(NULL, " "));
     h = atoi(strtok(NULL, " "));
+    a = 0; // temp
+    f = 1; // temp
     col = x / 32;
     row = y / 32;
     GtkWidget* square = gtk_grid_get_child_at(GTK_GRID(grid), col, row);
-    updateSquare(square, assetIndex, w, h);
+    updateSquare(square, assetIndex, w, h, a, f);
     occupyNearbySquares(col, row, w, h);
   }
 }
@@ -112,7 +117,7 @@ static void addAssetToSquare (GtkGestureClick *gesture,
 			      GtkWidget       *area)
 {
   if (!squareIsOccupied(area)) {
-    updateSquare(area, currentAsset, currentAssetWidth, currentAssetHeight);
+    updateSquare(area, currentAsset, currentAssetWidth, currentAssetHeight, currentAssetAnimated, currentAssetFrames);
     // Get position of 'area' in grid
     int areaX, areaY;
     gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
@@ -162,9 +167,11 @@ static void generateSpritemap(GtkWidget* button, gpointer data) {
 	int index = atoi(strsep(&altText, " "));
 	int w = atoi(strsep(&altText, " "));
 	int h = atoi(strsep(&altText, " "));
+	int a = atoi(strsep(&altText, " "));
+	int f = atoi(strsep(&altText, " "));
 	
 	//const char* index = gtk_picture_get_alternative_text(GTK_PICTURE(picture));
-	fprintf(fp, "%i %i %i %i %i\n", index, x*32, y*32, w, h);
+	fprintf(fp, "%i %i %i %i %i %i %i\n", index, x*32, y*32, w, h, a, f);
       }
     }
   }
@@ -180,6 +187,14 @@ static void setAssetWidth(GtkSpinButton* widthWidget, gpointer data) {
 
 static void setAssetHeight(GtkSpinButton* heightWidget, gpointer data) {
   currentAssetHeight = gtk_spin_button_get_value_as_int(heightWidget);
+}
+
+static void toggleAnimated(GtkCheckButton* checkButton, gpointer data) {
+  currentAssetAnimated = gtk_check_button_get_active(checkButton) ? 1 : 0;
+}
+
+static void setAnimationFrames(GtkSpinButton* framesWidget, gpointer data) {
+  currentAssetFrames = gtk_spin_button_get_value_as_int(framesWidget);
 }
 
 static void fileSelected(GObject* dialog, GAsyncResult* res, gpointer data) {
@@ -213,6 +228,11 @@ static void activate(GtkApplication *app,
   GtkWidget* heightLabel;
   GtkWidget* fileButton;
   GtkFileDialog* fileDialog;
+  GtkWidget* shouldAnimate;
+  GtkWidget* animationFramesH;
+  GtkWidget* framesLabel;
+  GtkWidget* framesBox;
+  GtkWidget* animationBox;
   
 
   window = gtk_application_window_new(app);
@@ -262,6 +282,19 @@ static void activate(GtkApplication *app,
   gtk_box_append(GTK_BOX(dimensionsBox), widthBox);
   gtk_box_append(GTK_BOX(dimensionsBox), heightBox);
 
+  // Animation fields
+  animationBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 50);
+  shouldAnimate = gtk_check_button_new_with_label("Animate");
+  g_signal_connect(GTK_CHECK_BUTTON(shouldAnimate), "toggled", G_CALLBACK(toggleAnimated), NULL);
+  animationFramesH = gtk_spin_button_new_with_range(1, 100, 1);
+  g_signal_connect(GTK_SPIN_BUTTON(animationFramesH), "value-changed", G_CALLBACK(setAnimationFrames), NULL);
+  framesLabel = gtk_label_new("Frames");
+  framesBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_box_append(GTK_BOX(framesBox), framesLabel);
+  gtk_box_append(GTK_BOX(framesBox), animationFramesH);
+  gtk_box_append(GTK_BOX(animationBox), shouldAnimate);
+  gtk_box_append(GTK_BOX(animationBox), framesBox);
+
   fileDialog = gtk_file_dialog_new();
   fileButton = gtk_button_new_with_label("Load Spritemap");
   g_signal_connect(fileButton, "clicked", G_CALLBACK(fileButtonPressed), fileDialog);
@@ -271,6 +304,7 @@ static void activate(GtkApplication *app,
 
   gtk_box_append(GTK_BOX(rightBox), spriteSelectBox);
   gtk_box_append(GTK_BOX(rightBox), dimensionsBox);
+  gtk_box_append(GTK_BOX(rightBox), animationBox);
   gtk_box_append(GTK_BOX(rightBox), fileButton);
   gtk_box_append(GTK_BOX(rightBox), button);
   gtk_box_append(GTK_BOX(box), rightBox);
