@@ -284,7 +284,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
 					 board->loader,
 					 board,
 					 threadTown,
-					 ACTOR_SKELETON,
+					 townContext->battleActorType,
 					 townContext->pInfo);
     COIWindowSetBoard(townContext->window, armory, &battle);
     townContext->willEnterBattle = false;

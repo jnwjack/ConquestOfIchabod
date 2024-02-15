@@ -6,7 +6,7 @@ int _pixelsToGridSquare(int px) {
 
 // Improvement: In cbb, option to set animation duration, etc.
 // Better place to put this?
-bool COISpriteAnimateInPlace(COISprite* sprite) {
+void COISpriteAnimateInPlace(COISprite* sprite) {
   if (sprite->_assetID == 21) {
     if (sprite->_srcRect) {
       sprite->_animationTicks++;

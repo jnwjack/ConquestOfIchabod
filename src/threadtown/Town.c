@@ -61,7 +61,9 @@ void _animateTentacles(TownContext* context) {
       int oldCol = tentacle->_srcRect->x / tentacle->_srcRect->w;
       COISpriteSetSheetIndex(tentacle, 0, (oldCol + 1) % 3);
       tentacle->_animationTicks = 0;
-      COIBoardQueueDraw(context->board);
+      if (tentacle->_visible) {
+	COIBoardQueueDraw(context->board);
+      }
     }
 
     tentacle = (COISprite*)LinkedListNext(context->topTentacles);
@@ -135,6 +137,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
   context->terrain = TT_SAFE;
+  context->battleActorType = ACTOR_SKELETON;
   context->board = board;
   context->willEnterBattle = false;
   context->_npcTicks = 0;
@@ -241,6 +244,9 @@ void townCheckForBattle(TownContext* context) {
   case TT_THICK_GRASS:
     context->willEnterBattle = generateRandomBoolWeighted(0.05);
     break;
+  case TT_TENTACLE:
+    context->willEnterBattle = true;
+    break;
   default:
     context->willEnterBattle = false;
   }
@@ -250,6 +256,11 @@ void townUpdateTerrain(TownContext* context, int collisionResult) {
   switch (collisionResult) {
   case THICK_GRASS:
     context->terrain = TT_THICK_GRASS;
+    context->battleActorType = ACTOR_SKELETON;
+    break;
+  case TENTACLE:
+    context->terrain = TT_TENTACLE;
+    context->battleActorType = ACTOR_TENTACLE;
     break;
   case COI_NO_COLLISION:
     context->terrain = TT_SAFE;

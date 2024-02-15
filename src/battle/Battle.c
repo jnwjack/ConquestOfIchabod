@@ -130,7 +130,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   
 
   // Enemies, can later randomize number
-  context->numEnemies = 1;
+  context->numEnemies = 4;
 
   // Actions
   context->actions = malloc(sizeof(BattleAction) *

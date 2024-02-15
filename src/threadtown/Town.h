@@ -18,6 +18,7 @@
 // What kind of terrain are we on? Used when determining if we should have an encounter
 typedef enum TownTerrain {
   TT_THICK_GRASS,
+  TT_TENTACLE,
   TT_SAFE // No chance of battle
 } TownTerrain;
 
@@ -27,6 +28,7 @@ typedef struct TownContext {
   int direction;
   TownTerrain terrain;
   bool willEnterBattle;
+  int battleActorType;
   COITextType* textType;
   PauseOverlay* pauseOverlay;
   TextBox* textBox;

@@ -38,6 +38,6 @@ void COISpriteSetSheetIndex(COISprite* sprite, int row, int col);
 int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height);
 void COISpriteSetExtraCollision(COISprite* sprite, COIExtraCollision* collision);
 void COISpriteSetPos(COISprite* sprite, int x, int y);
-bool COISpriteAnimateInPlace(COISprite* sprite);
+void COISpriteAnimateInPlace(COISprite* sprite);
 
 #endif
