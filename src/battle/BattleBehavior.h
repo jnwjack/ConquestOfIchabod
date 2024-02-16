@@ -22,7 +22,9 @@ typedef struct BattleAction {
 // action that just took place. Used for populating
 // text box in battles.
 typedef struct ActionSummary {
-  COIString** strings;
+  LinkedList* strings; // Should use a vector instead
+  COIString* currentStringObj;
+  //COIString** strings;
   int numStrings;
   int currentString;
   int ticksPerString;
@@ -43,7 +45,7 @@ void battleBehaviorSortActions(BattleAction* actions, int numActions);
 ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, COITextType* textType, COIBoard* board, COISprite* box);
 
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...);
-void ActionSummaryAdvance(ActionSummary* summary);
+void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString);
 void ActionSummaryPosition(ActionSummary* summary, int x, int y);
 void ActionSummaryDestroy(ActionSummary* summary, COIBoard* board);
 

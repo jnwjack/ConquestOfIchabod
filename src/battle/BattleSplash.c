@@ -62,7 +62,15 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
   return splash;
 }
 
-void BattleSplashAnimate(BattleSplash* splash) {
+void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd) {
+  if (cutToEnd && splash->stage < BSS_PROGRESS_BAR) {
+    COIStringSetVisible(splash->result, true);
+    COIStringSetVisible(splash->rewards, true);
+    COIStringSetVisible(splash->xp, true);
+    splash->stage = BSS_PROGRESS_BAR;
+    splash->_ticks = 0;
+  }
+  
   switch (splash->stage) {
   case BSS_START:
     COIStringSetVisible(splash->result, true);

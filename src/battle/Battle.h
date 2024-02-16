@@ -130,6 +130,6 @@ void battleHandleSubMenuSelection(BattleContext* context);
 void battleHandleActorSelect(BattleContext* context);
 void battleMovePointer(BattleContext* context, int offset);
 void battleSelectAttackTarget(BattleContext* context);
-BattleResult battleAdvanceScene(BattleContext* context);
+BattleResult battleAdvanceScene(BattleContext* context, bool selection);
 
 #endif

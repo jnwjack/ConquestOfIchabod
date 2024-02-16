@@ -130,7 +130,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   
 
   // Enemies, can later randomize number
-  context->numEnemies = 4;
+  context->numEnemies = 1;
 
   // Actions
   context->actions = malloc(sizeof(BattleAction) *
@@ -495,7 +495,7 @@ void battleHandleSubMenuSelection(BattleContext* context) {
 
 
 // Returns true if battle is finished
-BattleResult battleAdvanceScene(BattleContext* context) {
+BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
   int numActions = context->numAllies + context->numEnemies;
   
   if(context->sceneStage == SS_SPLASH) {
@@ -506,7 +506,7 @@ BattleResult battleAdvanceScene(BattleContext* context) {
       context->splash = NULL;
       return battleFinished(context);
     } else {
-      BattleSplashAnimate(context->splash);
+      BattleSplashAnimate(context->splash, selection);
       return BR_CONTINUE;
     }
   } else if (context->currentActionIndex >= numActions) {
@@ -533,6 +533,8 @@ BattleResult battleAdvanceScene(BattleContext* context) {
       break;
     case SS_TEXT:
       if (!context->summary) {
+	// We're working with the target's sprite in this section
+	action.target->sprite->_autoHandle = false;
 	// Create ActionSummary. This holds the COIStrings
 	// that describe the current action.
 	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
@@ -541,8 +543,17 @@ BattleResult battleAdvanceScene(BattleContext* context) {
 	ActionSummaryDestroy(context->summary, context->board);
 	context->summary = NULL;
 	context->sceneStage = SS_MOVE_BACKWARDS;
+	// We're done with the target's sprite
+	action.target->sprite->_autoHandle = true;
       } else {
-	ActionSummaryAdvance(context->summary);
+	ActionSummaryAdvance(context->summary, selection);
+	// Flicker effect on target actor
+	if (context->summary->currentString > 0) {
+	  action.target->sprite->_visible = true;
+	}
+	else if (context->summary->ticks % 10 == 0) {
+	  action.target->sprite->_visible = !action.target->sprite->_visible;
+	}
       }
       
       break;

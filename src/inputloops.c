@@ -62,7 +62,9 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   // Behavior when not accepting user input
   BattleResult result = BR_CONTINUE;
   if (!battleContext->controlEnabled) {
-    result = battleAdvanceScene(battleContext);
+    // Can speed up animations by inputting a selection
+    bool selection = _sdlEventToDirectionalInput(event) == MOVING_SELECT;
+    result = battleAdvanceScene(battleContext, selection);
     _processBattleResult(board, battleContext, result);
     return;
   }

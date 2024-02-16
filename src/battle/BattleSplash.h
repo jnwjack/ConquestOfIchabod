@@ -35,7 +35,7 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
 				 unsigned long currentXP,
 				 unsigned long xpForLevelUp,
 				 unsigned long gainedXP);
-void BattleSplashAnimate(BattleSplash* splash);
+void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd);
 bool BattleSplashFinished(BattleSplash* splash);
 void BattleSplashDestroy(BattleSplash* splash, COIBoard* board);
 

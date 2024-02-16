@@ -151,73 +151,100 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
 
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...) {
   ActionSummary* summary = malloc(sizeof(ActionSummary));
-  
+  summary->strings = LinkedListCreate();
+    
   va_list list;
   char* currentString = string;
   va_start(list, string);
   
   // Count how many strings we have
-  int count = 0;
+  /*int count = 0;
   while (currentString){
     count++;
     currentString = va_arg(list, char*);
   }
   va_end(list);
   summary->numStrings = count;
-  summary->strings = malloc(sizeof(COIString*) * count);
+  summary->strings = malloc(sizeof(COIString*) * count);*/
   summary->ticksPerString = 50; // Can have an arg for this later
   summary->ticks = 0;
   summary->finished = false;
 
   // Create a COIString for each string arg
-  currentString = string;
+  //currentString = string;
   va_start(list, string);
-  int i = 0;
+  //int i = 0;
+  summary->numStrings = 0;
   while (currentString){
-    summary->strings[i] = COIStringCreate(currentString, 0, 0, textType);
-    COIStringConfineToSprite(summary->strings[i], box);
+    COIString* coiString = COIStringCreate(currentString, 0, 0, textType);
+    //summary->strings[i] 
+    COIStringConfineToSprite(coiString, box);
     // Add COIString to board
-    COIBoardAddString(board, summary->strings[i]);
-    COIStringSetVisible(summary->strings[i], false);
+    COIBoardAddString(board, coiString);
+    COIStringSetVisible(coiString, false);
+    LinkedListAdd(summary->strings, (void*)coiString);
     currentString = va_arg(list, char*);
-    i++;
+    //i++;
+    summary->numStrings++;
   }
   // Set first string to visible
-  if (i > 0) {
-    COIStringSetVisible(summary->strings[0], true);
+  if (summary->numStrings > 0) {
+    LinkedListResetCursor(summary->strings);
+    summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
+    COIStringSetVisible(summary->currentStringObj, true);
+    summary->currentString = 0;
+    //COIStringSetVisible(summary->strings[0], true);
   }
   va_end(list);
+
+  
   
   return summary;
 }
 
-void ActionSummaryAdvance(ActionSummary* summary) {
+void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString) {
+  // Can't skip past last string
+  if (summary->currentString + 1 >= summary->numStrings) {
+    skipToNextString = false;
+  }
+  
   summary->ticks++;
-  if (summary->ticks >= summary->ticksPerString) {
+  if (summary->ticks >= summary->ticksPerString || skipToNextString) {
     summary->ticks = 0;
-    COIStringSetVisible(summary->strings[summary->currentString], false);
+    COIStringSetVisible(summary->currentStringObj, false);
     summary->currentString++;
     if (summary->currentString >= summary->numStrings) {
       summary->finished = true;
     } else {
-      COIStringSetVisible(summary->strings[summary->currentString], true);
+      summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
+      COIStringSetVisible(summary->currentStringObj, true);
     }
   }
 }
 
+void ActionSummaryAddString(ActionSummary* summary, char* newString) {
+  LinkedListAdd(summary->strings, (void*)newString);
+  summary->numStrings++;
+}
+
 void ActionSummaryPosition(ActionSummary* summary, int x, int y) {
+  /*
   for (int i = 0; i < summary->numStrings; i++) {
     COIStringSetPos(summary->strings[i], x, y);
-  }
+    }*/
+  // This function would break things if we mess with the linked list cursor
 }
 
 void ActionSummaryDestroy(ActionSummary* summary, COIBoard* board) {
-  for (int i = 0; i < summary->numStrings; i++) {
-    // Remove COIString from board
-    COIBoardRemoveString(board, summary->strings[i]);
-    COIStringDestroy(summary->strings[i]);
+  LinkedListResetCursor(summary->strings);
+  COIString* string = LinkedListNext(summary->strings);
+  while (string) {
+    COIBoardRemoveString(board, string);
+    COIStringDestroy(string);
+    string = LinkedListNext(summary->strings);
   }
-  free(summary->strings);
+  LinkedListDestroy(summary->strings);
+  //free(summary->strings);
   free(summary);
 }
 
