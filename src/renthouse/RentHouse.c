@@ -10,16 +10,27 @@ static void _destroyString(COIBoard* board, COIString* string) {
 static void _heal(RentHouseContext* context) {
   Actor* player = context->pInfo->party[0];
   
-  char temp[MAX_STRING_SIZE];
+  
   if (!context->pInfo->alreadyHealed) {
+    char hpString[MAX_STRING_SIZE];
+    char spString[MAX_STRING_SIZE];
+    char tpString[MAX_STRING_SIZE];
     int amountHealed = player->hpMax - player->hp;
-    snprintf(temp, MAX_STRING_SIZE, "%i damage healed.", amountHealed);
+    int regainedTP = player->tpMax - player->tp;
+    int regainedSP = player->spMax - player->sp;
+    snprintf(hpString, MAX_STRING_SIZE, "%i damage healed.", amountHealed);
+    snprintf(tpString, MAX_STRING_SIZE, "%i TP restored.", regainedTP);
+    snprintf(spString, MAX_STRING_SIZE, "%i SP restored.", regainedSP);
     TextBoxSetStrings(context->textBox,
 		      "You tend to your wounds.",
-		      temp,
+		      hpString,
+		      tpString,
+		      spString,
 		      NULL);
     context->pInfo->alreadyHealed = true;
     player->hp = player->hpMax;
+    player->tp = player->tpMax;
+    player->sp = player->spMax;
   } else {
     TextBoxSetStrings(context->textBox,
 		      "You must sleep before you may heal again.",

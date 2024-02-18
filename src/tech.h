@@ -24,7 +24,7 @@
 typedef struct Tech {
   int id;
   int cost; // Cost per turn to apply tech
-  int strength; // Strength of effect
+  float strength; // Strength of effect
   int consecutive;
   bool active;
 } Tech;

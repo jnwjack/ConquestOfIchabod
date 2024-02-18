@@ -16,6 +16,11 @@ typedef struct BattleAction {
   Actor* target; // Targeted actor of attack/special/item
   ActionType type;
   int index; // Index of used special/item
+
+  // Modifiers
+  float attackModifier; // Effectiveness modifier from actor/target
+  float spCostModifier;
+  bool damageAttacker;
 } BattleAction;
 
 // Data structure that contains text that describes an
@@ -47,6 +52,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...);
 void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString);
 void ActionSummaryPosition(ActionSummary* summary, int x, int y);
+//void ActionSummaryAddString(ActionSummary* summary, char* newString);
+void ActionSummaryAddString(ActionSummary* summary, char* newString, COIBoard* board, COISprite* sprite, COITextType* textType);
 void ActionSummaryDestroy(ActionSummary* summary, COIBoard* board);
 
 

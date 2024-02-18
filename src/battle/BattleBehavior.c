@@ -41,6 +41,12 @@ void _sortHelper(BattleAction* actions, int lo, int hi) {
   _sortHelper(actions, pivot + 1, hi);
 }
 
+void _initializeAction(BattleAction* action) {
+  action->attackModifier = 1.0;
+  action->spCostModifier = 1.0;
+  action->damageAttacker = false;
+}
+
 ActionType battleBehaviorPickActionType(int actorType) {
   // In future, can have different behavior for different actors.
   return ATTACK;
@@ -109,6 +115,42 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
   char dmgString[MAX_STRING_SIZE];  
   int damage = 0;
   ActionSummary* summary;
+  _initializeAction(action);
+
+  // Apply actor TECH
+  for (int i = 0; i < a->techList->count; i++) {
+    Tech* tech = a->techList->techs[i];
+    if (tech->active) {
+      a->tp -= tech->cost;
+      switch (tech->id) {
+      case TECH_ID_FOCUS:
+	action->spCostModifier *= tech->strength;
+	break;
+      case TECH_ID_RAGE:
+	action->attackModifier *= tech->strength;
+	break;
+      }
+    }
+  }
+
+  // Apply target TECH
+  for (int i = 0; i < t->techList->count; i++) {
+    Tech* tech = t->techList->techs[i];
+    if (tech->active) {
+      switch (tech->id) {
+      case TECH_ID_COUNTER:
+	action->damageAttacker = true;
+	break;
+      case TECH_ID_BRACE:
+	action->attackModifier *= tech->strength;
+	break;
+      case TECH_ID_RAGE:
+	action->attackModifier *= tech->strength;
+	break;
+      }
+    }
+  }
+  
   if (a->actorType == ACTOR_PLAYER) {
     aName = playerName;
   } else {
@@ -123,23 +165,31 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
 
   switch (action->type) {
   case ATTACK:
-    damage = MAX(1, a->atk - t->def);
+    // Save attack value and defense value in BattleAction on creation
+    damage = MAX(1, a->atk - t->def) * action->attackModifier;
     sprintf(atkString, "%s ATTACKS %s", aName, tName);
     sprintf(dmgString, "%i DAMAGE DEALT", damage);
     t->hp = MAX(0, t->hp - damage);
+    summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, NULL);
+    if (action->damageAttacker) {
+      a->hp = MAX(0, a->hp - damage / 2);
+      char temp[MAX_STRING_SIZE];
+      snprintf(temp, MAX_STRING_SIZE, "%s COUNTERS!", tName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+      snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", damage / 2, aName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+      if (actorIsDead(a)) {
+	a->sprite->_visible = false;
+	snprintf(temp, MAX_STRING_SIZE, "%s DIES", aName);
+	ActionSummaryAddString(summary, temp, board, box, textType);
+      }
+    }
     if (actorIsDead(t)) {
       t->sprite->_visible = false;
       char deathString[MAX_STRING_SIZE];
-      sprintf(deathString, "%s DIES", tName);
-      summary = ActionSummaryCreate(board, box, textType,
-				    atkString,
-				    dmgString,
-				    deathString,
-				    NULL);
-    } else {
-      summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, NULL);
+      snprintf(deathString, MAX_STRING_SIZE, "%s DIES", tName);
+      ActionSummaryAddString(summary, deathString, board, box, textType);
     }
-    //printf("%s ATTACKS %s FOR %i DAMAGE\n", aName, tName, damage);
     break;
   default:
     printf("Invalid action type.\n");
@@ -196,8 +246,6 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
     //COIStringSetVisible(summary->strings[0], true);
   }
   va_end(list);
-
-  
   
   return summary;
 }
@@ -222,8 +270,14 @@ void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString) {
   }
 }
 
-void ActionSummaryAddString(ActionSummary* summary, char* newString) {
-  LinkedListAdd(summary->strings, (void*)newString);
+void ActionSummaryAddString(ActionSummary* summary, char* newString, COIBoard* board, COISprite* sprite, COITextType* textType) {
+  COIString* coiString = COIStringCreate(newString, 0, 0, textType);
+  //summary->strings[i] 
+  COIStringConfineToSprite(coiString, sprite);
+  // Add COIString to board
+  COIBoardAddString(board, coiString);
+  COIStringSetVisible(coiString, false);
+  LinkedListAdd(summary->strings, (void*)coiString);
   summary->numStrings++;
 }
 

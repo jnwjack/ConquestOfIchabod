@@ -265,6 +265,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case RENTABLE_HOUSE_DOOR:
       player->movementDirection = MOVING_NONE;
+      townContext->pauseOverlay->dirty = true;
       otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
       COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
       break;

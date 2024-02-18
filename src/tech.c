@@ -11,19 +11,19 @@ Tech* techCreate(int id) {
   switch (id) {
   case TECH_ID_FOCUS:
     tech->cost = 3;
-    tech->strength = 5;
+    tech->strength = 0.5;
     return tech;
   case TECH_ID_COUNTER:
     tech->cost = 7;
-    tech->strength = 10;
+    tech->strength = 1.0;
     return tech;
   case TECH_ID_BRACE:
     tech->cost = 1;
-    tech->strength = 4;
+    tech->strength = 0.5;
     return tech;
   case TECH_ID_RAGE:
     tech->cost = 5;
-    tech->strength = 12;
+    tech->strength = 1.5;
     return tech;
   }
 

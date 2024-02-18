@@ -454,6 +454,8 @@ void townMovePlayer(TownContext* context) {
   }
 
   if (context->willEnterBattle) {
+    // Readjust pause overlay after battle. HP, SP, etc. will have changed
+    context->pauseOverlay->dirty = true;
     player->nextMovementDirection = MOVING_NONE;
     player->movementDirection = MOVING_NONE;
   }
