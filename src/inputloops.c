@@ -59,6 +59,8 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
 void battle(COIBoard* board, SDL_Event* event, void* context) {
   BattleContext* battleContext = (BattleContext*)context;
 
+  battleTick(battleContext);
+
   // Behavior when not accepting user input
   BattleResult result = BR_CONTINUE;
   if (!battleContext->controlEnabled) {

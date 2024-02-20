@@ -35,6 +35,7 @@ typedef struct Actor {
   int spMax;
 
   TechList* techList;
+  IntList specials;
 
   int movementDirection;
   int nextMovementDirection;

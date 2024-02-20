@@ -1,5 +1,7 @@
 #include "actor.h"
 
+#include "special.h"
+
 // For a 3 x 4 spritesheet
 static int _spriteSheetOrderCols[] = { 0, 2, 1, 2 };
 
@@ -25,6 +27,10 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   } else {
     actor->techList = techCreateList(MAX_TECH_COUNT_NPC);
   }
+
+  IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
+  IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
+  IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
 
   actor->movementDirection = MOVING_NONE;
   actor->nextMovementDirection = MOVING_NONE;

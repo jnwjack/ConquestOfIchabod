@@ -33,6 +33,7 @@ typedef struct COIMenu {
 COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer);
 COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int capacity);
 void COIMenuDestroy(COIMenu* menu);
+void COIMenuFreeComponents(COIMenu* menu, COIBoard* board);
 void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board);
 
 void COIMenuSetVisible(COIMenu* menu);
@@ -45,5 +46,6 @@ bool COIMenuHandleInput(COIMenu* menu, int event);
 bool COIMenuAddString(COIMenu* menu, COIString* string, int val);
 void COIMenuRemoveString(COIMenu* menu, int index, COIBoard* board);
 int COIMenuGetCurrentValue(COIMenu* menu);
+
 
 #endif

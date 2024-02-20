@@ -84,6 +84,25 @@ void LinkedListDestroy(LinkedList* list) {
   free(list);
 }
 
+void IntListInitialize(IntList* list, int capacity) {
+  list->capacity = capacity;
+  list->values = malloc(sizeof(int) * capacity);
+  list->length = 0;
+}
+
+void IntListAdd(IntList* list, int value) {
+  if (list->length < list->capacity) {
+    list->values[list->length] = value;
+    list->length++;
+  } else {
+    printf("Error: attempted to add to full list.");
+  }
+}
+
+void IntListDestroy(IntList* list) {
+  free(list->values);
+}
+
 int POW_INT(int x, int y) {
   int res = 1;
   for (int i = 0; i < y; i++) {

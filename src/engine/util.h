@@ -31,12 +31,25 @@ typedef struct LinkedList {
   LinkedListNode* cursor; // Used when traversing list
 } LinkedList;
 
+
 LinkedList* LinkedListCreate();
 void LinkedListAdd(LinkedList* list, void* data);
 void LinkedListRemove(LinkedList* list, void* data);
 void* LinkedListNext(LinkedList* list);
 void LinkedListResetCursor(LinkedList* list);
 void LinkedListDestroy(LinkedList* list);
+
+// Can make this more generic later on
+typedef struct IntList {
+  int* values;
+  int capacity;
+  int length;
+} IntList;
+
+IntList* IntListCreate(int capacity);
+void IntListInitialize(IntList* list, int capacity);
+void IntListDestroy(IntList* list);
+void IntListAdd(IntList* list, int value);
 
 int POW_INT(int x, int y);
 

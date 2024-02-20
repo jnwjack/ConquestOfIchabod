@@ -1,5 +1,6 @@
 #include "Battle.h"
 #include "../actor.h"
+#include "../special.h"
 
 static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
@@ -118,6 +119,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->numAllies = pInfo->partySize;
   for (int i = 0; i < context->numAllies; i++) {
     actorFaceLeft(context->allies[i]);
+    
   }
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
   _centerActorsInBox(context->allies, context->numAllies, aBox);
@@ -167,15 +169,29 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COIMenuSetTexts(context->actionMenu, context->actionStrings, BATTLE_NUM_ACTIONS);
 
   // Submenu
-  context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
+  //context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
+  context->subMenu = COIMenuCreateWithCapacity(sprites[6], sprites[7], MAX_TECH_COUNT_ALLY);
   COIMenuSetInvisible(context->subMenu);
 
   COIMenuSetVisible(context->actionMenu);
   context->menuFocus = ACTION_MENU;
 
+  // Things next to each ally. Status strings and tech particles
+  context->techParticles = malloc(sizeof(COISprite*) * context->numAllies);
   for (int i = 0; i < context->numAllies; i++) {
     context->allyStatuses[i] = AllyStatusCreate(context->board, window, 15);
     AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
+    context->techParticles[i] = COISpriteCreateFromAssetID(context->allies[i]->sprite->_x,
+							   context->allies[i]->sprite->_y,
+							   32,
+							   32,
+							   COI_GLOBAL_LOADER,
+							   22,
+							   COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+    context->techParticles[i]->_autoHandle = false;
+    context->techParticles[i]->_visible = false;
+    COISpriteSetSheetIndex(context->techParticles[i], 0, 0);
+    COIBoardAddDynamicSprite(board, context->techParticles[i]);
   }
 
   COIBoardSetContext(board, (void*)context);
@@ -240,6 +256,19 @@ void battleMovePointer(BattleContext* context, int offset) {
   _toggleTargetNameVisibility(context, true);
 }
 
+static void _disableTechParticlesIfNecessary(BattleContext* context, int index) {
+  Actor* ally = context->allies[index];
+  TechList* techList = ally->techList;
+  for (int i = 0; i < techList->count; i++) {
+    if (techList->techs[i]->active) {
+      return;
+    }
+  }
+
+  context->techParticles[index]->_visible = false;
+}
+
+
 // Reset everything so that we're looking at the action menu again
 void _focusActionMenu(BattleContext* context) {
   _toggleTargetNameVisibility(context, false);
@@ -258,8 +287,44 @@ void _attack(BattleContext* context) {
   context->pointer->_visible = true;
 }
 
+void _item(BattleContext* context) {
+  COIMenuFreeComponents(context->subMenu, context->board);
+  //  ItemList* itemList = context->pInfo->inventory->items;
+  Item** items = context->pInfo->inventory->backpack;
+  for (int i = 0; i < context->pInfo->inventory->numBackpackItems; i++) {
+    if (items[i]->type == CONSUMABLE) {
+      COIString* string = COIStringCreate(ItemListStringFromItemID(items[i]->id),
+					  0, 0,
+					  context->textType);
+      COIStringSetVisible(string, true);
+      COIBoardAddString(context->board, string);
+      COIMenuAddString(context->subMenu, string, i);
+    }
+  }
+
+  COIMenuSetVisible(context->subMenu);
+}
+
+void _special(BattleContext* context) {
+  
+  // Clean up previous COIStrings
+  COIMenuFreeComponents(context->subMenu, context->board);
+
+  // JNW: Using new menu functions. Should port the _tech function similarly
+  IntList* specials = &context->allies[context->turnIndex]->specials;
+  for (int i = 0; i < specials->length; i++) {
+    COIString* string = COIStringCreate(specialName(specials->values[i]),
+					0, 0,
+					context->textType);
+    COIStringSetVisible(string, true);
+    COIBoardAddString(context->board, string);
+    COIMenuAddString(context->subMenu, string, specials->values[i]);
+  }
+  
+  COIMenuSetVisible(context->subMenu);
+}
+
 void _tech(BattleContext* context) {
-  // Display menu of TECH abilities in the future
   context->pointingAtEnemies = false;
   context->targetedActorIndex = 0;
   _adjustPointer(context);
@@ -293,12 +358,48 @@ void _pickNPCActions(BattleContext* context) {
   }
 }
 
+void _itemSelection(BattleContext* context) {
+  if (context->subMenu->_stringCount > 0) {
+    context->pointingAtEnemies = false;
+    context->targetedActorIndex = 0;
+    _adjustPointer(context);
+    _toggleTargetNameVisibility(context, true);
+    context->pointer->_visible = true;
+    COIMenuSetInvisible(context->subMenu);
+    context->menuFocus = ACTORS;
+  }
+}
+
+void _specialSelection(BattleContext* context) {
+  Actor* ally = context->allies[context->turnIndex];
+  int special = COIMenuGetCurrentValue(context->subMenu);
+  
+  context->pointingAtEnemies = specialTargetsEnemies(special);
+  context->targetedActorIndex = 0;
+  if (specialCost(special) <= ally->sp) {
+    _adjustPointer(context);
+    _toggleTargetNameVisibility(context, true);
+    context->pointer->_visible = true;
+    COIMenuSetInvisible(context->subMenu);
+    context->menuFocus = ACTORS;
+  }
+}
+
+
 void _techSelection(BattleContext* context) {
   Actor* ally = context->allies[context->turnIndex];
   int selectedTech = context->subMenu->_current;
   TechList* tList = ally->techList;
   Tech* tech = tList->techs[selectedTech];
   COIString** tNames = context->subMenu->_strings;
+
+  int activeTPCost = 0;
+  for (int i = 0; i < tList->count; i++) {
+    if (tList->techs[i]->active) {
+      activeTPCost += tList->techs[i]->cost;
+    }
+  }
+  
   if (tech->active) {
     tech->active = false;
     COIBoardRemoveString(context->board, tNames[selectedTech]);
@@ -306,13 +407,15 @@ void _techSelection(BattleContext* context) {
     tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
     COIBoardAddString(context->board, tNames[selectedTech]);
     COIMenuSetVisible(context->subMenu);
-  } else if (ally->tp >= tech->cost) {
+    _disableTechParticlesIfNecessary(context, context->turnIndex);
+  } else if (ally->tp >= tech->cost + activeTPCost) {
     tech->active = true;
     COIBoardRemoveString(context->board, tNames[selectedTech]);
     COIStringDestroy(tNames[selectedTech]);
     tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
     COIBoardAddString(context->board, tNames[selectedTech]);
     COIMenuSetVisible(context->subMenu);
+    context->techParticles[context->turnIndex]->_visible = true;
   }
 }
 
@@ -352,6 +455,28 @@ void _selectAttackTarget(BattleContext* context) {
   action->index = -1; // Unused
 }
 
+void _selectItemTarget(BattleContext* context) {
+  BattleAction* action = &context->actions[context->turnIndex];
+  Actor* actor = context->allies[context->turnIndex];
+  action->actor = actor;
+  action->target = context->allies[context->turnIndex];
+  action->type = ITEM;
+  Item** items = context->pInfo->inventory->backpack;
+  action->index = items[COIMenuGetCurrentValue(context->subMenu)]->id;
+}
+
+void _selectSpecialTarget(BattleContext* context) {
+  BattleAction* action = &context->actions[context->turnIndex];
+  int numActors = context->pointingAtEnemies ? context->numEnemies : context->numAllies;
+  Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
+
+  Actor* actor = context->allies[context->turnIndex];
+  action->actor = actor;
+  action->target = actors[context->targetedActorIndex];
+  action->type = SPECIAL;
+  action->index = COIMenuGetCurrentValue(context->subMenu);
+}
+
 // Return true if we're done moving
 bool _moveActorBackwards(BattleContext* context, Actor* actor) {
   // If actor is dead, don't do anything
@@ -363,10 +488,12 @@ bool _moveActorBackwards(BattleContext* context, Actor* actor) {
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
     //COIBoardMoveSprite(context->board, actor->sprite,-1 * BATTLE_MOVEMENT_STEP, 0);
     actorMove(actor, -1 * BATTLE_MOVEMENT_STEP, 0, context->board);
+    // Move tech particles
+    COIBoardMoveSprite(context->board, context->techParticles[0], -1 * BATTLE_MOVEMENT_STEP, 0);
   } else {
     //COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
-    actorMove(actor,BATTLE_MOVEMENT_STEP, 0, context->board);
-  }
+    actorMove(actor, BATTLE_MOVEMENT_STEP, 0, context->board);
+      }
   context->movementOffset -= BATTLE_MOVEMENT_STEP;
   
   bool done =  context->movementOffset <= 0;
@@ -391,6 +518,8 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
   } else {
     //COIBoardMoveSprite(context->board, actor->sprite, -1 * BATTLE_MOVEMENT_STEP, 0);
     actorMove(actor, -1 * BATTLE_MOVEMENT_STEP, 0, context->board);
+    // Move tech particles
+    COIBoardMoveSprite(context->board, context->techParticles[0], -1 * BATTLE_MOVEMENT_STEP, 0);
   }
   context->movementOffset += BATTLE_MOVEMENT_STEP;
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
@@ -419,6 +548,49 @@ static int _countAliveActors(Actor** actors, int numActors) {
   return aliveActors;
 }
 
+
+static void _disableTechs(Actor* actor) {
+  // Currently only does this for the player. May need to update this to handle enemies
+  // or other allies in the future.
+  if (actor->actorType != ACTOR_PLAYER) {
+    return;
+  }
+  int activeTechIndices[MAX_TECH_COUNT_ALLY];
+  int numActiveTechs = 0;
+  int total = 0;
+  //Actor* actor = context->allies[0];
+  TechList* techList = actor->techList;
+  for (int i = 0; i < techList->count; i++) {
+    Tech* tech = techList->techs[i];
+    if (tech->active) {
+      activeTechIndices[numActiveTechs++] = i;
+      total += tech->cost;
+    }
+  }
+
+  while (total > actor->tp) {
+    Tech* tech = techList->techs[activeTechIndices[--numActiveTechs]];
+    tech->active = false;
+    total -= tech->cost;
+  }
+}
+
+void battleTick(BattleContext* context) {
+  // Sparkle effect when techs are active
+  for (int i = 0; i < context->numAllies; i++) {
+    COISprite* sprite = context->techParticles[i];
+    if (sprite->_visible) {
+      sprite->_animationTicks++;
+      if (sprite->_visible && sprite->_animationTicks > BATTLE_TECH_PARTICLE_TICKS) {
+	int oldCol = sprite->_srcRect->x / sprite->_srcRect->w;
+	COISpriteSetSheetIndex(sprite, 0, (oldCol + 1) % 5);
+	sprite->_animationTicks = 0;
+	COIBoardQueueDraw(context->board);
+      }
+    }
+  }
+}
+
 BattleResult battleFinished(BattleContext* context) {
   if (_countAliveActors(context->allies, context->numAllies) == 0) {
     return BR_LOSS;
@@ -442,6 +614,16 @@ BattleResult battleHandleActionSelection(BattleContext* context) {
     context->menuFocus = SUB_MENU;
     context->subMenuType = SM_TECH;
     break;
+  case BATTLE_SPECIAL:
+    _special(context);
+    context->menuFocus = SUB_MENU;
+    context->subMenuType = SM_SPECIAL;
+    break;
+  case BATTLE_ITEM:
+    _item(context);
+    context->menuFocus = SUB_MENU;
+    context->subMenuType = SM_ITEM;
+    break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
     return BR_FLEE;
@@ -460,6 +642,12 @@ void battleHandleActorSelect(BattleContext* context) {
   case BATTLE_ATTACK:
     _selectAttackTarget(context);
     break;
+  case BATTLE_SPECIAL:
+    _selectSpecialTarget(context);
+    break;
+  case BATTLE_ITEM:
+    _selectItemTarget(context);
+    break;
   default:
     printf("Invalid actor selection in battle.\n");
     break;
@@ -474,7 +662,9 @@ void battleHandleBack(BattleContext* context) {
   case BATTLE_ATTACK:
     _focusActionMenu(context);
     break;
+  case BATTLE_ITEM:
   case BATTLE_TECH:
+  case BATTLE_SPECIAL:
     COIMenuSetInvisible(context->subMenu);
     _focusActionMenu(context);
     break;
@@ -487,6 +677,12 @@ void battleHandleSubMenuSelection(BattleContext* context) {
   switch (context->subMenuType) {
   case SM_TECH:
     _techSelection(context);
+    break;
+  case SM_SPECIAL:
+    _specialSelection(context);
+    break;
+  case SM_ITEM:
+    _itemSelection(context);
     break;
   default:
     printf("Error on battle submenu selection.\n");
@@ -511,6 +707,12 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     }
   } else if (context->currentActionIndex >= numActions) {
     // We're done processing actions, user can control again
+
+    // Disable TECHs that we will not be able to afford next turn
+    // Only doing this for the player right now. Not handling other allies or enemies
+    _disableTechs(context->allies[0]);
+    _disableTechParticlesIfNecessary(context, 0);
+    
     context->sceneStage = SS_MOVE_FORWARD;
     context->currentActionIndex = 0;
     context->controlEnabled = true;
@@ -538,7 +740,13 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	// Create ActionSummary. This holds the COIStrings
 	// that describe the current action.
 	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
-	context->summary = battleBehaviorDoAction(&action, context->pInfo->name, context->textType, context->board, box);
+	context->summary = battleBehaviorDoAction(&action, context->textType, context->board, box, context->pInfo);
+	// If it's a item, remove it from backpack on use
+	if (action.type == ITEM) {
+	  inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
+						   ItemListGetItem(context->pInfo->inventory->items,
+								   action.index));
+	}
       } else if (context->summary->finished) {
 	ActionSummaryDestroy(context->summary, context->board);
 	context->summary = NULL;
@@ -567,6 +775,9 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	_updateStatuses(context);
 
 	BattleResult res = battleFinished(context);
+
+	
+	
 	
 	// We're done with the battle, display the splash screen
 	if (res != BR_CONTINUE) {
@@ -599,8 +810,11 @@ void battleDestroyBoard(COIBoard* board) {
     COIStringDestroy(context->enemyNames[i]);
   }
   for (int i = 0; i < context->numAllies; i++) {
+    COIBoardRemoveDynamicSprite(board, context->techParticles[i]);
+    COISpriteDestroy(context->techParticles[i]);
     AllyStatusDestroy(context->allyStatuses[i]);
   }
+  free(context->techParticles);
   free(context->allyStatuses);
   free(context->enemies);
   free(context->actions);

@@ -1,7 +1,7 @@
 #ifndef BATTLEBEHAVIOR_H
 #define BATTLEBEHAVIOR_H
 
-#include "../actor.h"
+#include "../player.h"
 
 typedef enum {
   ATTACK,
@@ -47,7 +47,7 @@ BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, in
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b);
 void battleBehaviorSortActions(BattleAction* actions, int numActions);
 
-ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, COITextType* textType, COIBoard* board, COISprite* box);
+ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo);
 
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...);
 void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString);

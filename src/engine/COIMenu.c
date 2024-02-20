@@ -11,7 +11,7 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer) {
   menu->_stringCount = 0;
   menu->_strings = NULL;
   menu->_values = NULL;
-  menu->_maxStrings = 1000; // Added for new version of COIMenu
+  menu->_maxStrings = 100; // Added for new version of COIMenu
   menu->_current = 0;
   menu->_fontSize = 0;
   menu->_visibleTextCount = 0;
@@ -37,6 +37,17 @@ COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int cap
   return menu;
 }
 
+// Remove and destroy all strings in menu
+// Better to call this than repeatedly calling "COIMenuRemoveString"
+void COIMenuFreeComponents(COIMenu* menu, COIBoard* board) {
+  for (int i = 0; i < menu->_stringCount; i++) {
+    COIString* str = menu->_strings[i];
+    COIBoardRemoveString(board, str);
+    COIStringDestroy(str);
+  }
+  menu->_stringCount = 0;
+}
+
 // Like COIMenuDestroy but also destroy sprites and strings in menu.
 // Assumes sprites are dynamic sprites.
 void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board) {
@@ -52,11 +63,7 @@ void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board) {
   COISpriteDestroy(pointer);
   
   if (menu->_strings != NULL) {
-    for (int i = 0; i < menu->_stringCount; i++) {
-      COIString* str = menu->_strings[i];
-      COIBoardRemoveString(board, str);
-      COIStringDestroy(str);
-    }
+    COIMenuFreeComponents(menu, board);
   }
   COIMenuDestroy(menu);
 }
@@ -240,6 +247,11 @@ bool COIMenuHandleInput(COIMenu* menu, int event) {
 bool COIMenuAddString(COIMenu* menu, COIString* string, int val) {
   if (menu->_stringCount >= menu->_maxStrings) {
     return false;
+  }
+
+  // JNW: Remove this when we fully convert to new COIMenu (getting rid of old settexts function)
+  if (menu->_values == NULL) {
+    menu->_values = malloc(sizeof(int) * menu->_maxStrings);
   }
 
   menu->_strings[menu->_stringCount] = string;

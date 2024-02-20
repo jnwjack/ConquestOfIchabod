@@ -35,6 +35,8 @@
 #define BATTLE_SPRITEMAP_DESC_BOX 8
 #define BATTLE_SPRITEMAP_SPLASH_BOX 9
 
+#define BATTLE_TECH_PARTICLE_TICKS 4
+
 typedef enum{
   SS_MOVE_FORWARD,
   SS_TEXT,
@@ -109,6 +111,10 @@ typedef struct BattleContext {
   // End splash screen, XP gained, new items, progress bar, etc.
   BattleSplash* splash;
 
+  // TECH particle effects
+  COISprite** techParticles;
+  //LinkedList* techParticles;
+
   unsigned long xpYield;
 
   // Data for next board after battle completes
@@ -123,6 +129,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
 			    int enemyType, PlayerInfo* pInfo);
 void battleDestroyBoard(COIBoard* board);
+void battleTick(BattleContext* context);
 void battleHandleBack(BattleContext* context);
 COIMenu* battleGetFocusedMenu(BattleContext* context);
 BattleResult battleHandleActionSelection(BattleContext* context);

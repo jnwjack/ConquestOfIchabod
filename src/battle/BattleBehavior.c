@@ -1,4 +1,6 @@
 #include "BattleBehavior.h"
+#include "../special.h"
+#include "../items.h"
 
 // Action with actor having higher AGI is larger
 int _compareActions(BattleAction a, BattleAction b) {
@@ -106,7 +108,7 @@ void battleBehaviorSortActions(BattleAction* actions, int numActions) {
   _sortHelper(actions, 0, numActions - 1);
 }
 
-ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, COITextType* textType, COIBoard* board, COISprite* box) {
+ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo) {
   Actor* a = action->actor;
   Actor* t = action->target;
   char* aName;
@@ -150,50 +152,87 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, char* playerName, CO
       }
     }
   }
-  
+
+  int aAtk, aDef, tAtk, tDef;
   if (a->actorType == ACTOR_PLAYER) {
-    aName = playerName;
+    aName = pInfo->name;
+    aAtk = playerAdjustedATK(pInfo);
+    aDef = playerAdjustedDEF(pInfo);
   } else {
     aName = actorGetNameFromType(a->actorType);
+    aAtk = a->atk;
+    aDef = a->def;
   }
   if (t->actorType == ACTOR_PLAYER) {
-    tName = playerName;
+    tName = pInfo->name;
+    tAtk = playerAdjustedATK(pInfo);
+    tDef = playerAdjustedDEF(pInfo);
   } else {
     tName = actorGetNameFromType(t->actorType);
+    tAtk = t->atk;
+    tDef = t->def;
   }
 
-
+  char temp[MAX_STRING_SIZE];
+  SpecialType spType;
   switch (action->type) {
   case ATTACK:
     // Save attack value and defense value in BattleAction on creation
-    damage = MAX(1, a->atk - t->def) * action->attackModifier;
+    damage = MAX(1, aAtk - tDef) * action->attackModifier;
     sprintf(atkString, "%s ATTACKS %s", aName, tName);
     sprintf(dmgString, "%i DAMAGE DEALT", damage);
     t->hp = MAX(0, t->hp - damage);
     summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, NULL);
     if (action->damageAttacker) {
       a->hp = MAX(0, a->hp - damage / 2);
-      char temp[MAX_STRING_SIZE];
       snprintf(temp, MAX_STRING_SIZE, "%s COUNTERS!", tName);
       ActionSummaryAddString(summary, temp, board, box, textType);
       snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", damage / 2, aName);
       ActionSummaryAddString(summary, temp, board, box, textType);
-      if (actorIsDead(a)) {
-	a->sprite->_visible = false;
-	snprintf(temp, MAX_STRING_SIZE, "%s DIES", aName);
-	ActionSummaryAddString(summary, temp, board, box, textType);
-      }
     }
-    if (actorIsDead(t)) {
-      t->sprite->_visible = false;
-      char deathString[MAX_STRING_SIZE];
-      snprintf(deathString, MAX_STRING_SIZE, "%s DIES", tName);
-      ActionSummaryAddString(summary, deathString, board, box, textType);
+    break;
+  case SPECIAL:
+    spType = specialType(action->index);
+    a->sp -= (specialCost(action->index) * action->spCostModifier);
+    if (spType == SPECIAL_DAMAGING) {
+      damage = specialStrength(action->index);
+      t->hp = MAX(0, t->hp - damage);
+      
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+    } else if (spType == SPECIAL_HEALING) {
+      int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
+      t->hp = MIN(t->hp + specialStrength(action->index), t->hpMax);
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      snprintf(temp, MAX_STRING_SIZE, "%i HP RESTORED", amountHealed);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+    } else {
+      summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
     }
+    break;
+  case ITEM:
+    snprintf(temp, MAX_STRING_SIZE, "%s USES %s ON %s", aName, ItemListStringFromItemID(action->index), tName);
+    summary = ActionSummaryCreate(board, box, textType, temp, NULL);
     break;
   default:
     printf("Invalid action type.\n");
-    summary = ActionSummaryCreate(board, box, textType, "Invalid action type.");
+    summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
+  }
+
+  if (actorIsDead(a)) {
+    a->sprite->_visible = false;
+    snprintf(temp, MAX_STRING_SIZE, "%s DIES", aName);
+    ActionSummaryAddString(summary, temp, board, box, textType);
+  }
+  if (actorIsDead(t)) {
+    t->sprite->_visible = false;
+    snprintf(temp, MAX_STRING_SIZE, "%s DIES", tName);
+    ActionSummaryAddString(summary, temp, board, box, textType);
   }
   
   return summary;
@@ -207,15 +246,6 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
   char* currentString = string;
   va_start(list, string);
   
-  // Count how many strings we have
-  /*int count = 0;
-  while (currentString){
-    count++;
-    currentString = va_arg(list, char*);
-  }
-  va_end(list);
-  summary->numStrings = count;
-  summary->strings = malloc(sizeof(COIString*) * count);*/
   summary->ticksPerString = 50; // Can have an arg for this later
   summary->ticks = 0;
   summary->finished = false;
@@ -243,7 +273,6 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
     summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
     COIStringSetVisible(summary->currentStringObj, true);
     summary->currentString = 0;
-    //COIStringSetVisible(summary->strings[0], true);
   }
   va_end(list);
   
@@ -261,12 +290,23 @@ void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString) {
     summary->ticks = 0;
     COIStringSetVisible(summary->currentStringObj, false);
     summary->currentString++;
-    if (summary->currentString >= summary->numStrings) {
+    summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
+    if (summary->currentStringObj == NULL) {
       summary->finished = true;
     } else {
-      summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
       COIStringSetVisible(summary->currentStringObj, true);
     }
+    /*
+    if (summary->currentString >= summary->numStrings) {
+      summary->finished = true;
+      } else {
+      summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
+      if (summary->currentStringObj == NULL) {
+	printf("bad: %i\n", summary->currentString);
+      }
+      COIStringSetVisible(summary->currentStringObj, true);
+    }
+    */
   }
 }
 
@@ -278,6 +318,7 @@ void ActionSummaryAddString(ActionSummary* summary, char* newString, COIBoard* b
   COIBoardAddString(board, coiString);
   COIStringSetVisible(coiString, false);
   LinkedListAdd(summary->strings, (void*)coiString);
+  LinkedListResetCursor(summary->strings);
   summary->numStrings++;
 }
 
