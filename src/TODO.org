@@ -4,3 +4,4 @@
 + All sprites should be handled like DynamicSprites (remove original sprites and persistent sprites)
 + Remove old handleMenuInput function in inputloops.c
 + Can we reduce the number of dynamic allocations?
++ Should only be one SDL_Texture per asset type. Handle it like we do SDL_Surfaces.

@@ -198,6 +198,12 @@ void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y) {
     sprite->_y = newY;
     board->_shouldDraw = true;
   }
+  // If autohandle is off, user-defined position is also the relative position on the screen.
+  // We do no adjustment on it.
+  if (!sprite->_autoHandle) {
+    sprite->_drawRect->x = sprite->_x;
+    sprite->_drawRect->y = sprite->_y;
+  }
 }
 
 void COIBoardQueueDraw(COIBoard* board) {

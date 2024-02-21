@@ -72,6 +72,9 @@ int specialCost(int id) {
     return 7;
   case SPECIAL_ID_PARRY:
     return 10;
+  default:
+    printf("Invalid special type.\n");
+    return -1;
   }
 }
 
