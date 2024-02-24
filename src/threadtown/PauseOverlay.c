@@ -46,7 +46,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newHP != oldHP) {
       _removeStringIfExists(overlay, overlay->hpChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newHP);
-      overlay->atkChange = COIStringCreate(temp, 0, 0,
+      overlay->hpChange = COIStringCreate(temp, 0, 0,
 					   newHP > oldHP ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->hpChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->hpChange, overlay->class);
@@ -60,7 +60,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newSP != oldSP) {
       _removeStringIfExists(overlay, overlay->spChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newSP);
-      overlay->atkChange = COIStringCreate(temp, 0, 0,
+      overlay->spChange = COIStringCreate(temp, 0, 0,
 					   newSP > oldSP ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->spChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->spChange, overlay->hp);
@@ -74,7 +74,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newTP != oldTP) {
       _removeStringIfExists(overlay, overlay->tpChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newTP);
-      overlay->atkChange = COIStringCreate(temp, 0, 0,
+      overlay->tpChange = COIStringCreate(temp, 0, 0,
 					   newTP > oldTP ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->tpChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->tpChange, overlay->sp);
@@ -116,7 +116,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newAGI != oldAGI) {
       _removeStringIfExists(overlay, overlay->agiChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newAGI);
-      overlay->defChange = COIStringCreate(temp, 0, 0,
+      overlay->agiChange = COIStringCreate(temp, 0, 0,
 					   newAGI > oldAGI ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->agiChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->agiChange, overlay->def);
@@ -159,8 +159,14 @@ static void _makeStatStrings(PauseOverlay* overlay) {
   COIStringPositionBelowString(overlay->tp, overlay->sp);
   COIBoardAddString(overlay->board, overlay->tp);
 
+  // Change text color if we have a stat buff/debuff
+  COITextType* textTypeAtk = overlay->textType;
+  int modifiedAtk = actorModifiedAtk(player);
+  if (modifiedAtk != player->atk) {
+    textTypeAtk = modifiedAtk < player->atk ? overlay->negTextType : overlay->posTextType;
+  }
   snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedATK(overlay->pInfo));
-  overlay->atk = COIStringCreate(temp, 0, 0, overlay->textType);
+  overlay->atk = COIStringCreate(temp, 0, 0, textTypeAtk);
   COIStringPositionBelowString(overlay->atk, overlay->tp);
   COIBoardAddString(overlay->board, overlay->atk);
 

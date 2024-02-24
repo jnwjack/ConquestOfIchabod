@@ -13,6 +13,9 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   COISpriteSetSheetIndex(actor->sprite, 2, 2);
 
   actor->atk = atk;
+  actor->atkModifier.factor = 1.0;
+  //TimeStateCopyGlobalTime(&actor->atkModifier.end);
+  
   actor->def = def;
   actor->agi = agi;
   actor->hp = hp;
@@ -230,4 +233,28 @@ void actorTurnAround(Actor* actor) {
   }
 
   COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, 2);
+}
+
+int actorModifiedAtk(Actor* actor) {
+  if (TimeStateInFuture(&actor->atkModifier.end)) {
+    return actor->atkModifier.factor * actor->atk;
+  }
+  return actor->atk;
+}
+
+void actorUseConsumable(Actor* actor, Item* item) {
+  StatModifier* modifier;
+  
+  switch (item->id) {
+  case ITEM_ID_STRENGTH_POTION:
+    modifier = &actor->atkModifier;
+    break;
+  default:
+    printf("Invalid consumable item.\n");
+    modifier = NULL;
+  }
+
+  modifier->factor = item->strength / 10.0;
+  TimeStateCopyGlobalTime(&modifier->end);
+  TimeStateAddVal(&modifier->end, 2);
 }

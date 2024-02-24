@@ -42,7 +42,7 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
 int playerAdjustedATK(PlayerInfo* info) {
   Actor* player = info->party[0];
   Inventory* inventory = info->inventory;
-  return ItemAdjustStat(player->atk, inventory->weapon->strength);
+  return ItemAdjustStat(actorModifiedAtk(player), inventory->weapon->strength);
 }
 
 int playerAdjustedDEF(PlayerInfo* info) {
