@@ -564,6 +564,12 @@ static void _returnToEquipableMenu(PauseOverlay* overlay) {
   COIMenuSetVisible(overlay->topRightMenu);
 }
 
+static void _returnToItemsMenu(PauseOverlay* overlay) {
+  COIMenuSetInvisible(overlay->topRightMenu);
+  overlay->topRightMenu = overlay->itemsMenu;
+  COIMenuSetVisible(overlay->topRightMenu);
+}
+
 static void _equipMenuSelect(PauseOverlay* overlay) {
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     Inventory* inventory = overlay->pInfo->inventory;
@@ -604,6 +610,25 @@ static void _unequipMenuSelect(PauseOverlay* overlay) {
   }
 
   _returnToEquipableMenu(overlay);
+}
+
+static void _itemsMenuSelect(PauseOverlay* overlay) {
+  if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
+    Actor* player = overlay->pInfo->party[0];
+    Inventory* inventory = overlay->pInfo->inventory;
+    actorUseConsumable(player, overlay->selectedItem);
+    inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
+
+    _destroySubMenus(overlay);
+    _makeItemsMenu(overlay, overlay->pInfo, overlay->textType, overlay->board);
+    COIMenuSetInvisible(overlay->itemsMenu);
+    COIMenuSetInvisible(overlay->weaponsMenu);
+    COIMenuSetInvisible(overlay->armorMenu);
+    _destroyStatStrings(overlay);
+    _makeStatStrings(overlay);
+  }
+
+  _returnToItemsMenu(overlay);
 }
 
 
@@ -660,7 +685,7 @@ void PauseOverlaySelect(PauseOverlay* overlay) {
   } else if (overlay->topRightMenu == overlay->unequipMenu) {
     _unequipMenuSelect(overlay);
   } else {
-    printf("wack\n");
+    _itemsMenuSelect(overlay);
   }
 }
 
