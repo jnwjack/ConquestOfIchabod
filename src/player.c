@@ -10,6 +10,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->level = 1;
   info->xp = 0;
   info->xpForLevelUp = 500;
+  info->renting = false;
   info->alreadyHealed = false;
   info->nextRentDate = 30;
 

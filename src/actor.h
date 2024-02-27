@@ -11,6 +11,7 @@
 #define ACTOR_PLAYER 1
 #define ACTOR_CHAGGAI 2
 #define ACTOR_TENTACLE 3
+#define ACTOR_LANDLORD 4
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8

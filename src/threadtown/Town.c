@@ -125,6 +125,14 @@ void _createNPCs(TownContext* context) {
 				       COI_GLOBAL_WINDOW);
   COIBoardAddDynamicSprite(context->board, context->npcs[2]->sprite);
   actorFaceRight(context->npcs[2]);
+
+  context->npcs[3] = actorCreateOfType(ACTOR_LANDLORD,
+				       2176,
+				       2528,
+				       COI_GLOBAL_LOADER,
+				       COI_GLOBAL_WINDOW);
+  COIBoardAddDynamicSprite(context->board, context->npcs[3]->sprite);
+  actorFaceDown(context->npcs[3]);
 }
 
 
@@ -151,11 +159,35 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   Actor* player = context->pInfo->party[0];
   // Adjust board player is in the center of the screen.
   int playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
-  COIBoardShiftFrameX(board, playerCenterX);
+  COIBoardShiftFrameX(board, playerCenterX - COI_GLOBAL_WINDOW->_width / 2);
   int playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
-  COIBoardShiftFrameY(board, playerCenterY);
+  COIBoardShiftFrameY(board, playerCenterY - COI_GLOBAL_WINDOW->_height / 2);
 
   _createNPCs(context);
+  context->talkingActorType = ACTOR_CHAGGAI;
+  
+  // Yes/No dialog
+  COISprite* frame = COISpriteCreateFromAssetID(40, 250, 150, 80,
+						COI_GLOBAL_LOADER,
+						5,
+						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  frame->_autoHandle = false;
+  COIBoardAddDynamicSprite(context->board, frame);
+  COISprite* pointer = COISpriteCreateFromAssetID(0, 0, 32, 32,
+						  COI_GLOBAL_LOADER,
+						  6,
+						  COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  pointer->_autoHandle = false;
+  COIBoardAddDynamicSprite(context->board, pointer);
+  context->confirmMenu = COIMenuCreateWithCapacity(frame, pointer, BACKPACK_SIZE);
+  COIString* yes = COIStringCreate("Yes", 0, 0, context->textType);
+  COIBoardAddString(context->board, yes);
+  COIString* no = COIStringCreate("No", 0, 0, context->textType);
+  COIBoardAddString(context->board, no);
+  COIMenuAddString(context->confirmMenu, yes, 0);
+  COIMenuAddString(context->confirmMenu, no, 1);
+  COIMenuSetInvisible(context->confirmMenu);
+
   
   context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board);
 
@@ -294,14 +326,39 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
   return  _testForCollision(context, actor->sprite, changeX, changeY);
 }
 
+void _talkToLandlord(TownContext* context) {
+  if (context->pInfo->renting) {
+    TextBoxSetStrings(context->textBox,
+		      "Rent's due on the first.",
+		      NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+		      "I'm renting out a room. Interested?",
+		      NULL);
+  }
+  
+}
+
+void _confirmMenuSelect(TownContext* context) {
+  TextBoxNextString(context->textBox);
+  if (COIMenuGetCurrentValue(context->confirmMenu) == 0) {
+    context->pInfo->renting = true;
+    _talkToLandlord(context);
+  }
+  COIMenuSetInvisible(context->confirmMenu);
+  COIBoardQueueDraw(context->board);
+}
+
 
 void townProcessDirectionalInput(TownContext* context, int direction) {
   if (context->pauseOverlay->visible) {
     PauseOverlayProcessInput(context->pauseOverlay, direction);
     COIBoardQueueDraw(context->board);
+  } else if (context->confirmMenu->_frame->_visible) {
+    COIMenuHandleInput(context->confirmMenu, direction);
+    COIBoardQueueDraw(context->board);
   } else if (!context->textBox->box->_visible) {
     Actor* player = context->pInfo->party[0];
-    //bool canAcceptInput = player->_stepsLeft == 0;
     _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
   }
 }
@@ -311,19 +368,34 @@ void townProcessSelectionInput(TownContext* context) {
   if (context->pauseOverlay->visible) {
     PauseOverlaySelect(context->pauseOverlay);
     COIBoardQueueDraw(context->board);
+  } else if (context->confirmMenu->_frame->_visible) {
+    _confirmMenuSelect(context);
   } else if (context->textBox->box->_visible) {
-    // Advance text box
-    TextBoxNextString(context->textBox);
+    if (context->talkingActorType == ACTOR_LANDLORD &&
+	!context->pInfo->renting &&
+	context->textBox->currentStringDone) {
+      COIMenuSetVisible(context->confirmMenu);
+    } else {
+      // Advance text box
+      TextBoxNextString(context->textBox);
+    }
     COIBoardQueueDraw(context->board);
   } else {
     Actor* talkingNPC = _facingNPC(player, context->npcs);
     if (talkingNPC != NULL) {
       actorMeetGaze(talkingNPC, player);
-      TextBoxSetStrings(context->textBox,
-		      "This is the first string.",
-		      "Hi! How are you?",
-		      "The quick brown fox jumps over the lazy dog.",
-		      NULL);
+      context->talkingActorType = talkingNPC->actorType;
+      switch (context->talkingActorType) {
+      case ACTOR_LANDLORD:
+	_talkToLandlord(context);
+	break;
+      default:
+	TextBoxSetStrings(context->textBox,
+			  "This is the first string.",
+			  "Hi! How are you?",
+			  "The quick brown fox jumps over the lazy dog.",
+			  NULL);
+      }
       COIBoardQueueDraw(context->board);
     }
   }
@@ -376,7 +448,7 @@ void townTick(TownContext* context) {
     if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
       for (int i = 0; i < TOWN_NUM_NPCS; i++) {
 	// 30% chance they move
-	if (generateRandomBoolWeighted(0.3)) {
+	if (context->npcs[i]->actorType == ACTOR_CHAGGAI && generateRandomBoolWeighted(0.3)) {
 	  // If we do move, pick 1 of the 4 directions
 	  _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
 	  // Cancel movement if there's a collision
@@ -463,7 +535,7 @@ void townMovePlayer(TownContext* context) {
 
 void townTogglePauseOverlay(TownContext* context) {
   Actor* player = context->pInfo->party[0];
-  if (player->movementDirection == MOVING_NONE) {
+  if (player->movementDirection == MOVING_NONE && !context->confirmMenu->_frame->_visible) {
     PauseOverlaySetVisible(context->pauseOverlay, !context->pauseOverlay->visible);
     COIBoardQueueDraw(context->board);
   }
@@ -475,6 +547,13 @@ void townDestroyBoard(TownContext* context) {
   PauseOverlayDestroy(context->pauseOverlay, context->board);
   TextBoxDestroy(context->textBox);
   LinkedListDestroy(context->topTentacles);
+  for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+    COISprite* sprite = context->npcs[i]->sprite;
+    COIBoardRemoveDynamicSprite(context->board, sprite);
+    COISpriteDestroy(sprite);
+    actorDestroy(context->npcs[i]);
+  }
+  COIMenuDestroyAndFreeComponents(context->confirmMenu, context->board);
   COIBoardDestroy(context->board);
   free(context);
 }

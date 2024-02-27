@@ -69,21 +69,21 @@ int ItemAdjustStat(int baseStat, int itemStrength) {
 char* ItemListStringFromItemID(int item) {
   switch (item) {
   case ITEM_ID_RUSTY_SWORD:
-    return "Rusty Sword";
+    return "Sword";
   case ITEM_ID_RUSTY_BATTLEAXE:
-    return "Rusty Battleaxe";
+    return "Battleaxe";
   case ITEM_ID_SHABBY_BOW:
-    return "Shabby Bow";
+    return "Bow";
   case ITEM_ID_CRACKED_SHIELD:
-    return "Cracked Shield";
+    return "Shield";
   case ITEM_ID_STRENGTH_POTION:
     return "STR Potion";
   case ITEM_ID_BRONZE_HELM:
-    return "Bronze Helm";
+    return "Helm";
   case ITEM_ID_BRONZE_CHEST:
-    return "Bronze Chestplate";
+    return "Chestplate";
   case ITEM_ID_BRONZE_LEGS:
-    return "Bronze Greaves";
+    return "Greaves";
   default:
     return "-";
   }

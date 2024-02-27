@@ -24,8 +24,9 @@ int main(int argc, char** argv) {
   Inventory* inventory = createTestInventory(itemList);
 
   // Initialize player data
-  COISprite* playerSprite = COISpriteCreateFromAssetID(1216, 1472, 32, 32, loader, 1, COIWindowGetRenderer(window));
+  COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, loader, 1, COIWindowGetRenderer(window));
   PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory);
+  actorFaceDown(pInfo->party[0]);
 
   
   COIBoard* townBoard = townCreateBoard(window, loader, pInfo);
