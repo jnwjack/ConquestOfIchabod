@@ -488,12 +488,13 @@ bool _moveActorBackwards(BattleContext* context, Actor* actor) {
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
     //COIBoardMoveSprite(context->board, actor->sprite,-1 * BATTLE_MOVEMENT_STEP, 0);
     actorMove(actor, -1 * BATTLE_MOVEMENT_STEP, 0, context->board);
-    // Move tech particles
-    COIBoardMoveSprite(context->board, context->techParticles[0], -1 * BATTLE_MOVEMENT_STEP, 0);
+    
   } else {
     //COIBoardMoveSprite(context->board, actor->sprite, BATTLE_MOVEMENT_STEP, 0);
     actorMove(actor, BATTLE_MOVEMENT_STEP, 0, context->board);
-      }
+    // Move tech particles
+    COIBoardMoveSprite(context->board, context->techParticles[0], BATTLE_MOVEMENT_STEP, 0);
+  }
   context->movementOffset -= BATTLE_MOVEMENT_STEP;
   
   bool done =  context->movementOffset <= 0;
@@ -520,6 +521,7 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
     actorMove(actor, -1 * BATTLE_MOVEMENT_STEP, 0, context->board);
     // Move tech particles
     COIBoardMoveSprite(context->board, context->techParticles[0], -1 * BATTLE_MOVEMENT_STEP, 0);
+    // Move tech particles
   }
   context->movementOffset += BATTLE_MOVEMENT_STEP;
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
@@ -549,7 +551,15 @@ static int _countAliveActors(Actor** actors, int numActors) {
 }
 
 
-static void _disableTechs(Actor* actor) {
+// Run this when the battle's over.
+static void _disableAllTechs(Actor* actor) {
+  TechList* techList = actor->techList;
+  for (int i = 0; i < techList->count; i++) {
+    techList->techs[i]->active = false;
+  }
+}
+
+static void _disableTechsIfTooExpensive(Actor* actor) {
   // Currently only does this for the player. May need to update this to handle enemies
   // or other allies in the future.
   if (actor->actorType != ACTOR_PLAYER) {
@@ -626,6 +636,7 @@ BattleResult battleHandleActionSelection(BattleContext* context) {
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
+    _disableAllTechs(context->allies[0]);
     return BR_FLEE;
   default:
     printf("Invalid action in battle.\n");
@@ -710,7 +721,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 
     // Disable TECHs that we will not be able to afford next turn
     // Only doing this for the player right now. Not handling other allies or enemies
-    _disableTechs(context->allies[0]);
+    _disableTechsIfTooExpensive(context->allies[0]);
     _disableTechParticlesIfNecessary(context, 0);
     
     context->sceneStage = SS_MOVE_FORWARD;
@@ -775,12 +786,10 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	_updateStatuses(context);
 
 	BattleResult res = battleFinished(context);
-
-	
-	
 	
 	// We're done with the battle, display the splash screen
 	if (res != BR_CONTINUE) {
+	  _disableAllTechs(context->allies[0]);
 	  _showSplash(context, res);
 	  context->sceneStage = SS_SPLASH;
 	}

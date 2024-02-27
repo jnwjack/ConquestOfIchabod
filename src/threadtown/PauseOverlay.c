@@ -46,7 +46,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newHP != oldHP) {
       _removeStringIfExists(overlay, overlay->hpChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newHP);
-      overlay->atkChange = COIStringCreate(temp, 0, 0,
+      overlay->hpChange = COIStringCreate(temp, 0, 0,
 					   newHP > oldHP ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->hpChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->hpChange, overlay->class);
@@ -60,7 +60,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newSP != oldSP) {
       _removeStringIfExists(overlay, overlay->spChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newSP);
-      overlay->atkChange = COIStringCreate(temp, 0, 0,
+      overlay->spChange = COIStringCreate(temp, 0, 0,
 					   newSP > oldSP ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->spChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->spChange, overlay->hp);
@@ -74,7 +74,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newTP != oldTP) {
       _removeStringIfExists(overlay, overlay->tpChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newTP);
-      overlay->atkChange = COIStringCreate(temp, 0, 0,
+      overlay->tpChange = COIStringCreate(temp, 0, 0,
 					   newTP > oldTP ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->tpChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->tpChange, overlay->sp);
@@ -116,7 +116,7 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     if (newAGI != oldAGI) {
       _removeStringIfExists(overlay, overlay->agiChange);
       snprintf(temp, MAX_STRING_SIZE, "%i", newAGI);
-      overlay->defChange = COIStringCreate(temp, 0, 0,
+      overlay->agiChange = COIStringCreate(temp, 0, 0,
 					   newAGI > oldAGI ? overlay->posTextType : overlay->negTextType);
       COIStringConfineToSprite(overlay->agiChange, overlay->statWindow);
       COIStringPositionBelowString(overlay->agiChange, overlay->def);
@@ -159,8 +159,14 @@ static void _makeStatStrings(PauseOverlay* overlay) {
   COIStringPositionBelowString(overlay->tp, overlay->sp);
   COIBoardAddString(overlay->board, overlay->tp);
 
+  // Change text color if we have a stat buff/debuff
+  COITextType* textTypeAtk = overlay->textType;
+  int modifiedAtk = actorModifiedAtk(player);
+  if (modifiedAtk != player->atk) {
+    textTypeAtk = modifiedAtk < player->atk ? overlay->negTextType : overlay->posTextType;
+  }
   snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedATK(overlay->pInfo));
-  overlay->atk = COIStringCreate(temp, 0, 0, overlay->textType);
+  overlay->atk = COIStringCreate(temp, 0, 0, textTypeAtk);
   COIStringPositionBelowString(overlay->atk, overlay->tp);
   COIBoardAddString(overlay->board, overlay->atk);
 
@@ -558,6 +564,12 @@ static void _returnToEquipableMenu(PauseOverlay* overlay) {
   COIMenuSetVisible(overlay->topRightMenu);
 }
 
+static void _returnToItemsMenu(PauseOverlay* overlay) {
+  COIMenuSetInvisible(overlay->topRightMenu);
+  overlay->topRightMenu = overlay->itemsMenu;
+  COIMenuSetVisible(overlay->topRightMenu);
+}
+
 static void _equipMenuSelect(PauseOverlay* overlay) {
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     Inventory* inventory = overlay->pInfo->inventory;
@@ -598,6 +610,25 @@ static void _unequipMenuSelect(PauseOverlay* overlay) {
   }
 
   _returnToEquipableMenu(overlay);
+}
+
+static void _itemsMenuSelect(PauseOverlay* overlay) {
+  if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
+    Actor* player = overlay->pInfo->party[0];
+    Inventory* inventory = overlay->pInfo->inventory;
+    actorUseConsumable(player, overlay->selectedItem);
+    inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
+
+    _destroySubMenus(overlay);
+    _makeItemsMenu(overlay, overlay->pInfo, overlay->textType, overlay->board);
+    COIMenuSetInvisible(overlay->itemsMenu);
+    COIMenuSetInvisible(overlay->weaponsMenu);
+    COIMenuSetInvisible(overlay->armorMenu);
+    _destroyStatStrings(overlay);
+    _makeStatStrings(overlay);
+  }
+
+  _returnToItemsMenu(overlay);
 }
 
 
@@ -654,7 +685,7 @@ void PauseOverlaySelect(PauseOverlay* overlay) {
   } else if (overlay->topRightMenu == overlay->unequipMenu) {
     _unequipMenuSelect(overlay);
   } else {
-    printf("wack\n");
+    _itemsMenuSelect(overlay);
   }
 }
 

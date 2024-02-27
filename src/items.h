@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
 #define ITEM_SLOT_WEAPON 0
 #define ITEM_SLOT_HEAD 1
 #define ITEM_SLOT_BODY 2

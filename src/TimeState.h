@@ -1,6 +1,8 @@
 #ifndef TIMESTATE_H
 #define TIMESTATE_H
 
+#include <stdbool.h>
+
 /*
 #define TIMESTATE_MORNING_THRESHOLD 5
 #define TIMESTATE_DAY_THRESHOLD 10
@@ -23,7 +25,10 @@ typedef struct TimeState {
   unsigned long day;
 } TimeState;
 
+void TimeStateAddVal(TimeState* state, unsigned char val);
 void TimeStateIncrement(unsigned char val);
+bool TimeStateInFuture(TimeState* state);
+void TimeStateCopyGlobalTime(TimeState* state);
 
 extern TimeState GLOBAL_TIME;
 

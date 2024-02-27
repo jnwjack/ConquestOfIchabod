@@ -2,7 +2,9 @@
 #define ACTOR_H
 
 #include "engine/COI.h"
+#include "TimeState.h"
 #include "tech.h"
+#include "items.h"
 
 #define ACTOR_NONE -1
 #define ACTOR_SKELETON 0
@@ -12,6 +14,13 @@
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8
+
+// Represents the effect of buffs/debuffs on a single stat.
+// Caused by spells, potions, etc.
+typedef struct StatModifier {
+  float factor;
+  TimeState end; // Point at which effect is over
+} StatModifier;
 
 // Holds data about a character in the world
 // Sprite, stats, walking behaviors, etc.
@@ -25,6 +34,9 @@ typedef struct Actor {
 
   // Battle statistics
   int atk;
+  // Can add this for other stats. Probably want to package base stat and modifier
+  // into the same data structure.
+  StatModifier atkModifier;
   int def;
   int agi;
   int hp;
@@ -70,5 +82,7 @@ void actorFaceDown(Actor* actor);
 void actorMeetGaze(Actor* a, Actor* b);
 void actorFaceDirection(Actor* actor, int direction);
 void actorTurnAround(Actor* actor);
+int actorModifiedAtk(Actor* actor);
+void actorUseConsumable(Actor* actor, Item* item);
 
 #endif

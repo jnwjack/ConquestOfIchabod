@@ -169,7 +169,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     tDef = playerAdjustedDEF(pInfo);
   } else {
     tName = actorGetNameFromType(t->actorType);
-    tAtk = t->atk;
+    tAtk = actorModifiedAtk(t);
     tDef = t->def;
   }
 
@@ -216,6 +216,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     }
     break;
   case ITEM:
+    actorUseConsumable(t, &pInfo->inventory->items->items[action->index]);
     snprintf(temp, MAX_STRING_SIZE, "%s USES %s ON %s", aName, ItemListStringFromItemID(action->index), tName);
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
     break;

@@ -2,20 +2,39 @@
 
 TimeState GLOBAL_TIME = { TS_MORNING, 0, 0 };
 
-void TimeStateIncrement(unsigned char val) {
-  GLOBAL_TIME.val += val;
+void TimeStateAddVal(TimeState* state, unsigned char val) {
+  state->val += val;
   // Are we in a new time phase?
-  if (GLOBAL_TIME.val >= TIMESTATE_PHASE_LENGTH) {
-    TimeStatePhase oldPhase = GLOBAL_TIME.phase;
-    GLOBAL_TIME.phase += GLOBAL_TIME.val / (TIMESTATE_PHASE_LENGTH);
-    GLOBAL_TIME.val = (GLOBAL_TIME.val - TIMESTATE_PHASE_LENGTH) % TIMESTATE_PHASE_LENGTH;
-    GLOBAL_TIME.phase = (GLOBAL_TIME.phase) % (TS_NIGHT + 1);
+  if (state->val >= TIMESTATE_PHASE_LENGTH) {
+    TimeStatePhase oldPhase = state->phase;
+    state->phase += state->val / (TIMESTATE_PHASE_LENGTH);
+    state->val = (state->val - TIMESTATE_PHASE_LENGTH) % TIMESTATE_PHASE_LENGTH;
+    state->phase = (state->phase) % (TS_NIGHT + 1);
 
     // If our new phase <= our old phase, we're in a new day
-    if (GLOBAL_TIME.phase <= oldPhase) {
-      GLOBAL_TIME.day++;
+    if (state->phase <= oldPhase) {
+      state->day++;
     }
   }
+}
+
+void TimeStateIncrement(unsigned char val) {
+  TimeStateAddVal(&GLOBAL_TIME, val);
+}
+
+bool TimeStateInFuture(TimeState* state) {
+  if (state->day != GLOBAL_TIME.day) {
+    return state->day > GLOBAL_TIME.day;
+  } else if (state->phase != GLOBAL_TIME.phase) {
+    return state->phase > GLOBAL_TIME.phase;
+  }
+  return state->val > GLOBAL_TIME.val;
+}
+
+void TimeStateCopyGlobalTime(TimeState* state) {
+  state->day = GLOBAL_TIME.day;
+  state->phase = GLOBAL_TIME.phase;
+  state->val = GLOBAL_TIME.val;
 }
 
   
