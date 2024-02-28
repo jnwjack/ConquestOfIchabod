@@ -472,19 +472,31 @@ static void _updateGearString(PauseOverlay* overlay, int slot) {
   COIStringDestroy(oldString);
 }
 
+static void _returnToItemsMenu(PauseOverlay* overlay) {
+  COIMenuSetInvisible(overlay->topRightMenu);
+  overlay->topRightMenu = overlay->itemsMenu;
+  COIMenuSetVisible(overlay->topRightMenu);
+}
+
 static void _baseMenuSelect(PauseOverlay* overlay) {
   COIMenuSetInvisible(overlay->baseMenu);
   switch (overlay->topRightMenu->_current) {
   case PAUSE_OVERLAY_ITEMS:
-    overlay->topRightMenu = overlay->itemsMenu;
+    if (overlay->itemsMenu->_stringCount > 0) {
+      overlay->topRightMenu = overlay->itemsMenu;
+    }
     break;
   case PAUSE_OVERLAY_WEAPONS:
-    overlay->topRightMenu = overlay->weaponsMenu;
-    _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
+    if (overlay->weaponsMenu->_stringCount > 0) {
+      overlay->topRightMenu = overlay->weaponsMenu;
+      _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
+    }
     break;
   case PAUSE_OVERLAY_ARMOR:
-    overlay->topRightMenu = overlay->armorMenu;
-    _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
+    if (overlay->armorMenu->_stringCount > 0) {
+      overlay->topRightMenu = overlay->armorMenu;
+      _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
+    }
     break;
   case PAUSE_OVERLAY_QUIT:
     overlay->topRightMenu = overlay->quitMenu;
@@ -564,12 +576,6 @@ static void _returnToEquipableMenu(PauseOverlay* overlay) {
   COIMenuSetVisible(overlay->topRightMenu);
 }
 
-static void _returnToItemsMenu(PauseOverlay* overlay) {
-  COIMenuSetInvisible(overlay->topRightMenu);
-  overlay->topRightMenu = overlay->itemsMenu;
-  COIMenuSetVisible(overlay->topRightMenu);
-}
-
 static void _equipMenuSelect(PauseOverlay* overlay) {
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     Inventory* inventory = overlay->pInfo->inventory;
@@ -628,7 +634,12 @@ static void _itemsMenuSelect(PauseOverlay* overlay) {
     _makeStatStrings(overlay);
   }
 
-  _returnToItemsMenu(overlay);
+  if (overlay->itemsMenu->_stringCount > 0) {
+    _returnToItemsMenu(overlay);
+  } else {
+    _returnToBaseMenu(overlay);
+  }
+  
 }
 
 

@@ -265,6 +265,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
       COIWindowSetBoard(townContext->window, otherBoard, &armory);
       break;
+    case SHOP_DOOR:
     case RENTABLE_HOUSE_DOOR:
       player->movementDirection = MOVING_NONE;
       townContext->pauseOverlay->dirty = true;

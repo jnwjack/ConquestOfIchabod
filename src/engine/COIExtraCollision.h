@@ -12,7 +12,7 @@
 #define THICK_GRASS 4
 #define RENTABLE_HOUSE_DOOR 5
 #define TENTACLE 6
-
+#define SHOP_DOOR 7
 
 typedef struct COIExtraCollision {
   int tlX;
