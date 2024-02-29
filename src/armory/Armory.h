@@ -41,14 +41,20 @@ typedef struct ArmoryContext {
 
 // Create board and associated context
 // main.c can access context through the returned board
-COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard, Inventory* inventory);
+COIBoard* armoryCreateBoard(COIWindow* window,
+			    COIAssetLoader* loader,
+			    COIBoard* outsideBoard,
+			    Inventory* inventory,
+			    IntList* itemIDs);
+COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* inventory);
+COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory);
 
 void armoryDestroy(ArmoryContext* context);
 
 void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock, bool sell, int slot);
 int* armoryGetTextIndices(ArmoryContext* context);
 void armorySetTextIndices(ArmoryContext* context, int* indices);
-void armoryPopulateBuy(ArmoryContext* context);
+void armoryPopulateBuy(ArmoryContext* context, IntList* itemIDs);
 void armoryPopulateSell(ArmoryContext* context);
 void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems);
 void armoryUpdateBoardText(COIBoard* board);
@@ -59,9 +65,10 @@ void armoryBuyItem(COIBoard* board);
 void armorySellItem(COIBoard* board);
 
 // Private functions
+// JNW: cleanup: remove private function declarations in header
 int _textIDFromItemID(int item);
 int _priceFromItemID(int item);
-ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory);
+ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory, IntList* itemIDs);
 char* _stringFromItemID(int item);
 
 #endif

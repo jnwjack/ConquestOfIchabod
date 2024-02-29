@@ -260,12 +260,18 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     // Input loop handles collisions that lead to changes in the input loop (going into a shop, etc.)
     COIBoard* otherBoard;
     switch (collision) {
+    case SHOP_DOOR:
+      player->movementDirection = MOVING_NONE;
+      //otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
+      otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo->inventory);
+      COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      break;      
     case ARMORY_DOOR:
       player->movementDirection = MOVING_NONE;
-      otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
+      //otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
+      otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo->inventory);
       COIWindowSetBoard(townContext->window, otherBoard, &armory);
       break;
-    case SHOP_DOOR:
     case RENTABLE_HOUSE_DOOR:
       player->movementDirection = MOVING_NONE;
       townContext->pauseOverlay->dirty = true;

@@ -90,19 +90,23 @@ void armoryPopulateSell(ArmoryContext* context) {
 }
 
 // Initialize the "buy" menu items
-void armoryPopulateBuy(ArmoryContext* context) {
+void armoryPopulateBuy(ArmoryContext* context, IntList* itemIDs) {
   if(context->sellItems != NULL) {
     free(context->sellItems);
   }
-  
-  context->numBuyItems = 8;
+
+  context->numBuyItems = itemIDs->length;
+  //context->numBuyItems = 8;
   context->buyItems = malloc(context->numBuyItems * sizeof(ArmoryItem));
 
   for (int i = 0; i < context->numBuyItems; i++) {
     context->buyItems[i].string = NULL;
+    armorySetItem(context, &context->buyItems[i], itemIDs->values[i], 1, false, ITEM_SLOT_NA);
   }
+
   
   // Hardcoded prices and stock values
+  /*
   armorySetItem(context, &context->buyItems[0], ITEM_ID_RUSTY_SWORD, 1, false, ITEM_SLOT_NA);
   armorySetItem(context, &context->buyItems[1], ITEM_ID_RUSTY_BATTLEAXE, 1, false, ITEM_SLOT_NA);
   armorySetItem(context, &context->buyItems[2], ITEM_ID_SHABBY_BOW, 1, false, ITEM_SLOT_NA);
@@ -111,6 +115,7 @@ void armoryPopulateBuy(ArmoryContext* context) {
   armorySetItem(context, &context->buyItems[5], ITEM_ID_BRONZE_HELM, 1, false, ITEM_SLOT_NA);
   armorySetItem(context, &context->buyItems[6], ITEM_ID_BRONZE_CHEST, 1, false, ITEM_SLOT_NA);
   armorySetItem(context, &context->buyItems[7], ITEM_ID_BRONZE_LEGS, 1, false, ITEM_SLOT_NA);
+  */
 
   armoryUpdateMenuText(context->buyMenu, context->buyItems, context->numBuyItems);
 }
@@ -179,20 +184,61 @@ void armoryEnableConfirmMenu(ArmoryContext* context) {
 
 // Initialization/Destruction ----------------------------------
 
-COIBoard* armoryCreateBoard(COIWindow* window, COIAssetLoader* loader, COIBoard* outsideBoard, Inventory* inventory) {
+COIBoard* armoryCreateBoard(COIWindow* window,
+			    COIAssetLoader* loader,
+			    COIBoard* outsideBoard,
+			    Inventory* inventory,
+			    IntList* itemIDs) {
+  
   COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, loader);
 
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
 
-  COIBoardSetContext(armoryBoard, (void*)_armoryCreateContext(armoryBoard, outsideBoard, window, inventory));
+  ArmoryContext* context = _armoryCreateContext(armoryBoard, outsideBoard, window, inventory, itemIDs);
+  COIBoardSetContext(armoryBoard, (void*)context);
 
   armoryUpdateBoardText(armoryBoard);
 
   return armoryBoard;
 }
 
-ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory) {
+COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* inventory) {
+  IntList itemIDs;
+  IntListInitialize(&itemIDs, 7);
+  IntListAdd(&itemIDs, ITEM_ID_RUSTY_SWORD);
+  IntListAdd(&itemIDs, ITEM_ID_RUSTY_BATTLEAXE);
+  IntListAdd(&itemIDs, ITEM_ID_SHABBY_BOW);
+  IntListAdd(&itemIDs, ITEM_ID_CRACKED_SHIELD);
+  IntListAdd(&itemIDs, ITEM_ID_BRONZE_HELM);
+  IntListAdd(&itemIDs, ITEM_ID_BRONZE_CHEST);
+  IntListAdd(&itemIDs, ITEM_ID_BRONZE_LEGS);
+
+  return armoryCreateBoard(COI_GLOBAL_WINDOW,
+			   COI_GLOBAL_LOADER,
+			   outsideBoard,
+			   inventory,
+			   &itemIDs);
+}
+
+COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory) {
+  IntList itemIDs;
+  IntListInitialize(&itemIDs, 1);
+  IntListAdd(&itemIDs, ITEM_ID_STRENGTH_POTION);
+  
+  return armoryCreateBoard(COI_GLOBAL_WINDOW,
+			   COI_GLOBAL_LOADER,
+			   outsideBoard,
+			   inventory,
+			   &itemIDs);
+}
+
+ArmoryContext* _armoryCreateContext(COIBoard* board,
+				    COIBoard* outsideBoard,
+				    COIWindow* window,
+				    Inventory* inventory,
+				    IntList* itemIDs) {
+
   ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
   COISprite** armorySprites = COIBoardGetSprites(board);
 
@@ -212,7 +258,7 @@ ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COI
 
   // Fill item list for buy menu
   armoryContext->buyMenu = COIMenuCreate(armorySprites[2], armorySprites[3]);
-  armoryPopulateBuy(armoryContext);
+  armoryPopulateBuy(armoryContext, itemIDs);
   armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
   COIMenuSetInvisible(armoryContext->buyMenu);
   

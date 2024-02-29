@@ -39,14 +39,15 @@ void* LinkedListNext(LinkedList* list);
 void LinkedListResetCursor(LinkedList* list);
 void LinkedListDestroy(LinkedList* list);
 
-// Can make this more generic later on
+// "Add and Read" list. Attempting to delete an element from the underlying array
+// will make bad things happen.
+// Can make this more generic later on.
 typedef struct IntList {
   int* values;
   int capacity;
   int length;
 } IntList;
 
-IntList* IntListCreate(int capacity);
 void IntListInitialize(IntList* list, int capacity);
 void IntListDestroy(IntList* list);
 void IntListAdd(IntList* list, int value);
