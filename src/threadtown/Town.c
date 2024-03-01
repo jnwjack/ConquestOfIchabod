@@ -133,6 +133,14 @@ void _createNPCs(TownContext* context) {
 				       COI_GLOBAL_WINDOW);
   COIBoardAddDynamicSprite(context->board, context->npcs[3]->sprite);
   actorFaceDown(context->npcs[3]);
+
+  context->npcs[4] = actorCreateOfType(ACTOR_MERCHANT,
+				       2080,
+				       2144,
+				       COI_GLOBAL_LOADER,
+				       COI_GLOBAL_WINDOW);
+  COIBoardAddDynamicSprite(context->board, context->npcs[4]->sprite);
+  actorFaceDown(context->npcs[4]);
 }
 
 
@@ -336,6 +344,12 @@ void _talkToLandlord(TownContext* context) {
 		      "I'm renting out a room. Interested?",
 		      NULL);
   }
+}
+
+void _talkToMerchant(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+		    "Hey I'm the merchant.",
+		    NULL);
   
 }
 
@@ -388,6 +402,9 @@ void townProcessSelectionInput(TownContext* context) {
       switch (context->talkingActorType) {
       case ACTOR_LANDLORD:
 	_talkToLandlord(context);
+	break;
+      case ACTOR_MERCHANT:
+	_talkToMerchant(context);
 	break;
       default:
 	TextBoxSetStrings(context->textBox,
