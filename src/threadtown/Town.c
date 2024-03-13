@@ -347,22 +347,55 @@ void _talkToLandlord(TownContext* context) {
 }
 
 void _talkToMerchant(TownContext* context) {
-  TextBoxSetStrings(context->textBox,
+  if (context->pInfo->working) {
+    TextBoxSetStrings(context->textBox,
+		      "Ready to work?",
+		      NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
 		    "Hey I'm the merchant.",
 		    NULL);
+  }
+  
   
 }
 
 void _confirmMenuSelect(TownContext* context) {
   TextBoxNextString(context->textBox);
-  if (COIMenuGetCurrentValue(context->confirmMenu) == 0) {
-    context->pInfo->renting = true;
-    _talkToLandlord(context);
+  bool choseYes = COIMenuGetCurrentValue(context->confirmMenu) == 0;
+  if (choseYes) {
+    switch (context->talkingActorType) {
+    case ACTOR_LANDLORD:
+      context->pInfo->renting = true;
+      _talkToLandlord(context);
+      break;
+    case ACTOR_MERCHANT:
+      if (context->pInfo->working) {
+	TimeStateIncrement(12);
+      } else {
+	context->pInfo->working = true;
+	_talkToMerchant(context);
+      }
+      break;
+    default:
+      printf("Error: confirm menu appeared for invalid actor type\n");
+    }
   }
   COIMenuSetInvisible(context->confirmMenu);
   COIBoardQueueDraw(context->board);
 }
 
+bool _shouldPromptForAnswer(TownContext* context) {
+  if (context->talkingActorType == ACTOR_LANDLORD &&
+      !context->pInfo->renting &&
+      context->textBox->currentStringDone) {
+    return true;
+  } else if (context->talkingActorType == ACTOR_MERCHANT &&
+	     context->textBox->currentStringDone) {
+    return true;
+  }
+  return false;
+}
 
 void townProcessDirectionalInput(TownContext* context, int direction) {
   if (context->pauseOverlay->visible) {
@@ -377,6 +410,7 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   }
 }
 
+
 void townProcessSelectionInput(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   if (context->pauseOverlay->visible) {
@@ -385,9 +419,7 @@ void townProcessSelectionInput(TownContext* context) {
   } else if (context->confirmMenu->_frame->_visible) {
     _confirmMenuSelect(context);
   } else if (context->textBox->box->_visible) {
-    if (context->talkingActorType == ACTOR_LANDLORD &&
-	!context->pInfo->renting &&
-	context->textBox->currentStringDone) {
+    if (_shouldPromptForAnswer(context)) {
       COIMenuSetVisible(context->confirmMenu);
     } else {
       // Advance text box

@@ -13,6 +13,7 @@ typedef struct PlayerInfo {
   char name[MAX_NAME_SIZE];
 
   bool renting;
+  bool working;
   bool alreadyHealed; // Can only heal once per rest via house.
   unsigned long nextRentDate;
   
