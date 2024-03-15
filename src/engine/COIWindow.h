@@ -8,6 +8,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "COIBoard.h"
+#include "COITransition.h"
 
 typedef void (*COILoop)(COIBoard*, SDL_Event* event, void* context);
 
@@ -20,6 +21,7 @@ typedef struct COIWindow {
   COILoop _loop;
   void* _loopContext;
   bool shouldQuit;
+  COITransition transition;
 }COIWindow;
 
 COIWindow* COIWindowCreate();

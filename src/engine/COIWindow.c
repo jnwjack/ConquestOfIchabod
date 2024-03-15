@@ -16,6 +16,7 @@ COIWindow* COIWindowCreate() {
   window->_currentBoard = NULL;
   window->_loop = NULL;
   window->shouldQuit = false;
+  COITransitionInit(&window->transition, COI_TRANSITION_NONE, window);
   return window;
 }
 
@@ -39,7 +40,9 @@ void COIWindowLoop(COIWindow* window) {
     SDL_Delay(20);
     SDL_PollEvent(&event);
 
-    switch (event.type){
+    // Enable user control if no active transition
+    if (window->transition.complete) {
+      switch (event.type){
       case SDL_QUIT:
 	      window->shouldQuit = true;
 	      break;
@@ -48,8 +51,9 @@ void COIWindowLoop(COIWindow* window) {
 	  window->_loop(window->_currentBoard, &event, window->_currentBoard->context);
 	}
 	break;
+      }
     }
-
+    
     if (window->_currentBoard->_shouldDraw) {
       SDL_RenderClear(window->_renderer);
 
@@ -89,8 +93,15 @@ void COIWindowLoop(COIWindow* window) {
 	}
       }
 
+      if (!window->transition.complete) {
+	window->transition.update(&window->transition, window);
+      } else {
+	// We'll want to keep drawing as long as transition is active
+	window->_currentBoard->_shouldDraw = false;
+      }
+      
       SDL_RenderPresent(window->_renderer);
-      window->_currentBoard->_shouldDraw = false;
+      
     }
   }
 }

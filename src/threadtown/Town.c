@@ -372,6 +372,9 @@ void _confirmMenuSelect(TownContext* context) {
     case ACTOR_MERCHANT:
       if (context->pInfo->working) {
 	TimeStateIncrement(12);
+	COITransitionInit(&COI_GLOBAL_WINDOW->transition,
+			  COI_TRANSITION_ENCLOSE,
+			  COI_GLOBAL_WINDOW);
       } else {
 	context->pInfo->working = true;
 	_talkToMerchant(context);
@@ -579,6 +582,9 @@ void townMovePlayer(TownContext* context) {
     context->pauseOverlay->dirty = true;
     player->nextMovementDirection = MOVING_NONE;
     player->movementDirection = MOVING_NONE;
+    COITransitionInit(&COI_GLOBAL_WINDOW->transition,
+		      COI_TRANSITION_SNAKE,
+		      COI_GLOBAL_WINDOW);
   }
 }
 

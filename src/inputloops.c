@@ -219,6 +219,18 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   TownContext* townContext = (TownContext*)context;
   Actor* player = townContext->pInfo->party[0];
 
+  if (townContext->willEnterBattle) {
+    COIBoard* armory = battleCreateBoard(townContext->window,
+					 board->loader,
+					 board,
+					 threadTown,
+					 townContext->battleActorType,
+					 townContext->pInfo);
+    COIWindowSetBoard(townContext->window, armory, &battle);
+    townContext->willEnterBattle = false;
+    return;
+  }
+  
   switch (event->type) {
   case SDL_KEYDOWN:
     switch (event->key.keysym.sym) {
@@ -291,16 +303,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   
   townMoveNPCs(townContext);
 
-  if (townContext->willEnterBattle) {
-    COIBoard* armory = battleCreateBoard(townContext->window,
-					 board->loader,
-					 board,
-					 threadTown,
-					 townContext->battleActorType,
-					 townContext->pInfo);
-    COIWindowSetBoard(townContext->window, armory, &battle);
-    townContext->willEnterBattle = false;
-  }
+  
 }
 
 void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
