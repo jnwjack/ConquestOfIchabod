@@ -58,6 +58,8 @@ void _animateTentacles(TownContext* context) {
   while (tentacle) {
     tentacle->_animationTicks++;
     if (tentacle->_animationTicks > TOWN_TENTACLE_MOVEMENT_TICKS) {
+      // JNW: cleanup - pull this behavior out into a function
+      // in COISprite
       int oldCol = tentacle->_srcRect->x / tentacle->_srcRect->w;
       COISpriteSetSheetIndex(tentacle, 0, (oldCol + 1) % 3);
       tentacle->_animationTicks = 0;

@@ -15,6 +15,8 @@ typedef struct COISprite {
   int _y;
   int _width;
   int _height;
+  int viewWindowWidth;
+  int viewWindowHeight;
   bool _visible;
   SDL_Rect* _drawRect;
   SDL_Rect* _srcRect;

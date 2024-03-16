@@ -11,12 +11,14 @@
 #include "gameover/GameOver.h"
 #include "threadtown/Town.h"
 #include "renthouse/RentHouse.h"
+#include "title/Title.h"
 #include "TimeState.h"
 #include <stdbool.h>
 
 
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context);
+void title(COIBoard* board, SDL_Event* event, void* context);
 void armory(COIBoard* board, SDL_Event* event, void* context);
 void battle(COIBoard* board, SDL_Event* event, void* context);
 void rentHouse(COIBoard* board, SDL_Event* event, void* context);

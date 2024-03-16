@@ -1,5 +1,6 @@
 #include "inputloops.h"
 
+
 // Can extend this to support joystick, etc. later.
 static int _sdlEventToDirectionalInput(SDL_Event* event) {
   switch (event->key.keysym.sym) {
@@ -118,6 +119,12 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
     }
   }
   _processBattleResult(board, battleContext, result);
+}
+
+void title(COIBoard* board, SDL_Event* event, void* context) {
+  TitleContext* titleContext = (TitleContext*)context;
+
+  titleTick(titleContext);
 }
 
 void armory(COIBoard* board, SDL_Event* event, void* context) {

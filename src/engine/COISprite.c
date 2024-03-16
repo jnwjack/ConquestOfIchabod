@@ -40,6 +40,8 @@ COISprite* COISpriteCreate(int x, int y, int w, int h, SDL_Texture* texture, int
   sprite->_autoHandle = true;
   sprite->_extraCollision = NULL;
   sprite->_assetID = assetID;
+  sprite->viewWindowWidth = COI_VIEW_WINDOW_WIDTH;
+  sprite->viewWindowHeight = COI_VIEW_WINDOW_HEIGHT;
 
   return sprite;
 }
@@ -92,8 +94,8 @@ void COISpriteSetSheetIndex(COISprite* sprite, int row, int col) {
   if(sprite->_srcRect == NULL) {
     sprite->_srcRect = malloc(sizeof(SDL_Rect));
     // Default width and height to draw width and draw height
-    sprite->_srcRect->w = COI_VIEW_WINDOW_WIDTH;
-    sprite->_srcRect->h = COI_VIEW_WINDOW_HEIGHT;
+    sprite->_srcRect->w = sprite->viewWindowWidth;
+    sprite->_srcRect->h = sprite->viewWindowHeight;;
   }
   // Assume sprite sheet is an n x 1 image of sprites
   sprite->_srcRect->x = col * sprite->_srcRect->w;

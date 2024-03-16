@@ -28,15 +28,18 @@ int main(int argc, char** argv) {
   PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory);
   actorFaceDown(pInfo->party[0]);
 
+  COIBoard* titleBoard = titleCreateBoard();
+  COIWindowSetBoard(COI_GLOBAL_WINDOW, titleBoard, title);
   
   COIBoard* townBoard = townCreateBoard(window, loader, pInfo);
   COILoop threadTownLoop = &threadTown;
-  COIWindowSetBoard(window, townBoard, threadTownLoop);
+  //COIWindowSetBoard(window, townBoard, threadTownLoop);
   COIWindowLoop(window);
-
+  
   // Cleanup
   COIAssetLoaderDestroy(loader);
   COIBoardDestroy(townBoard);
+  COIBoardDestroy(titleBoard);
   COIWindowDestroy(window);
   ItemListDestroy(itemList);
   inventoryDestroy(inventory);
