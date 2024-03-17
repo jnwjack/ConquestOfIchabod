@@ -124,6 +124,10 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
 void title(COIBoard* board, SDL_Event* event, void* context) {
   TitleContext* titleContext = (TitleContext*)context;
 
+  if (event->type == SDL_KEYDOWN) {
+    titleProcessInput(titleContext, _sdlEventToDirectionalInput(event));
+  }
+
   titleTick(titleContext);
 }
 
