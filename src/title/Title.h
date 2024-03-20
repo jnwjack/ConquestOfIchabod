@@ -4,7 +4,8 @@
 #include "../engine/COI.h"
 #include "../TextBox.h"
 
-#define TITLE_NAME_TICKS 24
+//#define TITLE_NAME_TICKS 24
+#define TITLE_NAME_TICKS 12
 #define TITLE_TEXT_ANIMATE_TICKS 0 // Reduce text speed by this factor
 #define TITLE_STRING_NEW_GAME 0
 #define TITLE_STRING_CONTINUE_GAME 1

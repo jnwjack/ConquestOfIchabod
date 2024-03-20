@@ -53,9 +53,9 @@ COIBoard* titleCreateBoard() {
 					     COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   context->name->viewWindowWidth = 90;
   COIBoardAddDynamicSprite(board, context->name);
-  COISpriteSetSheetIndex(context->name, 0, 0);
-  context->name->_autoHandle = false;
-
+  COISpriteSetSheetIndex(context->name, 0, 3);
+  //context->name->_autoHandle = false;
+  
   COITextType* white = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   COITextType* gray = COITextTypeCreate(25, 120, 120, 120, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
@@ -152,19 +152,31 @@ void titleTick(TitleContext* context) {
       context->currentSlide < TITLE_NUM_INTRO_SLIDES) {
     _displaySlide(context);
   } else {
+    // Animate title
     context->ticks++;
-    if (context->animating &&
-	context->ticks % (TITLE_NAME_TICKS / 3) == 0) {
+    if (context->ticks >= TITLE_NAME_TICKS) {
+      COISpriteSetSheetIndex(context->name, 0, 3);
+      COIBoardQueueDraw(context->board);
+    }
+    if (context->ticks >= TITLE_NAME_TICKS * 5) {
+      context->animating = !context->animating;
+      if (!context->animating) {
+	// Plain static title, no gold.
+	COISpriteSetSheetIndex(context->name, 0, 3);
+      } else {
+	COISpriteSetSheetIndex(context->name, 0, 0);
+      }
+      //context->name->_visible = context->animating;
+      COIBoardQueueDraw(context->board);
+      context->ticks = 0;
+    } else if (context->animating &&
+	       context->ticks < TITLE_NAME_TICKS &&
+	       context->ticks % (TITLE_NAME_TICKS / 3) == 0) {
       int oldCol = context->name->_srcRect->x / context->name->_srcRect->w;
       COISpriteSetSheetIndex(context->name, 0, (oldCol + 1) % 3);
       COIBoardQueueDraw(context->board);
     }
-    if (context->ticks > TITLE_NAME_TICKS) {
-      context->animating = !context->animating;
-      context->name->_visible = context->animating;
-      COIBoardQueueDraw(context->board);
-      context->ticks = 0;
-    }
+    
   }
 }
 
