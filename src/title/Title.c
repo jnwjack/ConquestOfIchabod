@@ -54,7 +54,8 @@ COIBoard* titleCreateBoard() {
   context->name->viewWindowWidth = 90;
   COIBoardAddDynamicSprite(board, context->name);
   COISpriteSetSheetIndex(context->name, 0, 3);
-  //context->name->_autoHandle = false;
+  context->name->_autoHandle = false;
+  context->name->_visible = true;
   
   COITextType* white = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   COITextType* gray = COITextTypeCreate(25, 120, 120, 120, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
@@ -122,6 +123,7 @@ void _setTextBox(TextBox* textBox, char slide) {
 
 void _displaySlide(TitleContext* context) {
   context->ticks++;
+  context->name->_visible = false; // jnw: cleanup - only need to do this once
   if (context->ticks > TITLE_TEXT_ANIMATE_TICKS) {
     context->ticks = 0;
     context->drawing->_visible = false;
@@ -166,7 +168,6 @@ void titleTick(TitleContext* context) {
       } else {
 	COISpriteSetSheetIndex(context->name, 0, 0);
       }
-      //context->name->_visible = context->animating;
       COIBoardQueueDraw(context->board);
       context->ticks = 0;
     } else if (context->animating &&
@@ -181,27 +182,29 @@ void titleTick(TitleContext* context) {
 }
 
 void _select(TitleContext* context) {
-  switch (context->selectedStringIndex) {
-  case TITLE_STRING_NEW_GAME:
-    COITransitionInit(&COI_GLOBAL_WINDOW->transition,
-		      COI_TRANSITION_ENCLOSE,
-		      COI_GLOBAL_WINDOW);
-    // Make strings invisible
-    for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
-      COIStringSetVisible(context->strings[i], false);
-      COIStringSetVisible(context->grayStrings[i], false);
+  if (context->currentSlide == -1) {
+    switch (context->selectedStringIndex) {
+    case TITLE_STRING_NEW_GAME:
+      COITransitionInit(&COI_GLOBAL_WINDOW->transition,
+			COI_TRANSITION_ENCLOSE,
+			COI_GLOBAL_WINDOW);
+      // Make strings invisible
+      for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
+	COIStringSetVisible(context->strings[i], false);
+	COIStringSetVisible(context->grayStrings[i], false);
+      }
+      COIBoardQueueDraw(context->board);
+      context->currentSlide++;
+      break;
+    case TITLE_STRING_CONTINUE_GAME:
+      printf("blah\n");
+      break;
+    case TITLE_STRING_QUIT_GAME:
+      COI_GLOBAL_WINDOW->shouldQuit = true;
+      break;
+    default:
+      printf("Error in title selection.\n");
     }
-    COIBoardQueueDraw(context->board);
-    context->currentSlide++;
-    break;
-  case TITLE_STRING_CONTINUE_GAME:
-    printf("blah\n");
-    break;
-  case TITLE_STRING_QUIT_GAME:
-    COI_GLOBAL_WINDOW->shouldQuit = true;
-    break;
-  default:
-    printf("Error in title selection.\n");
   }
 }
 
@@ -220,7 +223,8 @@ void titleProcessInput(TitleContext* context, int direction) {
     return;
   }
 
-  if (newIndex != context->selectedStringIndex) {
+  if (newIndex != context->selectedStringIndex
+      && context->currentSlide == -1 /* Are we NOT watching intro? */) {
     _setStringSelected(context, context->selectedStringIndex, false);
     _setStringSelected(context, newIndex, true);
     COIBoardQueueDraw(context->board);
