@@ -15,12 +15,18 @@ void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
 				 30);
 }
 
-
 void _setStringSelected(TitleContext* context, int index, bool selected) {
   COIStringSetVisible(context->strings[index], selected);
   COIStringSetVisible(context->grayStrings[index], !selected);
 }
 
+TitleNextBoard titleGetNextBoard(TitleContext* context) {
+  if (context->currentSlide >= TITLE_NUM_INTRO_SLIDES) {
+    return TITLE_NEW_GAME;
+  }
+
+  return TITLE_TITLE;
+}
 
 COIBoard* titleCreateBoard() {
   TitleContext* context = malloc(sizeof(TitleContext));

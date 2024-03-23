@@ -1,4 +1,5 @@
 #include "inputloops.h"
+#include "tests.h"
 
 
 // Can extend this to support joystick, etc. later.
@@ -128,6 +129,20 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 
   if (event->type == SDL_KEYDOWN) {
     titleProcessInput(titleContext, _sdlEventToDirectionalInput(event));
+  }
+
+  if (titleGetNextBoard(titleContext) == TITLE_NEW_GAME) {
+    // Global item data
+   ItemList* itemList = loadItems();
+
+   // Test inventory
+   Inventory* inventory = createTestInventory(itemList);
+
+    // Initialize player data
+    COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+    PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory); // jnw cleanup: leaks
+    COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
   }
 }
 
@@ -313,8 +328,6 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   townTick(townContext);
   
   townMoveNPCs(townContext);
-
-  
 }
 
 void rentHouse(COIBoard* board, SDL_Event* event, void* context) {

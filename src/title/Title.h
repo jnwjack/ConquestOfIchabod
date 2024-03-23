@@ -14,6 +14,12 @@
 #define TITLE_NUM_INTRO_SLIDES 5
 #define TITLE_NUM_OPTIONS 3
 
+typedef enum TitleNextBoard {
+  TITLE_NEW_GAME,
+  TITLE_CONTINUE_GAME,
+  TITLE_TITLE
+} TitleNextBoard;
+
 typedef struct TitleContext {
   COIMenu* menu;
   COISprite* name;
@@ -34,5 +40,6 @@ COIBoard* titleCreateBoard();
 void titleDestroyBoard(TitleContext* context);
 void titleTick(TitleContext* context);
 void titleProcessInput(TitleContext* context, int direction);
+TitleNextBoard titleGetNextBoard(TitleContext* context);
 
 #endif
