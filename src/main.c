@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
   COIAssetLoader* loader = COI_GLOBAL_LOADER;
 
   // Global item data
+  /*
   ItemList* itemList = loadItems();
 
   // Test inventory
@@ -27,22 +28,23 @@ int main(int argc, char** argv) {
   COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, loader, 1, COIWindowGetRenderer(window));
   PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory);
   actorFaceDown(pInfo->party[0]);
+  */
 
   COIBoard* titleBoard = titleCreateBoard();
   COIWindowSetBoard(COI_GLOBAL_WINDOW, titleBoard, title);
   
-  COIBoard* townBoard = townCreateBoard(window, loader, pInfo);
-  COILoop threadTownLoop = &threadTown;
+  //COIBoard* townBoard = townCreateBoard(window, loader, pInfo);
+  //COILoop threadTownLoop = &threadTown;
   //COIWindowSetBoard(window, townBoard, threadTownLoop);
   COIWindowLoop(window);
   
   // Cleanup
   COIAssetLoaderDestroy(loader);
-  COIBoardDestroy(townBoard);
-  COIBoardDestroy(titleBoard);
+  //COIBoardDestroy(townBoard);
+  titleDestroyBoard((TitleContext*)titleBoard->context);
   COIWindowDestroy(window);
-  ItemListDestroy(itemList);
-  inventoryDestroy(inventory);
+  //ItemListDestroy(itemList);
+  //inventoryDestroy(inventory);
 
   return 0;
 }

@@ -105,7 +105,6 @@ void titleDestroyBoard(TitleContext* context) {
   COITextTypeDestroy(context->tBoxTextType);
   TextBoxDestroy(context->textBox);
   free(context);
-  
   COIBoardDestroy(board);
 }
 
