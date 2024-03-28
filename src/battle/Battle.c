@@ -129,6 +129,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COISprite* splashBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
   splashBox->_autoHandle = false;
   splashBox->_visible = false;
+
+  COISprite* descBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
+  descBox->_autoHandle = false;
+  descBox->_visible = false;
   
 
   // Enemies, can later randomize number
@@ -751,6 +755,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	// Create ActionSummary. This holds the COIStrings
 	// that describe the current action.
 	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
+	box->_visible = true;
 	context->summary = battleBehaviorDoAction(&action, context->textType, context->board, box, context->pInfo);
 	// If it's a item, remove it from backpack on use
 	if (action.type == ITEM) {
@@ -762,6 +767,8 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	ActionSummaryDestroy(context->summary, context->board);
 	context->summary = NULL;
 	context->sceneStage = SS_MOVE_BACKWARDS;
+	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
+	box->_visible = false;
 	// We're done with the target's sprite
 	action.target->sprite->_autoHandle = true;
       } else {
