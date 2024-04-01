@@ -65,6 +65,17 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_MERCHANT:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
+  case ACTOR_BOOWOW:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    {
+      Actor* actor = actorCreate(actorType, sprite, 15, 9, 7, 12, 0, 5);
+      techAddToList(actor->techList, TECH_ID_HEAL);
+      return actor;
+    }
+    
+  case ACTOR_FEARWOLF:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    return actorCreate(actorType, sprite, 28, 15, 12, 22, 0, 5);
   }
 
   return NULL;
@@ -105,6 +116,10 @@ char* actorGetNameFromType(int actorType) {
     return "SKELETON";
   case ACTOR_TENTACLE:
     return "CORRUPTION";
+  case ACTOR_BOOWOW:
+    return "BOOWOW";
+  case ACTOR_FEARWOLF:
+    return "FEARWOLF";
   default:
     return "UNKNOWN";
   }

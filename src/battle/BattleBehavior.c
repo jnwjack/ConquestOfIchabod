@@ -51,7 +51,12 @@ void _initializeAction(BattleAction* action) {
 
 ActionType battleBehaviorPickActionType(int actorType) {
   // In future, can have different behavior for different actors.
-  return ATTACK;
+  switch (actorType) {
+  case ACTOR_BOOWOW:
+    return (generateRandomBoolWeighted(0.25) ? SPECIAL : ATTACK);
+  default:
+    return ATTACK;
+  }
 }
 
 Actor* battleBehaviorPickTarget(int actorType, ActionType action, Actor** enemies, int numEnemies, Actor** allies, int numAllies) {

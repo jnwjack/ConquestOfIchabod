@@ -13,6 +13,8 @@
 #define ACTOR_TENTACLE 3
 #define ACTOR_LANDLORD 4
 #define ACTOR_MERCHANT 5
+#define ACTOR_BOOWOW 6
+#define ACTOR_FEARWOLF 7
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8
