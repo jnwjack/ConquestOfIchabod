@@ -4,6 +4,7 @@
 #include "../player.h"
 #include "PauseOverlay.h"
 #include "../TextBox.h"
+#include "../terrain.h"
 
 // After how many ticks should we check for battle?
 #define TOWN_BATTLE_TICKS 50
@@ -15,18 +16,11 @@
 
 #define TOWN_TENTACLE_MOVEMENT_TICKS 20
 
-// What kind of terrain are we on? Used when determining if we should have an encounter
-typedef enum TownTerrain {
-  TT_THICK_GRASS,
-  TT_TENTACLE,
-  TT_SAFE // No chance of battle
-} TownTerrain;
-
 typedef struct TownContext {
   PlayerInfo* pInfo;
   COIWindow* window;
   int direction;
-  TownTerrain terrain;
+  Terrain terrain;
   bool willEnterBattle;
   int battleActorType;
   COITextType* textType;

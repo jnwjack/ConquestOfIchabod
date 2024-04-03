@@ -298,7 +298,7 @@ void townUpdateTerrain(TownContext* context, int collisionResult) {
   switch (collisionResult) {
   case THICK_GRASS:
     context->terrain = TT_THICK_GRASS;
-    context->battleActorType = ACTOR_SKELETON;
+    context->battleActorType = ACTOR_BOOWOW;
     break;
   case TENTACLE:
     context->terrain = TT_TENTACLE;

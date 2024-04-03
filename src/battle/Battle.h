@@ -11,6 +11,7 @@
 #include "BattleBehavior.h"
 #include "Status.h"
 #include "BattleSplash.h"
+#include "../terrain.h"
 
 #define BATTLE_ATTACK 0
 #define BATTLE_TECH 1
@@ -127,7 +128,7 @@ typedef struct BattleContext {
 
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
-			    int enemyType, PlayerInfo* pInfo);
+			    Terrain terrain, PlayerInfo* pInfo);
 void battleDestroyBoard(COIBoard* board);
 void battleTick(BattleContext* context);
 void battleHandleBack(BattleContext* context);

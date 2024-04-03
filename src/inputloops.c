@@ -246,13 +246,13 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   Actor* player = townContext->pInfo->party[0];
 
   if (townContext->willEnterBattle) {
-    COIBoard* armory = battleCreateBoard(townContext->window,
-					 board->loader,
-					 board,
-					 threadTown,
-					 townContext->battleActorType,
-					 townContext->pInfo);
-    COIWindowSetBoard(townContext->window, armory, &battle);
+    COIBoard* battleBoard = battleCreateBoard(townContext->window,
+					      board->loader,
+					      board,
+					      threadTown,
+					      townContext->terrain,
+					      townContext->pInfo);
+    COIWindowSetBoard(townContext->window, battleBoard, &battle);
     townContext->willEnterBattle = false;
     return;
   }

@@ -39,8 +39,8 @@ typedef struct ActionSummary {
 
 // AI action selection
 ActionType battleBehaviorPickActionType(int actorType);
-Actor* battleBehaviorPickTarget(int actorType, ActionType action, Actor** enemies, int numEnemies, Actor** allies, int numAllies);
-int battleBehaviorPickIndex(ActionType action, TechList* techList);
+Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** enemies, int numEnemies, Actor** allies, int numAllies);
+int battleBehaviorPickIndex(ActionType action, Actor* actor);
 BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies);
 
 // Sorting

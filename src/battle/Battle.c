@@ -2,6 +2,8 @@
 #include "../actor.h"
 #include "../special.h"
 
+static int THICK_GRASS_ENEMY_TYPES[3] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_TENTACLE };
+
 static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
 
@@ -25,9 +27,9 @@ static void _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
   context->enemyNames = malloc(sizeof(COIString*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
     Actor* enemy = context->enemies[i];
-    char name[MAX_STRING_SIZE];
-    sprintf(name, "%s %i", actorGetNameFromType(enemy->actorType), i + 1);
-    context->enemyNames[i] = COIStringCreate(name, 220, 40, context->textType);
+    //char name[MAX_STRING_SIZE];
+    //sprintf(name, "%s %i", actorGetNameFromType(enemy->actorType), i + 1);
+    context->enemyNames[i] = COIStringCreate(actorGetNameFromType(enemy->actorType), 220, 40, context->textType);
     COIStringSetVisible(context->enemyNames[i], false);
     allStrings[BATTLE_NUM_ACTIONS+i] = context->enemyNames[i];
   }
@@ -86,9 +88,37 @@ static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
   }
 }
 
+static int _numEnemiesFromTerrain(Terrain terrain) {
+  switch (terrain) {
+  case TT_THICK_GRASS:
+    return (generateRandomChar() % 5) + 1;
+  case TT_TENTACLE:
+    return 4;
+  default:
+    printf("Invalid terrain type for battle enemy count\n");
+    return 0;
+  }
+  
+}
+
+static int _enemyTypeFromTerrain(Terrain terrain) {
+  switch (terrain) {
+  case TT_THICK_GRASS:
+    {
+      int randIndex = (generateRandomChar() % 3);
+      return THICK_GRASS_ENEMY_TYPES[randIndex];
+    }
+  case TT_TENTACLE:
+    return ACTOR_TENTACLE;
+  default:
+    printf("Invalid terrain type for battle actor type\n");
+    return ACTOR_SKELETON;
+  }
+}
+
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
-			    int enemyType, PlayerInfo* pInfo) {  
+			    Terrain terrain, PlayerInfo* pInfo) {  
   COIBoard* board = COIBoardCreate(99, 91, 95, 225, 640, 480, loader);
   COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/battle/spritemap.dat");
 
@@ -124,7 +154,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
-
   
   COISprite* splashBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
   splashBox->_autoHandle = false;
@@ -136,7 +165,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   
 
   // Enemies, can later randomize number
-  context->numEnemies = 1;
+  context->numEnemies = _numEnemiesFromTerrain(terrain);
 
   // Actions
   context->actions = malloc(sizeof(BattleAction) *
@@ -155,8 +184,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->pointer->_autoHandle = false;
   context->pointer->_visible = false;
 
+  printf("num enemies: %i\n", context->numEnemies);
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
+    int enemyType = _enemyTypeFromTerrain(terrain);
     context->enemies[i] = actorCreateOfType(enemyType, 0, 0, loader, window);
     actorFaceRight(context->enemies[i]);
   }
@@ -165,7 +196,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   
   COIBoardSetPersistentSprites(board, _getPersistentSprites(context), context->numEnemies + context->numAllies);
-  
+
   _makeStrings(context, pInfo, board);
 
   // Top-level menu

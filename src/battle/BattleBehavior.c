@@ -59,18 +59,21 @@ ActionType battleBehaviorPickActionType(int actorType) {
   }
 }
 
-Actor* battleBehaviorPickTarget(int actorType, ActionType action, Actor** enemies, int numEnemies, Actor** allies, int numAllies) {
-  switch (action) {
+Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** enemies, int numEnemies, Actor** allies, int numAllies) {
+  switch (action->type) {
   case ATTACK:
     return enemies[0]; // For now, just pick first enemy
+  case SPECIAL:
+    return specialTargetsEnemies(action->index) ? enemies[0] : allies[0];
   default:
     return NULL;
   }
 }
 
-int battleBehaviorPickIndex(ActionType action, TechList* techList) {
+int battleBehaviorPickIndex(ActionType action, Actor* actor) {
   switch (action) {
   case SPECIAL:
+    return actor->specials.values[0];
   case ITEM:
     return 0; // For now, first in list
   default:
@@ -87,8 +90,9 @@ BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, in
   }
   
   action.type = battleBehaviorPickActionType(actor->actorType);
-  action.target = battleBehaviorPickTarget(actor->actorType, action.type, actorEnemies, numEnemies, actorAllies, numAllies);
-  action.index = battleBehaviorPickIndex(actor->actorType, actor->techList);
+  action.index = battleBehaviorPickIndex(action.type, actor);
+  action.target = battleBehaviorPickTarget(actor->actorType, &action, actorEnemies, numEnemies, actorAllies, numAllies);
+  
 
   return action;
 }
@@ -197,6 +201,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     }
     break;
   case SPECIAL:
+    printf("index: %i\n", action->index);
     spType = specialType(action->index);
     a->sp -= (specialCost(action->index) * action->spCostModifier);
     if (spType == SPECIAL_DAMAGING) {

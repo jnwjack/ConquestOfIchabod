@@ -49,6 +49,7 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 
 Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, COIWindow* window) {
   COISprite* sprite;
+  printf("ACTOR TYPE: %i\n", actorType);
   switch(actorType) {
   case ACTOR_SKELETON:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
@@ -69,7 +70,8 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 7, 12, 0, 5);
-      techAddToList(actor->techList, TECH_ID_HEAL);
+      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
+      IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
       return actor;
     }
     
