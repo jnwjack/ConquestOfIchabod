@@ -245,6 +245,13 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   TownContext* townContext = (TownContext*)context;
   Actor* player = townContext->pInfo->party[0];
 
+  if (!TimeStateInFuture(&END_TIME)) {
+    COIBoard* gameOver = gameOverCreateBoard(COI_GLOBAL_WINDOW,
+					     COI_GLOBAL_LOADER);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOver, NULL);
+    return;
+  }
+
   if (townContext->willEnterBattle) {
     COIBoard* battleBoard = battleCreateBoard(townContext->window,
 					      board->loader,

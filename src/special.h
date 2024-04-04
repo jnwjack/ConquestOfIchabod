@@ -36,6 +36,7 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_CURSE 4 // Causes damage when they attempt to heal
 #define SPECIAL_ID_REVIVE 5 // Revive dead enemies
 #define SPECIAL_ID_DISTRACT 6 // Target's next move must target actor
+#define SPEICAL_ID_DRAIN_SPIRIT 7 // Drain target's TP or SP
 
 typedef enum {
   SPECIAL_DAMAGING,

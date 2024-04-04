@@ -12,6 +12,7 @@
 
 #define TIMESTATE_PHASE_LENGTH 6
 
+
 typedef enum {
   TS_MORNING = 0,
   TS_DAY,
@@ -31,5 +32,6 @@ bool TimeStateInFuture(TimeState* state);
 void TimeStateCopyGlobalTime(TimeState* state);
 
 extern TimeState GLOBAL_TIME;
+extern TimeState END_TIME; // Causes game over when reached
 
 #endif
