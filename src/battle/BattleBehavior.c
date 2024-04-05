@@ -6,7 +6,7 @@
 int _compareActions(BattleAction a, BattleAction b) {
   if (a.actor->agi > b.actor->agi) {
     return 1;
-  } else if (a.actor->agi < b.actor->agi) {
+ } else if (a.actor->agi < b.actor->agi) {
     return -1;
   } else {
     return 0;
@@ -49,9 +49,25 @@ void _initializeAction(BattleAction* action) {
   action->damageAttacker = false;
 }
 
+// Breaks if you call this and there are no alive actors provided
+Actor* _pickRandomAliveActor(Actor** actors, int numActors) {
+  Actor* aliveActors[numActors];
+  int numAliveActors = 0;
+  for (int i = 0; i < numActors; i++) {
+    if (!actorIsDead(actors[i])) {
+      aliveActors[numAliveActors++] = actors[i];
+    }
+  }
+
+  int selectedActor = generateRandomCharInRange(0, numAliveActors - 1);
+  return aliveActors[selectedActor];
+}
+
 ActionType battleBehaviorPickActionType(int actorType) {
   // In future, can have different behavior for different actors.
   switch (actorType) {
+  case ACTOR_WIRE_MOTHER:
+  case ACTOR_VOLCANETTE:
   case ACTOR_BOOWOW:
     return (generateRandomBoolWeighted(0.25) ? SPECIAL : ATTACK);
   default:
@@ -62,9 +78,13 @@ ActionType battleBehaviorPickActionType(int actorType) {
 Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** enemies, int numEnemies, Actor** allies, int numAllies) {
   switch (action->type) {
   case ATTACK:
-    return enemies[0]; // For now, just pick first enemy
+    return _pickRandomAliveActor(enemies, numEnemies);
   case SPECIAL:
-    return specialTargetsEnemies(action->index) ? enemies[0] : allies[0];
+    if (specialTargetsEnemies(action->index)) {
+      return _pickRandomAliveActor(enemies, numEnemies);
+    } else {
+      return _pickRandomAliveActor(allies, numAllies);
+    }
   default:
     return NULL;
   }
@@ -73,7 +93,10 @@ Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** ene
 int battleBehaviorPickIndex(ActionType action, Actor* actor) {
   switch (action) {
   case SPECIAL:
-    return actor->specials.values[0];
+    {
+      int index = generateRandomCharInRange(0, actor->specials.length - 1);
+      return actor->specials.values[index];
+    }
   case ITEM:
     return 0; // For now, first in list
   default:
@@ -114,7 +137,16 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
 
 
 void battleBehaviorSortActions(BattleAction* actions, int numActions) {
+  // JNW left off here, sort is messed up. Crashes during sort sometimes.
+  printf("before sort:\n");
+  for (int i = 0; i < numActions; i++) {
+    printf("%i\n", actions[i].actor->agi);
+  }
   _sortHelper(actions, 0, numActions - 1);
+  printf("after sort:\n");
+  for (int i = 0; i < numActions; i++) {
+    printf("%i\n", actions[i].actor->agi);
+  }
 }
 
 ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo) {
@@ -201,7 +233,6 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     }
     break;
   case SPECIAL:
-    printf("index: %i\n", action->index);
     spType = specialType(action->index);
     a->sp -= (specialCost(action->index) * action->spCostModifier);
     if (spType == SPECIAL_DAMAGING) {

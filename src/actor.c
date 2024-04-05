@@ -49,7 +49,6 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 
 Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, COIWindow* window) {
   COISprite* sprite;
-  printf("ACTOR TYPE: %i\n", actorType);
   switch(actorType) {
   case ACTOR_SKELETON:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
@@ -74,13 +73,30 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
       return actor;
     }
-    
   case ACTOR_FEARWOLF:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 28, 15, 12, 22, 0, 5);
+  case ACTOR_WIRE_MOTHER:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    {
+      Actor* actor = actorCreate(actorType, sprite, 15, 9, 2, 12, 0, 75);
+      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
+      IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
+      return actor;
+    }
+  case ACTOR_VOLCANETTE:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    {
+      Actor* actor = actorCreate(actorType, sprite, 15, 9, 10, 12, 0, 75);
+      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
+      IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
+      IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
+      return actor;
+    }
+  default:
+    printf("Invalid actor type when creating actor\n");
+    return NULL;
   }
-
-  return NULL;
 }
 
 Actor* actorCreatePlayer(COISprite* sprite) {
@@ -122,6 +138,10 @@ char* actorGetNameFromType(int actorType) {
     return "BOOWOW";
   case ACTOR_FEARWOLF:
     return "FEARWOLF";
+  case ACTOR_WIRE_MOTHER:
+    return "WIRE MOTHER";
+  case ACTOR_VOLCANETTE:
+    return "VOLCANETTE";
   default:
     return "UNKNOWN";
   }

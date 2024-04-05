@@ -15,6 +15,8 @@
 #define ACTOR_MERCHANT 5
 #define ACTOR_BOOWOW 6
 #define ACTOR_FEARWOLF 7
+#define ACTOR_WIRE_MOTHER 8
+#define ACTOR_VOLCANETTE 9
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8

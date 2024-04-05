@@ -51,7 +51,7 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_PARRY:
     return SPECIAL_DEBUFF;
   default:
-    printf("Invalid special type.\n");
+    printf("Invalid id for special type lookup.\n");
     return SPECIAL_DAMAGING;
   }
 }
@@ -73,7 +73,7 @@ int specialCost(int id) {
   case SPECIAL_ID_PARRY:
     return 10;
   default:
-    printf("Invalid special type.\n");
+    printf("Invalid special id for cost.\n");
     return -1;
   }
 }

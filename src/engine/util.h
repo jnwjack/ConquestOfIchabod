@@ -57,6 +57,7 @@ int POW_INT(int x, int y);
 int countLines(const char* filename);
 int generateRandomChar();
 bool generateRandomBoolWeighted(double weight);
+int generateRandomCharInRange(int lowInclusive, int highInclusive);
 int generateRandomDirectionalMovement();
 
 #endif

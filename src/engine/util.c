@@ -137,6 +137,11 @@ bool generateRandomBoolWeighted(double weight) {
   return generateRandomChar() <= low;
 }
 
+int generateRandomCharInRange(int lowInclusive, int highInclusive) {
+  int diff = (highInclusive + 1) - lowInclusive;
+  return (generateRandomChar() % diff) + lowInclusive;
+}
+
 // Randomly pick between left, right, up, or down
 int generateRandomDirectionalMovement() {
   return (generateRandomChar() % 4) + 1;

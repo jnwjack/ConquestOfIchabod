@@ -2,7 +2,8 @@
 #include "../actor.h"
 #include "../special.h"
 
-static int THICK_GRASS_ENEMY_TYPES[3] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_TENTACLE };
+#define THICK_GRASS_ENEMY_COUNT 5
+static int THICK_GRASS_ENEMY_TYPES[THICK_GRASS_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_TENTACLE, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE };
 
 static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
@@ -91,7 +92,8 @@ static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
 static int _numEnemiesFromTerrain(Terrain terrain) {
   switch (terrain) {
   case TT_THICK_GRASS:
-    return (generateRandomChar() % 5) + 1;
+    return generateRandomCharInRange(1, 5);
+    //return (generateRandomChar() % 5) + 1;
   case TT_TENTACLE:
     return 4;
   default:
@@ -105,7 +107,7 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
   switch (terrain) {
   case TT_THICK_GRASS:
     {
-      int randIndex = (generateRandomChar() % 3);
+      int randIndex = (generateRandomChar() % THICK_GRASS_ENEMY_COUNT);
       return THICK_GRASS_ENEMY_TYPES[randIndex];
     }
   case TT_TENTACLE:
