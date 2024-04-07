@@ -1,13 +1,14 @@
 #include "BattleBehavior.h"
 #include "../special.h"
 #include "../items.h"
+#include <assert.h>
 
-// Action with actor having higher AGI is larger
+// Action with actor having higher AGI is smaller
 int _compareActions(BattleAction a, BattleAction b) {
   if (a.actor->agi > b.actor->agi) {
-    return 1;
- } else if (a.actor->agi < b.actor->agi) {
     return -1;
+ } else if (a.actor->agi < b.actor->agi) {
+    return 1;
   } else {
     return 0;
   }
@@ -15,12 +16,12 @@ int _compareActions(BattleAction a, BattleAction b) {
 
 // QuickSort
 void _sortHelper(BattleAction* actions, int lo, int hi) {
-  int size = hi - lo;
+  int size = (hi+1) - lo;
   if (size < 2) {
     return;
   }
 
-  int pivot = size / 2;
+  int pivot = lo + (size / 2);
   // Swap pivot with rightmost element
   battleBehaviorSwapActions(&actions[pivot], &actions[hi]);
 
@@ -39,8 +40,8 @@ void _sortHelper(BattleAction* actions, int lo, int hi) {
   battleBehaviorSwapActions(&actions[store], &actions[hi]);
 
   // Recurse
-  _sortHelper(actions, lo, pivot - 1);
-  _sortHelper(actions, pivot + 1, hi);
+  _sortHelper(actions, lo, store - 1);
+  _sortHelper(actions, store + 1, hi);
 }
 
 void _initializeAction(BattleAction* action) {
@@ -137,16 +138,7 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
 
 
 void battleBehaviorSortActions(BattleAction* actions, int numActions) {
-  // JNW left off here, sort is messed up. Crashes during sort sometimes.
-  printf("before sort:\n");
-  for (int i = 0; i < numActions; i++) {
-    printf("%i\n", actions[i].actor->agi);
-  }
   _sortHelper(actions, 0, numActions - 1);
-  printf("after sort:\n");
-  for (int i = 0; i < numActions; i++) {
-    printf("%i\n", actions[i].actor->agi);
-  }
 }
 
 ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo) {
