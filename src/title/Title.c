@@ -34,7 +34,7 @@ COIBoard* titleCreateBoard() {
   context->animating = false;
   context->currentSlide = -1;
   context->selectedStringIndex = 0;
-  COIBoard* board = COIBoardCreate(0, 0, 0, 225, 640, 480, COI_GLOBAL_LOADER);
+  COIBoard* board = COIBoardCreate(255, 0, 0, 225, 640, 480, COI_GLOBAL_LOADER);
   context->drawing = COISpriteCreateFromAssetID(0, 0, 640, 480,
 						COI_GLOBAL_LOADER,
 						25,

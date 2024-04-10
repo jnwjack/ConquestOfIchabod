@@ -11,6 +11,8 @@ COIAssetLoader* COIAssetLoaderCreate() {
   const char* textFilename = "src/engine/etc/text.cfg";
   int assetCount = countLines(mappingFilename);
 
+  printf("COIASSETLOADER\n");
+
   COIAssetLoader* loader = malloc(sizeof(COIAssetLoader));
   SDL_Surface** surfaces = malloc(assetCount * sizeof(SDL_Surface*));
   COIExtraCollision** collisions = malloc(assetCount * sizeof(COIExtraCollision*));
@@ -21,7 +23,9 @@ COIAssetLoader* COIAssetLoaderCreate() {
   }
 
   fp = fopen(mappingFilename, "r");
+  printf("after fopen\n");
   if (fp == NULL) {
+    printf("NULL!!!\n");
     free(loader);
     free(surfaces);
     free(collisions);
@@ -29,14 +33,18 @@ COIAssetLoader* COIAssetLoaderCreate() {
   }
 
   i = 0;
+  printf("LEN: %i\n", assetCount);
   while (getline(&line, &len, fp) != -1) {
     line[strcspn(line, "\n")] = '\0';
+    printf("LINE: %s\n", line);
     surfaces[i] = IMG_Load(line);
+    printf("loaded image\n");
     if(surfaces[i] == NULL) {
       printf("Error loading asset %s", line);
     }
     i++;
   }
+  printf("loaded assets\n");
   
   if (line) {
     free(line);

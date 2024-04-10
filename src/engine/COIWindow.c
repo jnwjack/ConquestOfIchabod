@@ -8,11 +8,12 @@ COIWindow* COIWindowCreate() {
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
 
+  
   COIWindow* window = malloc(sizeof(COIWindow));
   window->_width = 640;
   window->_height = 480;
   window->_screen = SDL_CreateWindow("Conquest of Ichabod", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
-  window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
+  window->_renderer = SDL_CreateRenderer(window->_screen, -1, SDL_RENDERER_SOFTWARE);
   window->_currentBoard = NULL;
   window->_loop = NULL;
   window->shouldQuit = false;
@@ -32,7 +33,8 @@ void COIWindowDestroy(COIWindow* window) {
   free(window);
 }
 
-void COIWindowLoop(COIWindow* window) {
+void COIWindowLoop(void* window_v, bool repeat) {
+  COIWindow* window = (COIWindow*)window_v;
   SDL_Event event;
   bool shouldDraw = true;
 
@@ -102,6 +104,10 @@ void COIWindowLoop(COIWindow* window) {
       
       SDL_RenderPresent(window->_renderer);
       
+    }
+
+    if (!repeat) {
+      return;
     }
   }
 }

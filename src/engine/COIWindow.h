@@ -27,7 +27,7 @@ typedef struct COIWindow {
 COIWindow* COIWindowCreate();
 void COIWindowDestroy(COIWindow* window);
 
-void COIWindowLoop(COIWindow* window);
+void COIWindowLoop(void* window, bool repeat);
 void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop);
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window);
 void COIWindowInit();
