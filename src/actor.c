@@ -85,7 +85,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       return actor;
     }
   case ACTOR_VOLCANETTE:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 27, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 10, 12, 0, 75);
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
