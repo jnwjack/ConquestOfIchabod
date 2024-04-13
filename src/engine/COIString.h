@@ -3,6 +3,9 @@
 
 #include "COISprite.h"
 #include "COITextType.h"
+#ifdef __WINDOWS__
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 

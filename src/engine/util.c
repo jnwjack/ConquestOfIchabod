@@ -129,7 +129,7 @@ int countLines(const char* filename) {
 }
 
 int generateRandomChar() {
-  return random() & 0xFF;
+  return rand() & 0xFF;
 }
 
 bool generateRandomBoolWeighted(double weight) {

@@ -13,7 +13,7 @@ COIWindow* COIWindowCreate() {
   window->_width = 640;
   window->_height = 480;
   window->_screen = SDL_CreateWindow("Conquest of Ichabod", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
-  window->_renderer = SDL_CreateRenderer(window->_screen, -1, SDL_RENDERER_SOFTWARE);
+  window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
   window->shouldQuit = false;

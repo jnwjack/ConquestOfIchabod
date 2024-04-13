@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#ifdef __WINDOWS__
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>

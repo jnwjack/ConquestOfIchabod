@@ -15,11 +15,18 @@ WEB_OUTPUT = coi.html
 LIBS = -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf
 DEBUGFLAGS = -g3
 NATIVE_FLAGS = -D__NATIVE__=1
+WINDOWS_CC = gcc
+WINDOWS_INCLUDE_BASE = C:\Users\jnw90\Projects\mingw-dev\include
+WINDOWS_LIB_BASE = C:\Users\jnw90\Projects\mingw-dev\lib
+WINDOWS_FLAGS = -m32 -D__WINDOWS__=1
+WINDOWS_SRCS = src\main.c src\actor.c src\inputloops.c src\inventory.c src\items.c src\player.c src\special.c src\tech.c src\tests.c src\TextBox.c src\TimeState.c src\armory\Armory.c src\battle\Battle.c src\battle\BattleBehavior.c src\battle\BattleSplash.c src\battle\Status.c src\engine\COIAssetLoader.c src\engine\COIBoard.c src\engine\COIMenu.c src\engine\COISprite.c src\engine\COIString.c src\engine\COITextType.c src\engine\COITransition.c src\engine\COIWindow.c src\engine\util.c src\gameover\GameOver.c src\renthouse\RentHouse.c src\threadtown\PauseOverlay.c src\threadtown\Town.c src\title\Title.c
 
 # TOOLS
 SRCS_TOOLS = tools/cbb.c src/engine/util.c
 CFLAG_TOOLS = -g
 
+windows:
+	$(WINDOWS_CC) $(WINDOWS_SRCS) -I$(WINDOWS_INCLUDE_BASE) -L$(WINDOWS_LIB_BASE) -w -Wl,-subsystem,windows -lmingw32 $(LIBS) $(NATIVE_FLAGS) $(WINDOWS_FLAGS) -o $(OUTPUT)
 # the turtle command works on mac with emscripten 3.1.33
 turtle:
 	$(WEB_CC) $(SRCS) -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL_TTF=2 --preload-file assets --preload-file test_data --preload-file src/engine/etc --preload-file src/threadtown/spritemap.dat --preload-file src/armory/spritemap.dat --preload-file src/battle/spritemap.dat -o coi.html

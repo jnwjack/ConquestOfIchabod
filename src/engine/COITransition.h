@@ -3,6 +3,9 @@
 
 //#include "COIWindow.h"
 #include <stdbool.h>
+#ifdef __WINDOWS__
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
 
 #define COI_TRANSITION_RECTS_X 20

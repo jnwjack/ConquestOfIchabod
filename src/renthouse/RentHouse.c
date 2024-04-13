@@ -38,7 +38,12 @@ static void _heal(RentHouseContext* context) {
   }
 }
 
+// _sleep appears to be a reserved function with MINGW
+#ifdef __WINDOWS__
+static void _sleep_coi(RentHouseContext* context) {
+#else
 static void _sleep(RentHouseContext* context) {
+#endif
   TextBoxSetStrings(context->textBox,
 		    "You sleep...",
 		    NULL);
@@ -194,7 +199,11 @@ bool RentHouseProcessSelectionInput(RentHouseContext* context) {
       _heal(context);
       break;
     case RENT_HOUSE_SLEEP:
+    #ifdef __WINDOWS__
+      _sleep_coi(context);
+    #else
       _sleep(context);
+    #endif
       break;
     case RENT_HOUSE_PAY:
       _pay(context);

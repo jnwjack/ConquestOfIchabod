@@ -6,7 +6,7 @@
 #include "player.h"
 #include "threadtown/Town.h"
 
-#ifndef __NATIVE__
+#if defined(__NATIVE__) && !defined(__WINDOWS__)
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #endif

@@ -1,7 +1,11 @@
 #ifndef ASSET_LOADER_H
 #define ASSET_LOADER_H
 
+#ifdef __WINDOWS__
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
+
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
 #include "util.h"

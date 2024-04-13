@@ -1,6 +1,9 @@
 #ifndef COISPRITE_H
 #define COISPRITE_H
 
+#ifdef __WINDOWS__
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include "COIExtraCollision.h"
