@@ -121,7 +121,7 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
 			    Terrain terrain, PlayerInfo* pInfo) {  
-  COIBoard* board = COIBoardCreate(99, 91, 95, 225, 640, 480, loader);
+  COIBoard* board = COIBoardCreate(2, 132, 28, 225, 640, 480, loader);
   COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/battle/spritemap.dat");
 
   // Context
@@ -155,6 +155,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   }
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
   _centerActorsInBox(context->allies, context->numAllies, aBox);
+  aBox->_autoHandle = false;
+  aBox->_visible = false;
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
   
   COISprite* splashBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
@@ -164,7 +166,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COISprite* descBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
   descBox->_autoHandle = false;
   descBox->_visible = false;
-  
+
 
   // Enemies, can later randomize number
   context->numEnemies = _numEnemiesFromTerrain(terrain);
@@ -182,11 +184,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COISprite** sprites = COIBoardGetSprites(board);
 
   // Pointer for enemies and allies
-  context->pointer = sprites[5];
+  context->pointer = sprites[BATTLE_SPRITEMAP_POINTER];
   context->pointer->_autoHandle = false;
   context->pointer->_visible = false;
 
-  printf("num enemies: %i\n", context->numEnemies);
   context->enemies = malloc(sizeof(Actor*) * context->numEnemies);
   for (int i = 0; i < context->numEnemies; i++) {
     int enemyType = _enemyTypeFromTerrain(terrain);
@@ -194,20 +195,27 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     actorFaceRight(context->enemies[i]);
   }
   COISprite* eBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_E_BOX];
+  eBox->_autoHandle = false;
+  eBox->_visible = false;
   _centerActorsInBox(context->enemies, context->numEnemies, eBox);
-
   
   COIBoardSetPersistentSprites(board, _getPersistentSprites(context), context->numEnemies + context->numAllies);
 
   _makeStrings(context, pInfo, board);
 
+  // Name box
+  sprites[BATTLE_SPRITEMAP_NAME_BOX]->_autoHandle = false;
+  sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = true;
+
   // Top-level menu
-  context->actionMenu = COIMenuCreate(sprites[3], sprites[4]);
+  sprites[BATTLE_SPRITEMAP_MENU_FRAME]->_autoHandle = false;
+  sprites[BATTLE_SPRITEMAP_MENU_FRAME]->_visible = true;
+  context->actionMenu = COIMenuCreate(sprites[BATTLE_SPRITEMAP_MENU_FRAME], sprites[BATTLE_SPRITEMAP_MENU_POINTER]);
   COIMenuSetTexts(context->actionMenu, context->actionStrings, BATTLE_NUM_ACTIONS);
 
   // Submenu
   //context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
-  context->subMenu = COIMenuCreateWithCapacity(sprites[6], sprites[7], MAX_TECH_COUNT_ALLY);
+  context->subMenu = COIMenuCreateWithCapacity(sprites[BATTLE_SPRITEMAP_SUBMENU_FRAME], sprites[BATTLE_SPRITEMAP_SUBMENU_POINTER], MAX_TECH_COUNT_ALLY);
   COIMenuSetInvisible(context->subMenu);
 
   COIMenuSetVisible(context->actionMenu);
@@ -218,13 +226,16 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   for (int i = 0; i < context->numAllies; i++) {
     context->allyStatuses[i] = AllyStatusCreate(context->board, window, 15);
     AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
-    context->techParticles[i] = COISpriteCreateFromAssetID(context->allies[i]->sprite->_x,
-							   context->allies[i]->sprite->_y,
-							   32,
-							   32,
+    context->techParticles[i] = COISpriteCreateFromAssetID(context->allies[i]->sprite->_x - 9,
+							   context->allies[i]->sprite->_y - 9,
+							   50,
+							   50,
 							   COI_GLOBAL_LOADER,
-							   22,
+							   34,
 							   COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+    // JNW: could be cleaned up
+    context->techParticles[i]->viewWindowWidth = 50;
+    context->techParticles[i]->viewWindowHeight = 50;
     context->techParticles[i]->_autoHandle = false;
     context->techParticles[i]->_visible = false;
     COISpriteSetSheetIndex(context->techParticles[i], 0, 0);
@@ -474,6 +485,11 @@ void _changeTurn(BattleContext* context, int step) {
     _processActions(context);
     // Ready to run the whole turn
     context->controlEnabled = false;
+    // Make action menu invisible
+    COIMenuSetInvisible(context->actionMenu);
+    COISprite** sprites = COIBoardGetSprites(context->board);
+    sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = false;
+    _toggleTargetNameVisibility(context, false);
     context->pointer->_visible = false;
   } else if (context->turnIndex + step < 0) {
     // Can't go lower than ally at position 0
@@ -764,6 +780,9 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     context->sceneStage = SS_MOVE_FORWARD;
     context->currentActionIndex = 0;
     context->controlEnabled = true;
+    COIMenuSetVisible(context->actionMenu);
+    COISprite** sprites = COIBoardGetSprites(context->board);
+    sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = true;
     context->movementOffset = 0;
     context->pointer->_visible = true;
     _focusActionMenu(context);
@@ -803,7 +822,11 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
 	box->_visible = false;
 	// We're done with the target's sprite
-	action.target->sprite->_autoHandle = true;
+	if (actorIsDead(action.target)) {
+	  action.target->sprite->_visible = false;
+	} else {
+	  action.target->sprite->_autoHandle = true;
+	}
       } else {
 	ActionSummaryAdvance(context->summary, selection);
 	// Flicker effect on target actor

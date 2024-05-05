@@ -8,6 +8,7 @@
 typedef struct AllyStatus {
   COITextType* textType;
   COIBoard* board;
+  COISprite* frame;
   COIString* hp;
   COIString* tp;
   COIString* sp;

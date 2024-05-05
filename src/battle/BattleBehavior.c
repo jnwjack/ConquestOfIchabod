@@ -259,11 +259,13 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   }
 
   if (actorIsDead(a)) {
+    a->sprite->_autoHandle = false;
     a->sprite->_visible = false;
     snprintf(temp, MAX_STRING_SIZE, "%s DIES", aName);
     ActionSummaryAddString(summary, temp, board, box, textType);
   }
   if (actorIsDead(t)) {
+    t->sprite->_autoHandle = false;
     t->sprite->_visible = false;
     snprintf(temp, MAX_STRING_SIZE, "%s DIES", tName);
     ActionSummaryAddString(summary, temp, board, box, textType);

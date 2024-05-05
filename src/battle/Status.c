@@ -11,6 +11,7 @@ AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize) {
   AllyStatus* status = malloc(sizeof(AllyStatus));
   status->board = board;
   status->textType = COITextTypeCreate(fontSize, 180, 0, 0, COIWindowGetRenderer(window));
+  status->frame = NULL;
   status->hp = NULL;
   status->tp = NULL;
   status->sp = NULL;
@@ -24,6 +25,19 @@ AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize) {
 void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
   COISprite* sprite = actor->sprite;
   int fs = status->textType->fontSize;
+  
+  if (!status->frame) {
+    const int sideLength = status->textType->fontSize * 3;
+    status->frame = COISpriteCreateFromAssetID(sprite->_x + sprite->_width + 40,
+					       sprite->_y - 10,
+					       sideLength + 20,
+					       sideLength + 20,
+					       COI_GLOBAL_LOADER,
+					       5,
+					       COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+    status->frame->_visible = true;
+    COIBoardAddDynamicSprite(status->board, status->frame);
+  }
   
   if (actor->hp != status->_hpVal) {
     _cleanupString(status->board, status->hp);
@@ -60,7 +74,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
       
       char spRaw[MAX_STRING_SIZE];
       sprintf(spRaw, "%i/%i", actor->sp, actor->spMax);
-      COITextTypeSetColor(status->textType, 0, 0, 180);
+      COITextTypeSetColor(status->textType, 5, 246, 250);
       status->sp = COIStringCreate(spRaw,
 				   sprite->_x + sprite->_width + 50,
 				   sprite->_y + (fs * 2),
@@ -76,6 +90,10 @@ void AllyStatusDestroy(AllyStatus* status) {
   _cleanupString(status->board, status->hp);
   _cleanupString(status->board, status->tp);
   _cleanupString(status->board, status->sp);
+  if (status->frame != NULL) {
+    COIBoardRemoveDynamicSprite(status->board, status->frame);
+    COISpriteDestroy(status->frame);
+  }
   
   free(status);
 }

@@ -51,22 +51,22 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   COISprite* sprite;
   switch(actorType) {
   case ACTOR_SKELETON:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 29, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_TENTACLE:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 15, 10, 8, 25, 10, 30);
   case ACTOR_CHAGGAI:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_LANDLORD:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_MERCHANT:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_BOOWOW:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 31, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 7, 12, 0, 5);
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
@@ -77,7 +77,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 28, 15, 12, 22, 0, 5);
   case ACTOR_WIRE_MOTHER:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 28, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 2, 12, 0, 75);
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
@@ -131,7 +131,7 @@ COISprite** actorGetSpriteList(Actor** actors, int numActors) {
 char* actorGetNameFromType(int actorType) {
   switch (actorType) {
   case ACTOR_SKELETON:
-    return "SKELETON";
+    return "MEATGRINDER";
   case ACTOR_TENTACLE:
     return "CORRUPTION";
   case ACTOR_BOOWOW:
