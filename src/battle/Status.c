@@ -35,6 +35,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
 					       COI_GLOBAL_LOADER,
 					       5,
 					       COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+    status->frame->_autoHandle = false;
     status->frame->_visible = true;
     COIBoardAddDynamicSprite(status->board, status->frame);
   }
@@ -85,6 +86,14 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
       status->_spVal = actor->sp;
   }
 }
+
+void AllyStatusSetVisible(AllyStatus* status, bool visible) {
+  status->frame->_visible = false;
+  COIStringSetVisible(status->hp, false);
+  COIStringSetVisible(status->sp, false);
+  COIStringSetVisible(status->tp, false);
+}
+
 void AllyStatusDestroy(AllyStatus* status) {
   COITextTypeDestroy(status->textType);
   _cleanupString(status->board, status->hp);

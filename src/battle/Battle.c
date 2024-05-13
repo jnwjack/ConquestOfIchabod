@@ -118,6 +118,40 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
   }
 }
 
+unsigned long _xpYieldFromEnemyType(int enemyType) {
+  switch (enemyType) {
+  case ACTOR_SKELETON:
+    return 15;
+  case ACTOR_BOOWOW:
+    return 25;
+  case ACTOR_TENTACLE:
+    return 50;
+  case ACTOR_WIRE_MOTHER:
+    return 35;
+  case ACTOR_VOLCANETTE:
+    return 30;
+  default:
+    return 0;
+  }
+}
+
+unsigned int _goldFromEnemyType(int enemyType) {
+  switch (enemyType) {
+  case ACTOR_SKELETON:
+    return (unsigned int)generateRandomCharInRange(3, 10);
+  case ACTOR_BOOWOW:
+    return (unsigned int)generateRandomCharInRange(0, 5);
+  case ACTOR_TENTACLE:
+    return (unsigned int)generateRandomCharInRange(10, 20);
+  case ACTOR_WIRE_MOTHER:
+    return (unsigned int)generateRandomCharInRange(8, 15);
+  case ACTOR_VOLCANETTE:
+    return (unsigned int)generateRandomCharInRange(15, 30);
+  default:
+    return 0;
+  }
+}
+
 COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 			    COIBoard* outsideBoard, COILoop outsideLoop,
 			    Terrain terrain, PlayerInfo* pInfo) {  
@@ -137,7 +171,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->pInfo = pInfo;
   context->summary = NULL;
   context->splash = NULL;
-  context->xpYield = 35;
+  context->xpYield = 0;
+  context->gold = 0;
   
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
@@ -192,6 +227,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   for (int i = 0; i < context->numEnemies; i++) {
     int enemyType = _enemyTypeFromTerrain(terrain);
     context->enemies[i] = actorCreateOfType(enemyType, 0, 0, loader, window);
+    context->xpYield += _xpYieldFromEnemyType(enemyType);
+    context->gold += _goldFromEnemyType(enemyType);
     actorFaceRight(context->enemies[i]);
   }
   COISprite* eBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_E_BOX];
@@ -241,6 +278,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     COISpriteSetSheetIndex(context->techParticles[i], 0, 0);
     COIBoardAddDynamicSprite(board, context->techParticles[i]);
   }
+
+  context->levelUpSplash = NULL;
 
   COIBoardSetContext(board, (void*)context);
 
@@ -427,6 +466,7 @@ void _specialSelection(BattleContext* context) {
   if (specialCost(special) <= ally->sp) {
     _adjustPointer(context);
     _toggleTargetNameVisibility(context, true);
+    battleMovePointer(context, 0); // Move off dead actor if we need to
     context->pointer->_visible = true;
     COIMenuSetInvisible(context->subMenu);
     context->menuFocus = ACTORS;
@@ -580,15 +620,15 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
   return context->movementOffset >= BATTLE_MAX_MOVEMENT;
 }
 
-static void _showSplash(BattleContext* context, BattleResult result) {
+static void _showSplash(BattleContext* context, BattleResult result, bool levelUp) {
   COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
   context->splash = BattleSplashCreate(context->board,
 				       context->textType,
 				       box,
 				       result == BR_WIN,
-				       context->pInfo->xp,
-				       context->pInfo->xpForLevelUp,
-				       context->xpYield);
+				       context->xpYield,
+               levelUp,
+               context->gold);
 				    
 }
 
@@ -761,7 +801,20 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
   if(context->sceneStage == SS_SPLASH) {
     // If the splash screen has finished animating
     if (BattleSplashFinished(context->splash)) {
+      unsigned int oldLevel = context->pInfo->level;
       playerAddXP(context->pInfo, context->xpYield);
+      context->pInfo->inventory->money = MIN(MAX_MONEY, context->pInfo->inventory->money + (int)context->gold);
+      if (context->pInfo->level > oldLevel) {
+        context->levelUpSplash = LevelUpSplashCreate(context->board, context->pInfo);
+        context->menuFocus = LEVEL_UP;
+        context->controlEnabled = true;
+        for (int i = 0; i < context->numAllies; i++) {
+          AllyStatusSetVisible(context->allyStatuses[i], false);
+        }
+        context->board->_sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = false;
+        BattleSplashDestroy(context->splash, context->board);
+        return BR_CONTINUE;
+      }
       BattleSplashDestroy(context->splash, context->board);
       context->splash = NULL;
       return battleFinished(context);
@@ -853,7 +906,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 	// We're done with the battle, display the splash screen
 	if (res != BR_CONTINUE) {
 	  _disableAllTechs(context->allies[0]);
-	  _showSplash(context, res);
+	  _showSplash(context, res, context->pInfo->xp + context->xpYield >= context->pInfo->xpForLevelUp);
 	  context->sceneStage = SS_SPLASH;
 	}
       }
@@ -875,7 +928,6 @@ void battleDestroyBoard(COIBoard* board) {
   for (int i = 0; i < BATTLE_NUM_ACTIONS; i++) {
     COIStringDestroy(context->actionStrings[i]);
   }
-  //free(context->actionStrings);
   context->actionMenu->_strings = NULL;
   for (int i = 0; i < context->numEnemies; i++) {
     actorDestroy(context->enemies[i]);
@@ -885,6 +937,9 @@ void battleDestroyBoard(COIBoard* board) {
     COIBoardRemoveDynamicSprite(board, context->techParticles[i]);
     COISpriteDestroy(context->techParticles[i]);
     AllyStatusDestroy(context->allyStatuses[i]);
+  }
+  if (context->levelUpSplash) {
+    LevelUpSplashDestroy(context->levelUpSplash, board);
   }
   free(context->techParticles);
   free(context->allyStatuses);

@@ -5,3 +5,8 @@
 + Remove old handleMenuInput function in inputloops.c
 + Can we reduce the number of dynamic allocations?
 + Should only be one SDL_Texture per asset type. Handle it like we do SDL_Surfaces.
+
+
+Other things:
++ At some point, world remains permanently darker
++ More normal monsters become weirder

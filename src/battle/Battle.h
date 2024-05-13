@@ -54,7 +54,8 @@ typedef enum{
 typedef enum {
   ACTION_MENU,
   SUB_MENU,
-  ACTORS
+  ACTORS,
+  LEVEL_UP
 } BattleMenuFocus;
 
 typedef enum {
@@ -115,14 +116,16 @@ typedef struct BattleContext {
   BattleSceneStage sceneStage; // Current stage in action processing
   int movementOffset; // How far has actor moved so far?
 
-  // End splash screen, XP gained, new items, progress bar, etc.
+  // End splash screen, XP gained, new items, progress bar, level up, etc..
   BattleSplash* splash;
+  LevelUpSplash* levelUpSplash;
 
   // TECH particle effects
   COISprite** techParticles;
   //LinkedList* techParticles;
 
   unsigned long xpYield;
+  unsigned int gold;
 
   // Data for next board after battle completes
   COIBoard* outside;

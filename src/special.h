@@ -51,6 +51,6 @@ SpecialType specialType(int id);
 char* specialVerb(int id);
 int specialStrength(int id);
 int specialCost(int id);
-
+char* specialDescription(int id);
 
 #endif

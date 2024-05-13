@@ -78,14 +78,16 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
     case SDL_KEYDOWN:
-      if (event->key.keysym.sym == SDLK_LEFT) {
+      if (event->key.keysym.sym == SDLK_LEFT && battleContext->menuFocus != LEVEL_UP) {
 	battleHandleBack(battleContext);
       }else {
 	if (battleContext->menuFocus == ACTION_MENU) {
 	  selection = handleMenuInput(battleContext->actionMenu, event);
 	} else if (battleContext->menuFocus == SUB_MENU) {
 	  selection = handleMenuInput(battleContext->subMenu, event);
-	} else {
+	} else if (battleContext->menuFocus == LEVEL_UP) {
+    selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
+  } else {
 	  switch (event->key.keysym.sym) {
 	  case SDLK_UP:
 	    battleMovePointer(battleContext, -1);
@@ -116,6 +118,11 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case ACTORS:
       battleHandleActorSelect(battleContext);
+      break;
+    case LEVEL_UP:
+      if (LevelUpSplashProcessSelection(battleContext->levelUpSplash, battleContext->pInfo)) {
+        result = BR_WIN;
+      }
       break;
     }
   }

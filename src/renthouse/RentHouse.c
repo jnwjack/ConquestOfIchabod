@@ -97,7 +97,7 @@ static void _makeStatWindowStrings(RentHouseContext* context) {
     _destroyString(context->board, window->price);
     snprintf(temp, MAX_STRING_SIZE, "Rent: %i", RENT_HOUSE_PRICE);
     window->price = COIStringCreate(temp, 0, 0, context->textType);
-    COIStringPositionBelowString(window->price, window->currentGold);
+    COIStringPositionBelowString(window->price, window->currentGold, false);
     COIStringSetVisible(window->price, true);
     COIBoardAddString(context->board, window->price);
   }
@@ -105,7 +105,7 @@ static void _makeStatWindowStrings(RentHouseContext* context) {
     _destroyString(context->board, window->daysLeft);
     snprintf(temp, MAX_STRING_SIZE, "Days Left: %lu", context->pInfo->nextRentDate - GLOBAL_TIME.day);
     window->daysLeft = COIStringCreate(temp, 0, 0, context->textType);
-    COIStringPositionBelowString(window->daysLeft, window->price);
+    COIStringPositionBelowString(window->daysLeft, window->price, false);
     COIStringSetVisible(window->daysLeft, true);
     COIBoardAddString(context->board, window->daysLeft);
   }

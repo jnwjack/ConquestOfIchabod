@@ -52,9 +52,10 @@ void COIStringDraw(COIString* obj, SDL_Renderer* renderer);
 void COIStringSetPos(COIString* obj, int x, int y);
 void COIStringSetVisible(COIString* obj, bool visible);
 void COIStringConfineToSprite(COIString* obj, COISprite* sprite);
-void COIStringPositionBelowString(COIString* below, COIString* above);
+void COIStringPositionBelowString(COIString* below, COIString* above, bool onlySetY);
 void COIStringPositionRightOfString(COIString* right, COIString* left, int space);
 bool COIStringAnimateTyping(COIString* string);
+void COIStringSetY(COIString* obj, int y);
 COIString** COIStringCopyList(COIString** src, int size);
 
 #endif

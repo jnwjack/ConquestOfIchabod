@@ -112,6 +112,20 @@ void COIStringSetPos(COIString* obj, int x, int y) {
   }
 }
 
+void COIStringSetY(COIString* obj, int y) {
+  COIChar* current = obj->_head;
+
+  // Handle strings that already have multiple lines
+  int yDiff = y - obj->y;
+  int offsetY = obj->yBottomLine - obj->y;
+  obj->y = y;
+  obj->yBottomLine = y + offsetY;
+  while (current != NULL) {
+    COICharSetPos(current, current->x, current->y + yDiff);
+    current = current->next;
+  }
+}
+
 void COIStringSetVisible(COIString* obj, bool visible) {
   COIChar* current = obj->_head;
   while (current != NULL) {
@@ -169,12 +183,16 @@ void COIStringConfineToSprite(COIString* obj, COISprite* sprite) {
   _confineToSpriteHelper(obj->_head, xOffset, yOffset, xMax, obj);
 }
 
-void COIStringPositionBelowString(COIString* below, COIString* above) {
+void COIStringPositionBelowString(COIString* below, COIString* above, bool onlySetY) {
   // Position string 'below' below string 'above'.
   // Use the y-position of 'above' as the base.
   // Use the x-position of 'above' as x for 'below'.
 
-  COIStringSetPos(below, above->x, above->yBottomLine + above->fontSize);
+  if (onlySetY) {
+    COIStringSetY(below, above->yBottomLine + above->fontSize);
+  } else {
+    COIStringSetPos(below, above->x, above->yBottomLine + above->fontSize);
+  }
 }
 
 static int _findRightMostPixel(COIString* string) {

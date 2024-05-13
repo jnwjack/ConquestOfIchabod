@@ -22,5 +22,6 @@ typedef struct AllyStatus {
 AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize);
 void AllyStatusUpdate(AllyStatus* status, Actor* actor);
 void AllyStatusDestroy(AllyStatus* status);
+void AllyStatusSetVisible(AllyStatus* status, bool visible);
 
 #endif

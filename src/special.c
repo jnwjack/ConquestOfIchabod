@@ -78,3 +78,20 @@ int specialCost(int id) {
   }
 }
 
+char* specialDescription(int id) {
+  switch (id) {
+  case SPECIAL_ID_FIREBALL:
+    return "Deal high damage to a single target";
+  case SPECIAL_ID_ICE_SPEAR:
+    return "Deal moderate damage to multiple targets";
+  case SPECIAL_ID_HEAL:
+    return "Restore HP to a friendly target";
+  case SPECIAL_ID_CURSE:
+    return "Any healing effect applied to the target will instead deal damage";
+  case SPECIAL_ID_PARRY:
+    return "Block attack and deal damage to attacker";
+  default:
+    return "Error: Not implemented";
+  }
+}
+

@@ -7,6 +7,20 @@
 
 #define MAX_PARTY_SIZE 4
 
+typedef struct ClassProgression {
+  unsigned int* techs;
+  unsigned int* specials;
+
+  // Minimum levels needed to acquire each skill in list
+  unsigned int* techsLevels;
+  unsigned int* specialsLevels;
+
+  unsigned int techsIndex;
+  unsigned int specialsIndex;
+  unsigned int numTechs;
+  unsigned int numSpecials;
+} ClassProgression;
+
 // Player character data
 // Party members, inventory, etc.
 typedef struct PlayerInfo {
@@ -25,6 +39,8 @@ typedef struct PlayerInfo {
   unsigned int level;
   unsigned long xp;
   unsigned long xpForLevelUp;
+
+  ClassProgression classProgression;
 } PlayerInfo;
 
 void playerAddXP(PlayerInfo* info, unsigned long xp);
@@ -38,5 +54,11 @@ int playerAdjustedAGI(PlayerInfo* info);
 int playerAdjustedHP(PlayerInfo* info);
 int playerAdjustedSP(PlayerInfo* info);
 int playerAdjustedTP(PlayerInfo* info);
+
+bool playerHasValidNextTech(PlayerInfo* pInfo);
+bool playerHasValidNextSpecials(PlayerInfo* pInfo);
+
+Tech* playerGetNextTech(PlayerInfo* info);
+int playerGetNextSpecial(PlayerInfo* info);
 
 #endif
