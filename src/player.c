@@ -112,6 +112,185 @@ bool playerHasValidNextSpecials(PlayerInfo* pInfo) {
         pInfo->level >= pInfo->classProgression.specialsLevels[pInfo->classProgression.specialsIndex]);
 }
 
+char _rotateChar(unsigned char c, int shift) {
+  if (c == '\n') {
+    return '\0';
+  }
+
+  unsigned char normalized = c - '0';
+  unsigned char offset = normalized + shift;
+  const unsigned char numVals = 'z' - '0';
+  return (char)((offset % numVals) + '0');
+}
+
+void _encodeString(char* string, FILE* fp) {
+  size_t len = strnlen(string, MAX_STRING_SIZE);
+  for (int i = 0; i < len; i++) {
+    fputc(_rotateChar((unsigned char)string[i], 15), fp);
+  }
+  fputc('\n', fp);
+}
+
+void _decodeString(char* string, char* output) {
+  size_t len = strnlen(string, MAX_STRING_SIZE);
+  for (int i = 0; i < len; i++) {
+    output[i] = _rotateChar((unsigned char)string[i], 59);
+  }
+  output[len] = '\0';
+}
+
+void _encodeInt(int val, char* buf, FILE* fp) {
+  SDL_itoa(val, buf, 10);
+  _encodeString(buf, fp);
+}
+
+void _encodeULong(unsigned long val, char* buf, FILE* fp) {
+  SDL_ultoa(val, buf, 10);
+  _encodeString(buf, fp);
+}
+
+int _decodeInt(char** line, size_t* len, FILE* fp, char* buf) {
+  getline(line, len, fp);
+  _decodeString(*line, buf);
+  return SDL_atoi(buf);
+}
+
+unsigned long _decodeULong(char** line, size_t* len, FILE* fp, char* buf) {
+  getline(line, len, fp);
+  _decodeString(*line, buf);
+  unsigned long res = SDL_strtoul(buf, NULL, 10);
+  return res;
+}
+
+void playerEncode(PlayerInfo* info) {
+  FILE* fp = fopen("src/engine/etc/save.dat", "w");
+
+  _encodeString(info->name, fp);
+
+  char temp[MAX_STRING_SIZE];
+
+  // Stats
+  _encodeInt(info->party[0]->atk, temp, fp);
+  _encodeInt(info->party[0]->def, temp, fp);
+  _encodeInt(info->party[0]->agi, temp, fp);
+  _encodeInt(info->party[0]->hp, temp, fp);
+  _encodeInt(info->party[0]->hpMax, temp, fp);
+  _encodeInt(info->party[0]->sp, temp, fp);
+  _encodeInt(info->party[0]->spMax, temp, fp);
+  _encodeInt(info->party[0]->tp, temp, fp);
+  _encodeInt(info->party[0]->tpMax, temp, fp);
+  _encodeInt(info->level, temp, fp);
+  
+  _encodeULong(info->xp, temp, fp);
+  _encodeULong(info->xpForLevelUp, temp, fp);
+  _encodeULong(info->nextRentDate, temp, fp);
+  printf("days left: %lu\n", info->nextRentDate);
+  _encodeInt((int)info->renting, temp, fp);
+  _encodeInt((int)info->working, temp, fp);
+  _encodeInt((int)info->alreadyHealed, temp, fp);
+
+  // Inventory
+  _encodeInt(info->inventory->weapon->id, temp, fp);
+  _encodeInt(info->inventory->offHand->id, temp, fp);
+  _encodeInt(info->inventory->head->id, temp, fp);
+  _encodeInt(info->inventory->body->id, temp, fp);
+  _encodeInt(info->inventory->legs->id, temp, fp);
+  _encodeInt(info->inventory->numEquippedItems, temp, fp);
+  _encodeInt(info->inventory->numBackpackItems, temp, fp);
+  for (int i = 0; i < info->inventory->numBackpackItems; i++) {
+    _encodeInt(info->inventory->backpack[i]->id, temp, fp);
+  }
+  _encodeInt(info->inventory->money, temp, fp);
+
+  // Time State
+  _encodeInt((int)GLOBAL_TIME.val, temp, fp);
+  _encodeULong(GLOBAL_TIME.day, temp, fp);
+  _encodeInt((int)GLOBAL_TIME.phase, temp, fp);
+
+  // Abilities
+  _encodeInt(info->party[0]->techList->count, temp, fp);
+  for (int i = 0; i < info->party[0]->techList->count; i++) {
+    Tech* tech = info->party[0]->techList->techs[i];
+    _encodeInt(info->party[0]->techList->techs[i]->id, temp, fp);
+  }
+  _encodeInt(info->party[0]->specials.length, temp, fp);
+  for (int i = 0; i < info->party[0]->specials.length; i++) {
+    _encodeInt(info->party[0]->specials.values[i], temp, fp);
+  }
+
+  // Player position
+  _encodeInt(info->party[0]->sprite->_x, temp, fp);
+  _encodeInt(info->party[0]->sprite->_y, temp, fp);
+
+
+  fclose(fp);
+}
+
+PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* inventory) {
+  FILE* fp = fopen("src/engine/etc/save.dat", "r");
+
+  char* line = NULL;
+  char buf[MAX_STRING_SIZE];
+  char name[MAX_STRING_SIZE];
+  size_t len = 0;
+
+  getline(&line, &len, fp);
+  _decodeString(line, name);
+
+  PlayerInfo* info = playerInfoCreate(name, playerSprite, inventory);
+
+  int atk, def, agi, hp, hpMax, sp, spMax, tp, tpMax, level;
+  info->party[0]->atk = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->def = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->agi = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->hp = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->hpMax = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->sp = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->spMax = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->tp = _decodeInt(&line, &len, fp, buf);
+  info->party[0]->tpMax = _decodeInt(&line, &len, fp, buf);
+  info->level = _decodeInt(&line, &len, fp, buf);
+
+  info->xp = _decodeULong(&line, &len, fp, buf);
+  info->xpForLevelUp = _decodeULong(&line, &len, fp, buf);
+  info->nextRentDate = _decodeULong(&line, &len, fp, buf);
+  info->renting = (bool)_decodeInt(&line, &len, fp, buf);
+  info->working = (bool)_decodeInt(&line, &len, fp, buf);
+  info->alreadyHealed = (bool)_decodeInt(&line, &len, fp, buf);
+
+  info->inventory->weapon = ItemListGetItem(items, _decodeInt(&line, &len, fp, buf));
+  info->inventory->offHand = ItemListGetItem(items, _decodeInt(&line, &len, fp, buf));
+  info->inventory->head = ItemListGetItem(items, _decodeInt(&line, &len, fp, buf));
+  info->inventory->body = ItemListGetItem(items, _decodeInt(&line, &len, fp, buf));
+  info->inventory->legs = ItemListGetItem(items, _decodeInt(&line, &len, fp, buf));
+  info->inventory->numEquippedItems = _decodeInt(&line, &len, fp, buf);
+  info->inventory->numBackpackItems = _decodeInt(&line, &len, fp, buf);
+  for (int i = 0; i < info->inventory->numBackpackItems; i++) {
+    info->inventory->backpack[i] = ItemListGetItem(items, _decodeInt(&line, &len, fp, buf));
+  }
+  info->inventory->money = _decodeInt(&line, &len, fp, buf);
+
+  GLOBAL_TIME.val = (unsigned char)_decodeInt(&line, &len, fp, buf);
+  GLOBAL_TIME.day = _decodeULong(&line, &len, fp, buf);
+  GLOBAL_TIME.phase = (TimeStatePhase)_decodeInt(&line, &len, fp, buf);
+
+  int numTechs = _decodeInt(&line, &len, fp, buf);
+  for (int i = 0; i < numTechs; i++) {
+    techAddToList(info->party[0]->techList, _decodeInt(&line, &len, fp, buf));
+  }
+  int numSpecials = _decodeInt(&line, &len, fp, buf);
+  for (int i = 0; i < numSpecials; i++) {
+    IntListAdd(&info->party[0]->specials, _decodeInt(&line, &len, fp, buf));
+  }
+
+  COISpriteSetPos(info->party[0]->sprite, _decodeInt(&line, &len, fp, buf), _decodeInt(&line, &len, fp, buf));
+
+
+  fclose(fp);
+
+  return info;
+}
+
 
 void playerInfoDestroy(PlayerInfo* info) {
   inventoryDestroy(info->inventory);

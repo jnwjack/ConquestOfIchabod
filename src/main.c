@@ -26,11 +26,9 @@ EM_BOOL one_iter(double time, void* userData) {
 
 
 void _init() {
-  printf("in the thing\n");
   
   // Initialize global window and asset loader
   COIWindowInit();
-  printf("window inited\n");
   COIAssetLoaderInit();
   
   // Global item data
@@ -46,7 +44,6 @@ void _init() {
   actorFaceDown(pInfo->party[0]);
   */
 
-  printf("before title board\n");
   COIBoard* titleBoard = titleCreateBoard();
   COIWindowSetBoard(COI_GLOBAL_WINDOW, titleBoard, title);
   

@@ -15,9 +15,9 @@
 
 typedef enum {
   TS_MORNING = 0,
-  TS_DAY,
-  TS_EVENING,
-  TS_NIGHT
+  TS_DAY = 1,
+  TS_EVENING = 2,
+  TS_NIGHT = 3
 } TimeStatePhase;
 
 typedef struct TimeState {

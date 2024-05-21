@@ -61,4 +61,7 @@ bool playerHasValidNextSpecials(PlayerInfo* pInfo);
 Tech* playerGetNextTech(PlayerInfo* info);
 int playerGetNextSpecial(PlayerInfo* info);
 
+void playerEncode(PlayerInfo* info);
+PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* inventory);
+
 #endif
