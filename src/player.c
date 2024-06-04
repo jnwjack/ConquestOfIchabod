@@ -184,7 +184,6 @@ void playerEncode(PlayerInfo* info) {
   _encodeULong(info->xp, temp, fp);
   _encodeULong(info->xpForLevelUp, temp, fp);
   _encodeULong(info->nextRentDate, temp, fp);
-  printf("days left: %lu\n", info->nextRentDate);
   _encodeInt((int)info->renting, temp, fp);
   _encodeInt((int)info->working, temp, fp);
   _encodeInt((int)info->alreadyHealed, temp, fp);
@@ -224,6 +223,15 @@ void playerEncode(PlayerInfo* info) {
 
 
   fclose(fp);
+}
+
+bool playerSaveExists() {
+  FILE* fp = fopen("src/engine/etc/save.dat", "r");
+  if (fp == NULL) {
+    return false;
+  }
+  fclose(fp);
+  return true;
 }
 
 PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* inventory) {

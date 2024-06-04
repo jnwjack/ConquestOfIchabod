@@ -419,7 +419,7 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
 void townProcessSelectionInput(TownContext* context) {
   Actor* player = context->pInfo->party[0];
   if (context->pauseOverlay->visible) {
-    PauseOverlaySelect(context->pauseOverlay);
+    PauseOverlaySelect(context->pauseOverlay, context->textBox);
     COIBoardQueueDraw(context->board);
   } else if (context->confirmMenu->_frame->_visible) {
     _confirmMenuSelect(context);

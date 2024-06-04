@@ -2,6 +2,7 @@
 #define PAUSEOVERLAY_H
 
 #include "../player.h"
+#include "../TextBox.h"
 
 #define PAUSE_OVERLAY_ITEMS   0
 #define PAUSE_OVERLAY_WEAPONS 1
@@ -85,7 +86,7 @@ void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board);
 
 void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible);
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event);
-void PauseOverlaySelect(PauseOverlay* overlay);
+void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox);
 void PauseOverlayBack(PauseOverlay* overlay);
 
 #endif

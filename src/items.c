@@ -140,6 +140,8 @@ char* ItemListStringFromItemID(int item) {
     return "Chestplate";
   case ITEM_ID_BRONZE_LEGS:
     return "Greaves";
+  case ITEM_ID_GEM_OF_PERMANENCE:
+    return "Gem of Time";
   default:
     return "-";
   }

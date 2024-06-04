@@ -618,12 +618,21 @@ static void _unequipMenuSelect(PauseOverlay* overlay) {
   _returnToEquipableMenu(overlay);
 }
 
-static void _itemsMenuSelect(PauseOverlay* overlay) {
+static void _itemsMenuSelect(PauseOverlay* overlay, TextBox* textBox) {
+  bool overlayInvisible = false;
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     Actor* player = overlay->pInfo->party[0];
     Inventory* inventory = overlay->pInfo->inventory;
-    actorUseConsumable(player, overlay->selectedItem);
-    inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
+    // Special case
+    if (overlay->selectedItem->id == ITEM_ID_GEM_OF_PERMANENCE) {
+      TextBoxSetStrings(textBox, "Game saved.", NULL);
+      inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
+      playerEncode(overlay->pInfo);
+      overlayInvisible = true;
+    } else {
+      actorUseConsumable(player, overlay->selectedItem);
+      inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
+    }
 
     _destroySubMenus(overlay);
     _makeItemsMenu(overlay, overlay->pInfo, overlay->textType, overlay->board);
@@ -634,7 +643,9 @@ static void _itemsMenuSelect(PauseOverlay* overlay) {
     _makeStatStrings(overlay);
   }
 
-  if (overlay->itemsMenu->_stringCount > 0) {
+  if (overlayInvisible) {
+    PauseOverlaySetVisible(overlay, false);
+  } else if (overlay->itemsMenu->_stringCount > 0) {
     _returnToItemsMenu(overlay);
   } else {
     _returnToBaseMenu(overlay);
@@ -682,7 +693,7 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
   return overlay;
 }
 
-void PauseOverlaySelect(PauseOverlay* overlay) {
+void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox) {
   if (overlay->topRightMenu == overlay->baseMenu) {
     _baseMenuSelect(overlay);
   } else if (overlay->topRightMenu == overlay->itemsMenu ||
@@ -696,7 +707,7 @@ void PauseOverlaySelect(PauseOverlay* overlay) {
   } else if (overlay->topRightMenu == overlay->unequipMenu) {
     _unequipMenuSelect(overlay);
   } else {
-    _itemsMenuSelect(overlay);
+    _itemsMenuSelect(overlay, textBox);
   }
 }
 

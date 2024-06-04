@@ -22,7 +22,10 @@ void _setStringSelected(TitleContext* context, int index, bool selected) {
 
 TitleNextBoard titleGetNextBoard(TitleContext* context) {
   if (context->currentSlide >= TITLE_NUM_INTRO_SLIDES) {
-    return TITLE_NEW_GAME;
+    if (context->selectedStringIndex == TITLE_STRING_NEW_GAME) {
+      return TITLE_NEW_GAME;
+    }
+    return TITLE_CONTINUE_GAME;
   }
 
   return TITLE_TITLE;
@@ -186,23 +189,31 @@ void titleTick(TitleContext* context) {
   }
 }
 
+void _closeTitle(TitleContext* context) {
+  COITransitionInit(&COI_GLOBAL_WINDOW->transition,
+                    COI_TRANSITION_ENCLOSE,
+                    COI_GLOBAL_WINDOW);
+  // Make strings invisible
+  for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
+    COIStringSetVisible(context->strings[i], false);
+    COIStringSetVisible(context->grayStrings[i], false);
+  }
+  COIBoardQueueDraw(context->board);
+}
+
 void _select(TitleContext* context) {
   if (context->currentSlide == -1) {
     switch (context->selectedStringIndex) {
-    case TITLE_STRING_NEW_GAME:
-      COITransitionInit(&COI_GLOBAL_WINDOW->transition,
-			COI_TRANSITION_ENCLOSE,
-			COI_GLOBAL_WINDOW);
-      // Make strings invisible
-      for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
-	COIStringSetVisible(context->strings[i], false);
-	COIStringSetVisible(context->grayStrings[i], false);
-      }
-      COIBoardQueueDraw(context->board);
-      context->currentSlide++;
-      break;
     case TITLE_STRING_CONTINUE_GAME:
-      printf("blah\n");
+      if (playerSaveExists()) {
+        _closeTitle(context);
+        // context->currentSlide = TITLE_NUM_INTRO_SLIDES; // Skip intro
+        context->currentSlide++;
+      }
+      break;
+    case TITLE_STRING_NEW_GAME:
+      _closeTitle(context);
+      context->currentSlide++;
       break;
     case TITLE_STRING_QUIT_GAME:
       COI_GLOBAL_WINDOW->shouldQuit = true;

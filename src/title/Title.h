@@ -3,6 +3,7 @@
 
 #include "../engine/COI.h"
 #include "../TextBox.h"
+#include "../player.h"
 
 //#define TITLE_NAME_TICKS 24
 #define TITLE_NAME_TICKS 12

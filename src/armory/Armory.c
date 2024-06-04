@@ -223,9 +223,10 @@ COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* in
 
 COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory) {
   IntList itemIDs;
-  IntListInitialize(&itemIDs, 1);
+  IntListInitialize(&itemIDs, 2);
   IntListAdd(&itemIDs, ITEM_ID_STRENGTH_POTION);
-  
+  IntListAdd(&itemIDs, ITEM_ID_GEM_OF_PERMANENCE);
+
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
 			   COI_GLOBAL_LOADER,
 			   outsideBoard,
@@ -341,6 +342,9 @@ int _priceFromItemID(int item) {
   case ITEM_ID_BRONZE_LEGS:
     return 30;
     break;
+  case ITEM_ID_GEM_OF_PERMANENCE:
+    return 120;
+    break;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;
@@ -363,6 +367,9 @@ char* _stringFromItemID(int item) {
     break;
   case ITEM_ID_STRENGTH_POTION:
     return "Strength Potion";
+    break;
+  case ITEM_ID_GEM_OF_PERMANENCE:
+    return "Gem of Time";
     break;
   default:
     printf("Error: No valid text ID\n");

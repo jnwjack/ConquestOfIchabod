@@ -138,7 +138,8 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
     titleProcessInput(titleContext, _sdlEventToDirectionalInput(event));
   }
 
-  if (titleGetNextBoard(titleContext) == TITLE_NEW_GAME) {
+  TitleNextBoard nextBoard = titleGetNextBoard(titleContext);
+  if (nextBoard == TITLE_NEW_GAME) {
     // Global item data
    ItemList* itemList = loadItems();
 
@@ -147,8 +148,18 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 
     // Initialize player data
     COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-    // PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory); // jnw cleanup: leaks
-    // playerEncode(pInfo);
+    PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory); // jnw cleanup: leaks
+    COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
+  } else if (nextBoard == TITLE_CONTINUE_GAME) {
+    // Global item data
+    ItemList* itemList = loadItems();
+
+    // Test inventory
+    Inventory* inventory = createTestInventory(itemList);
+
+    // Initialize player data
+    COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     PlayerInfo* pInfo = playerDecode(itemList, playerSprite, inventory);
     COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
@@ -290,7 +301,6 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case SDLK_ESCAPE:
       townTogglePauseOverlay(townContext);
-      playerEncode(townContext->pInfo);
       break;
     case SDLK_SPACE:
       townProcessSelectionInput(townContext);
