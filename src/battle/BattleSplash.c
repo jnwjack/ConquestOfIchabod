@@ -6,15 +6,21 @@ void _positionElements(BattleSplash* splash) {
   COIStringConfineToSprite(splash->result, splash->box);
   COIStringConfineToSprite(splash->rewards, splash->box);
   COIStringConfineToSprite(splash->xp, splash->box);
-  COIStringConfineToSprite(splash->levelUp, splash->box);
-  COIStringPositionBelowString(splash->rewards, splash->result, false);
-  COIStringPositionBelowString(splash->xp, splash->rewards, false);
-  COIStringPositionBelowString(splash->levelUp, splash->xp, false);
+  // COIStringConfineToSprite(splash->levelUp, splash->box);
+  COIStringPositionBelowString(splash->rewards, splash->result, true);
+  COIStringPositionBelowString(splash->xp, splash->rewards, true);
+  // COIStringPositionBelowString(splash->levelUp, splash->xp, false);
 
   COIStringSetVisible(splash->result, false);
   COIStringSetVisible(splash->rewards, false);
   COIStringSetVisible(splash->xp, false);
-  COIStringSetVisible(splash->levelUp, false);
+  // COIStringSetVisible(splash->levelUp, false);
+
+  if (splash->levelUp) {
+    COIStringConfineToSprite(splash->levelUp, splash->box);
+    COIStringPositionBelowString(splash->levelUp, splash->xp, false);
+    COIStringSetVisible(splash->levelUp, false);
+  }
 }
 
 BattleSplash* BattleSplashCreate(COIBoard* board,
@@ -31,25 +37,38 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
   splash->box->_autoHandle = false;
   splash->box->_visible = true;
 
-  splash->result = COIStringCreate("Victory", 0, 0, textType);
-  COIBoardAddString(board, splash->result);
-  // Accept some list of items or something in the future
-  char temp[MAX_STRING_SIZE];
-  snprintf(temp, MAX_STRING_SIZE, "Found: %u Gold", gold);
-  splash->rewards = COIStringCreate(temp,
-				    0,
-				    0,
-				    textType);
-  COIBoardAddString(board, splash->rewards);
+  if (victorious) {
+    splash->result = COIStringCreate("Victory", 0, 0, textType);
+    COIBoardAddString(board, splash->result);
+    // Accept some list of items or something in the future
+    char temp[MAX_STRING_SIZE];
+    snprintf(temp, MAX_STRING_SIZE, "Found: %u Gold", gold);
+    splash->rewards = COIStringCreate(temp,
+              0,
+              0,
+              textType);
+    COIBoardAddString(board, splash->rewards);
 
-  sprintf(temp, "Gained EXP: %lu", gainedXP); 
-  splash->xp = COIStringCreate(temp, 0, 0, textType);
-  COIBoardAddString(board, splash->xp);
+    sprintf(temp, "Gained EXP: %lu", gainedXP); 
+    splash->xp = COIStringCreate(temp, 0, 0, textType);
+    COIBoardAddString(board, splash->xp);
 
-  if (levelUp) {
-    splash->levelUp = COIStringCreate("Level Up", 0, 0, textType);
-    COIBoardAddString(board, splash->levelUp);
+    if (levelUp) {
+      splash->levelUp = COIStringCreate("Level Up", 0, 0, textType);
+      COIBoardAddString(board, splash->levelUp);
+    } else {
+      splash->levelUp = NULL;
+    }
   } else {
+    splash->result = COIStringCreate("Defeat", 0, 0, textType);
+    COIBoardAddString(board, splash->result);
+
+    splash->rewards = COIStringCreate("Your party has perished.", 0, 0, textType);
+    COIBoardAddString(board, splash->rewards);
+
+    splash->xp = COIStringCreate("Your quest is in vain.", 0, 0, textType);
+    COIBoardAddString(board, splash->xp);
+
     splash->levelUp = NULL;
   }
 

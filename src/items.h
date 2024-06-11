@@ -59,6 +59,7 @@ char* ItemListStringFromItemID(int item);
 int ItemAdjustStat(int baseStat, int itemStrength);
 
 bool ItemIsUnarmedItem(Item* item);
+bool ItemCanUseInBattle(Item* item);
 
 
 #endif

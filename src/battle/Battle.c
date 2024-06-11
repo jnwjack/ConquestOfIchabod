@@ -379,7 +379,7 @@ void _item(BattleContext* context) {
   //  ItemList* itemList = context->pInfo->inventory->items;
   Item** items = context->pInfo->inventory->backpack;
   for (int i = 0; i < context->pInfo->inventory->numBackpackItems; i++) {
-    if (items[i]->type == CONSUMABLE) {
+    if (ItemCanUseInBattle(items[i])) {
       COIString* string = COIStringCreate(ItemListStringFromItemID(items[i]->id),
 					  0, 0,
 					  context->textType);
@@ -393,7 +393,6 @@ void _item(BattleContext* context) {
 }
 
 void _special(BattleContext* context) {
-  
   // Clean up previous COIStrings
   COIMenuFreeComponents(context->subMenu, context->board);
 
@@ -801,19 +800,22 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
   if(context->sceneStage == SS_SPLASH) {
     // If the splash screen has finished animating
     if (BattleSplashFinished(context->splash)) {
-      unsigned int oldLevel = context->pInfo->level;
-      playerAddXP(context->pInfo, context->xpYield);
-      context->pInfo->inventory->money = MIN(MAX_MONEY, context->pInfo->inventory->money + (int)context->gold);
-      if (context->pInfo->level > oldLevel) {
-        context->levelUpSplash = LevelUpSplashCreate(context->board, context->pInfo);
-        context->menuFocus = LEVEL_UP;
-        context->controlEnabled = true;
-        for (int i = 0; i < context->numAllies; i++) {
-          AllyStatusSetVisible(context->allyStatuses[i], false);
+      BattleResult battleResult = battleFinished(context);
+      if (battleResult == BR_WIN) {
+        unsigned int oldLevel = context->pInfo->level;
+        playerAddXP(context->pInfo, context->xpYield);
+        context->pInfo->inventory->money = MIN(MAX_MONEY, context->pInfo->inventory->money + (int)context->gold);
+        if (context->pInfo->level > oldLevel) {
+          context->levelUpSplash = LevelUpSplashCreate(context->board, context->pInfo);
+          context->menuFocus = LEVEL_UP;
+          context->controlEnabled = true;
+          for (int i = 0; i < context->numAllies; i++) {
+            AllyStatusSetVisible(context->allyStatuses[i], false);
+          }
+          context->board->_sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = false;
+          BattleSplashDestroy(context->splash, context->board);
+          return BR_CONTINUE;
         }
-        context->board->_sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = false;
-        BattleSplashDestroy(context->splash, context->board);
-        return BR_CONTINUE;
       }
       BattleSplashDestroy(context->splash, context->board);
       context->splash = NULL;

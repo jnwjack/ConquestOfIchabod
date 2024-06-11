@@ -44,7 +44,7 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
   switch (result) {
   case BR_LOSS:
     nextBoard = gameOverCreateBoard(battleContext->window, board->loader);
-    COIWindowSetBoard(battleContext->window, nextBoard, NULL);
+    COIWindowSetBoard(battleContext->window, nextBoard, gameOver);
     break;
   case BR_FLEE:
   case BR_WIN:
@@ -151,6 +151,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
     PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory); // jnw cleanup: leaks
     COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
+    titleDestroyBoard(titleContext);
   } else if (nextBoard == TITLE_CONTINUE_GAME) {
     // Global item data
     ItemList* itemList = loadItems();
@@ -163,6 +164,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
     PlayerInfo* pInfo = playerDecode(itemList, playerSprite, inventory);
     COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
+    titleDestroyBoard(titleContext);
   }
 }
 
@@ -261,14 +263,29 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   }
 }
 
+void gameOver(COIBoard* board, SDL_Event* event, void* context) {
+  switch (event->type) {
+  case SDL_KEYDOWN:
+    switch(event->key.keysym.sym) {
+    case SDLK_SPACE:
+    case SDLK_ESCAPE:
+      COIWindowSetBoard(COI_GLOBAL_WINDOW, titleCreateBoard(), title);
+      gameOverDestroyBoard(board);
+      break;
+    }
+    default:
+      return;
+  }
+}
+
 void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   TownContext* townContext = (TownContext*)context;
   Actor* player = townContext->pInfo->party[0];
 
   if (!TimeStateInFuture(&END_TIME)) {
-    COIBoard* gameOver = gameOverCreateBoard(COI_GLOBAL_WINDOW,
+    COIBoard* gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW,
 					     COI_GLOBAL_LOADER);
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOver, NULL);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOverBoard, gameOver);
     return;
   }
 

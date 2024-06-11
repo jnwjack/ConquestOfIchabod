@@ -8,6 +8,7 @@ typedef struct GameOverContext {
 } GameOverContext;
 
 COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader);
+void gameOverDestroyBoard(COIBoard* board);
 
 
 #endif

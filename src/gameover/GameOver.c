@@ -11,3 +11,10 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader) {
 
   return board;
 }
+
+void gameOverDestroyBoard(COIBoard* board) {
+  for (int i = 0; i < board->stringCount; i++) {
+    COIStringDestroy(board->strings[i]);
+  }
+  COIBoardDestroy(board);
+}

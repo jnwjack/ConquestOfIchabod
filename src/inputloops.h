@@ -22,5 +22,6 @@ void title(COIBoard* board, SDL_Event* event, void* context);
 void armory(COIBoard* board, SDL_Event* event, void* context);
 void battle(COIBoard* board, SDL_Event* event, void* context);
 void rentHouse(COIBoard* board, SDL_Event* event, void* context);
+void gameOver(COIBoard* board, SDL_Event* event, void* context);
 
 #endif

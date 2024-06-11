@@ -147,6 +147,15 @@ char* ItemListStringFromItemID(int item) {
   }
 }
 
+bool ItemCanUseInBattle(Item* item) {
+  switch (item->id) {
+  case ITEM_ID_STRENGTH_POTION:
+    return true;
+  default:
+    return false;
+  }
+}
+
 // True if this item represents an unfilled item slot
 bool ItemIsUnarmedItem(Item* item) {
   return (item->id >= ITEM_ID_UNARMED && item->id <= ITEM_ID_UNARMED_OFF);
