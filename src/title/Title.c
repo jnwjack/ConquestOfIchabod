@@ -24,6 +24,9 @@ TitleNextBoard titleGetNextBoard(TitleContext* context) {
   if (context->currentSlide >= TITLE_NUM_INTRO_SLIDES) {
     if (context->selectedStringIndex == TITLE_STRING_NEW_GAME) {
       return TITLE_NEW_GAME;
+      // KeyboardInit(&context->kb, context->board);
+      // context->drawing->_visible = false;
+      return TITLE_TITLE;
     }
     return TITLE_CONTINUE_GAME;
   }
@@ -85,6 +88,10 @@ COIBoard* titleCreateBoard() {
   context->textBox = TextBoxCreate(board, context->tBoxTextType);
 
   context->board = board;
+
+  KeyboardInit(&context->kb, context->board);
+  context->drawing->_visible = false;
+
   COIBoardSetContext(board, (void*)context);
   return board;
 }
@@ -229,12 +236,26 @@ void titleProcessInput(TitleContext* context, int direction) {
   switch (direction) {
   case MOVING_LEFT:
     newIndex = MAX(0, context->selectedStringIndex - 1);
+    KeyboardMoveCursor(&context->kb, -1, 0);
+    COIBoardQueueDraw(context->board);
     break;
   case MOVING_RIGHT:
     newIndex = MIN(2, context->selectedStringIndex + 1);
+    KeyboardMoveCursor(&context->kb, 1, 0);
+    COIBoardQueueDraw(context->board);
+    break;
+  case MOVING_UP:
+    KeyboardMoveCursor(&context->kb, 0, -1);
+    COIBoardQueueDraw(context->board);
+    break;
+  case MOVING_DOWN:
+    KeyboardMoveCursor(&context->kb, 0, 1);
+    COIBoardQueueDraw(context->board);
     break;
   case MOVING_SELECT:
-    _select(context);
+    KeyboardAddCharacter(&context->kb, context->board);
+    COIBoardQueueDraw(context->board);
+    // _select(context);
   default:
     return;
   }

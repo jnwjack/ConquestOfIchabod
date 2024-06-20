@@ -4,6 +4,7 @@
 #include "../engine/COI.h"
 #include "../TextBox.h"
 #include "../player.h"
+#include "CharacterCreation.h"
 
 //#define TITLE_NAME_TICKS 24
 #define TITLE_NAME_TICKS 12
@@ -35,6 +36,7 @@ typedef struct TitleContext {
   int selectedStringIndex;
   TextBox* textBox;
   COITextType* tBoxTextType;
+  Keyboard kb;
 } TitleContext;
 
 COIBoard* titleCreateBoard();
