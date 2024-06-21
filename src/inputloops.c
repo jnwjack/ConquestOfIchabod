@@ -13,8 +13,11 @@ static int _sdlEventToDirectionalInput(SDL_Event* event) {
     return MOVING_LEFT;
   case SDLK_RIGHT:
     return MOVING_RIGHT;
+  case SDLK_z:
   case SDLK_SPACE:
     return MOVING_SELECT;
+  case SDLK_x:
+    return MOVING_DELETE;
   default:
     return MOVING_NONE;
   }

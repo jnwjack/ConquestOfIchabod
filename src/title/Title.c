@@ -255,7 +255,11 @@ void titleProcessInput(TitleContext* context, int direction) {
   case MOVING_SELECT:
     KeyboardAddCharacter(&context->kb, context->board);
     COIBoardQueueDraw(context->board);
+    break;
     // _select(context);
+  case MOVING_DELETE:
+    KeyboardRemoveCharacter(&context->kb, context->board);
+    break;
   default:
     return;
   }

@@ -18,6 +18,7 @@
 #define MOVING_UP 3
 #define MOVING_DOWN 4
 #define MOVING_SELECT 5
+#define MOVING_DELETE 6
 
 struct LinkedListNode;
 typedef struct LinkedListNode {

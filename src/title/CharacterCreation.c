@@ -89,3 +89,11 @@ void KeyboardAddCharacter(Keyboard* kb, COIBoard* board) {
     // }
   }
 }
+
+void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board) {
+  if (kb->currentNameChar > 0) {
+    COIBoardRemoveString(board, kb->nameStrings[kb->currentNameChar - 1]);
+    COIStringDestroy(kb->nameStrings[kb->currentNameChar - 1]);
+    kb->currentNameChar--;
+  }
+}

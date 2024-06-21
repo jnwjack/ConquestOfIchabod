@@ -26,5 +26,6 @@ typedef struct Keyboard {
 void KeyboardInit(Keyboard* kb, COIBoard* board);
 void KeyboardMoveCursor(Keyboard* kb, int dX, int dY);
 void KeyboardAddCharacter(Keyboard* kb, COIBoard* board);
+void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board);
 
 #endif
