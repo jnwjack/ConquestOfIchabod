@@ -17,8 +17,10 @@ typedef struct Keyboard {
   COIString* gridStrings[KEYBOARD_NUM_CHARS];
   COIString* underscores[KEYBOARD_NAME_SIZE];
   COIString* nameStrings[KEYBOARD_NAME_SIZE];
+  COIString* end;
   COISprite* highlight;
   COITextType* textType;
+  COITextType* textTypeWords;
   int currentGridX;
   int currentGridY;
 } Keyboard;

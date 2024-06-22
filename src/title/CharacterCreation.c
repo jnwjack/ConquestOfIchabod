@@ -2,6 +2,7 @@
 
 void KeyboardInit(Keyboard* kb, COIBoard* board) {
   kb->textType = COITextTypeCreate(32, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  kb->textTypeWords = COITextTypeCreate(20, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   kb->currentNameChar = 0;
 
   for (char i = 0; i < 26; i++) {
@@ -30,6 +31,11 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
       col++;
     }
   }
+  kb->end = COIStringCreate("END",
+                            KEYBOARD_OFFSET_X - 10,
+                            KEYBOARD_OFFSET_Y + ((KEYBOARD_GRID_HEIGHT) * (kb->textType->fontSize + KEYBOARD_GRID_PADDING)),
+                            kb->textTypeWords);
+  COIBoardAddString(board, kb->end);
 
   const int underscoreY = KEYBOARD_OFFSET_Y - (2 * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
   for (int i = 0; i < KEYBOARD_NAME_SIZE; i++) {
@@ -53,19 +59,25 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
 }
 
 void KeyboardMoveCursor(Keyboard* kb, int dX, int dY) {
-  kb->currentGridX += dX;
   kb->currentGridY += dY;
 
-  if (kb->currentGridX < 0) {
-    kb->currentGridX = KEYBOARD_GRID_WIDTH - 1;
-  } else if (kb->currentGridX >= KEYBOARD_GRID_WIDTH) {
+  if (kb->currentGridY < 0) {
+    kb->currentGridY = KEYBOARD_GRID_HEIGHT;
+    kb->currentGridX = 0;
+  } else if (kb->currentGridY > KEYBOARD_GRID_HEIGHT) {
+    kb->currentGridY = 0;
     kb->currentGridX = 0;
   }
 
-  if (kb->currentGridY < 0) {
-    kb->currentGridY = KEYBOARD_GRID_HEIGHT - 1;
-  } else if (kb->currentGridY >= KEYBOARD_GRID_HEIGHT) {
-    kb->currentGridY = 0;
+  if (kb->currentGridY != KEYBOARD_GRID_HEIGHT) {
+    kb->currentGridX += dX;
+    if (kb->currentGridX < 0) {
+      kb->currentGridX = KEYBOARD_GRID_WIDTH - 1;
+    } else if (kb->currentGridX >= KEYBOARD_GRID_WIDTH) {
+      kb->currentGridX = 0;
+    }
+  } else {
+    kb->currentGridX = 0;
   }
 
   int newX = -(KEYBOARD_GRID_PADDING) + KEYBOARD_OFFSET_X + kb->currentGridX * (kb->textType->fontSize + KEYBOARD_GRID_PADDING);
