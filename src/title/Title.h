@@ -37,6 +37,7 @@ typedef struct TitleContext {
   TextBox* textBox;
   COITextType* tBoxTextType;
   Keyboard kb;
+  ClassSelector cs;
 } TitleContext;
 
 COIBoard* titleCreateBoard();

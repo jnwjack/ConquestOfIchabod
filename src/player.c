@@ -299,6 +299,20 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   return info;
 }
 
+char* playerClassNameFromID(unsigned int id) {
+  switch (id) {
+  case PLAYER_CLASS_FIGHTER:
+    return "Fighter";
+  case PLAYER_CLASS_WIZARD:
+    return "Wizard";
+  case PLAYER_CLASS_ROGUE:
+    return "Rogue";
+  default:
+    printf("Error: Invalid class ID\n");
+    return "NONE";
+  }
+}
+
 
 void playerInfoDestroy(PlayerInfo* info) {
   inventoryDestroy(info->inventory);

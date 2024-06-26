@@ -7,6 +7,10 @@
 
 #define MAX_PARTY_SIZE 4
 
+#define PLAYER_CLASS_FIGHTER 0
+#define PLAYER_CLASS_WIZARD 1
+#define PLAYER_CLASS_ROGUE 2
+
 typedef struct ClassProgression {
   unsigned int* techs;
   unsigned int* specials;
@@ -64,5 +68,7 @@ int playerGetNextSpecial(PlayerInfo* info);
 void playerEncode(PlayerInfo* info);
 PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* inventory);
 bool playerSaveExists();
+
+char* playerClassNameFromID(unsigned int id);
 
 #endif

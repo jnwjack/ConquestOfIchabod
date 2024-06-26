@@ -90,6 +90,8 @@ COIBoard* titleCreateBoard() {
   context->board = board;
 
   KeyboardInit(&context->kb, context->board);
+  ClassSelectorInit(&context->cs, context->board);
+  KeyboardSetVisible(&context->kb, false);
   context->drawing->_visible = false;
 
   COIBoardSetContext(board, (void*)context);
@@ -236,12 +238,20 @@ void titleProcessInput(TitleContext* context, int direction) {
   switch (direction) {
   case MOVING_LEFT:
     newIndex = MAX(0, context->selectedStringIndex - 1);
-    KeyboardMoveCursor(&context->kb, -1, 0);
+    if (!KeyboardIsVisible(&context->kb)) {
+      ClassSelectorChange(&context->cs, -1);
+    } else {
+      KeyboardMoveCursor(&context->kb, -1, 0);
+    }
     COIBoardQueueDraw(context->board);
     break;
   case MOVING_RIGHT:
+    if (!KeyboardIsVisible(&context->kb)) {
+      ClassSelectorChange(&context->cs, 1);
+    } else {
+      KeyboardMoveCursor(&context->kb, 1, 0);
+    }
     newIndex = MIN(2, context->selectedStringIndex + 1);
-    KeyboardMoveCursor(&context->kb, 1, 0);
     COIBoardQueueDraw(context->board);
     break;
   case MOVING_UP:
@@ -253,12 +263,20 @@ void titleProcessInput(TitleContext* context, int direction) {
     COIBoardQueueDraw(context->board);
     break;
   case MOVING_SELECT:
-    KeyboardAddCharacter(&context->kb, context->board);
+    if (!KeyboardIsVisible(&context->kb)) {
+      KeyboardSetVisible(&context->kb, true);
+    } else {
+      KeyboardAddCharacter(&context->kb, context->board);
+    }
     COIBoardQueueDraw(context->board);
     break;
     // _select(context);
   case MOVING_DELETE:
-    KeyboardRemoveCharacter(&context->kb, context->board);
+    if (context->kb.currentNameChar == 0) {
+      KeyboardSetVisible(&context->kb, false);
+    } else {
+      KeyboardRemoveCharacter(&context->kb, context->board);
+    }
     break;
   default:
     return;

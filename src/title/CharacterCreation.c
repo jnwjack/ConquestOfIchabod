@@ -55,6 +55,7 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
                                             kb->textType->fontSize + KEYBOARD_GRID_PADDING, 
                                             kb->textType->fontSize + KEYBOARD_GRID_PADDING,
                                             COI_GLOBAL_LOADER, 45, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  kb->highlight->_autoHandle = false;                                            
   COIBoardAddDynamicSprite(board, kb->highlight);
 }
 
@@ -96,9 +97,6 @@ void KeyboardAddCharacter(Keyboard* kb, COIBoard* board) {
     kb->nameStrings[kb->currentNameChar] = COIStringCreate(buf, newCharX, underscoreY, kb->textType);
     COIBoardAddString(board, kb->nameStrings[kb->currentNameChar]);
     kb->currentNameChar++;
-    // if (kb->nameStrings[kb->currentNameChar]) {
-    //   COIBoardRemoveString(board, kb->nameStrings[i]);
-    // }
   }
 }
 
@@ -109,3 +107,84 @@ void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board) {
     kb->currentNameChar--;
   }
 }
+
+void KeyboardSetVisible(Keyboard* kb, bool visible) {
+  for (int i = 0; i < KEYBOARD_NUM_CHARS; i++) {
+    COIStringSetVisible(kb->gridStrings[i], visible);
+  }
+  for (int i = 0; i < kb->currentNameChar; i++) {
+    COIStringSetVisible(kb->nameStrings[i], visible);
+  }
+  for (int i = 0; i < KEYBOARD_NAME_SIZE; i++) {
+    COIStringSetVisible(kb->underscores[i], visible);
+  }
+  COIStringSetVisible(kb->end, visible);
+  kb->highlight->_visible = visible;
+}
+
+bool KeyboardIsVisible(Keyboard* kb) {
+  return kb->highlight->_visible;
+}
+
+void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
+  cs->leftArrow = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X, CLASSSELECTOR_OFFSET_Y, 64, 64, 
+                                            COI_GLOBAL_LOADER, 46, 
+                                            COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, cs->leftArrow);
+  cs->rightArrow = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 240, CLASSSELECTOR_OFFSET_Y, 64, 64, 
+                                            COI_GLOBAL_LOADER, 47, 
+                                            COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, cs->rightArrow);
+
+  COITextType* textType = COITextTypeCreate(32, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+
+  cs->currentClass = PLAYER_CLASS_FIGHTER;
+  cs->classIcons[PLAYER_CLASS_FIGHTER] = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 120, CLASSSELECTOR_OFFSET_Y, 64, 64,
+                                                                    COI_GLOBAL_LOADER, 48,
+                                                                    COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  cs->classIcons[PLAYER_CLASS_WIZARD] = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 120, CLASSSELECTOR_OFFSET_Y, 64, 64,
+                                                                   COI_GLOBAL_LOADER, 49,
+                                                                   COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  cs->classIcons[PLAYER_CLASS_ROGUE] = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 120, CLASSSELECTOR_OFFSET_Y, 64, 64,
+                                                                  COI_GLOBAL_LOADER, 50,
+                                                                  COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+
+  for (int i = 0; i < CLASSSELECTOR_NUM_CLASSES; i++) {
+    bool visible = i == cs->currentClass;
+    COIBoardAddDynamicSprite(board, cs->classIcons[i]);
+    cs->classIcons[i]->_autoHandle = false;
+    cs->classIcons[i]->_visible = visible;
+    cs->classNames[i] = COIStringCreate(playerClassNameFromID(i), CLASSSELECTOR_OFFSET_X + 100, CLASSSELECTOR_OFFSET_Y + 100, textType);
+    COIBoardAddString(board, cs->classNames[i]);
+    COIStringSetVisible(cs->classNames[i], visible);
+  }
+
+  COITextTypeDestroy(textType);
+}
+
+void ClassSelectorChange(ClassSelector* cs, int d) {
+  cs->classIcons[cs->currentClass]->_visible = false;
+  COIStringSetVisible(cs->classNames[cs->currentClass], false);
+
+  cs->currentClass += d;
+  if (cs->currentClass < 0) {
+    cs->currentClass = CLASSSELECTOR_NUM_CLASSES - 1;
+  } else if (cs->currentClass >= CLASSSELECTOR_NUM_CLASSES) {
+    cs->currentClass = 0;
+  }
+
+  cs->classIcons[cs->currentClass]->_visible = true;
+  COIStringSetVisible(cs->classNames[cs->currentClass], true);
+}
+
+void ClassSelectorSetVisible(ClassSelector* cs, bool visible) {
+  cs->leftArrow->_visible = visible;
+  cs->rightArrow->_visible = visible;
+  cs->classIcons[cs->currentClass]->_visible = visible;
+  COIStringSetVisible(cs->classNames[cs->currentClass], visible);
+}
+
+bool ClassSelectorIsVisible(ClassSelector* cs) {
+  return cs->leftArrow->_visible;
+}
+
