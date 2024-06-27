@@ -13,7 +13,7 @@
 #define TITLE_STRING_CONTINUE_GAME 1
 #define TITLE_STRING_QUIT_GAME 2
 
-#define TITLE_NUM_INTRO_SLIDES 1
+#define TITLE_NUM_INTRO_SLIDES 3
 #define TITLE_NUM_OPTIONS 3
 
 typedef enum TitleNextBoard {
@@ -38,6 +38,7 @@ typedef struct TitleContext {
   COITextType* tBoxTextType;
   Keyboard kb;
   ClassSelector cs;
+  bool creatingCharacter;
 } TitleContext;
 
 COIBoard* titleCreateBoard();

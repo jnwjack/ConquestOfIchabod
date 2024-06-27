@@ -304,7 +304,7 @@ char* playerClassNameFromID(unsigned int id) {
   case PLAYER_CLASS_FIGHTER:
     return "Fighter";
   case PLAYER_CLASS_WIZARD:
-    return "Wizard";
+    return "Mage";
   case PLAYER_CLASS_ROGUE:
     return "Rogue";
   default:

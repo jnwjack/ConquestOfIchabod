@@ -40,6 +40,7 @@ COIBoard* titleCreateBoard() {
   context->animating = false;
   context->currentSlide = -1;
   context->selectedStringIndex = 0;
+  context->creatingCharacter = false;
   COIBoard* board = COIBoardCreate(255, 0, 0, 225, 640, 480, COI_GLOBAL_LOADER);
   context->drawing = COISpriteCreateFromAssetID(0, 0, 640, 480,
 						COI_GLOBAL_LOADER,
@@ -116,6 +117,8 @@ void titleDestroyBoard(TitleContext* context) {
   }
   COITextTypeDestroy(context->tBoxTextType);
   TextBoxDestroy(context->textBox);
+  KeyboardDestroy(&context->kb, context->board);
+  ClassSelectorDestroy(&context->cs, context->board);
   free(context);
   COIBoardDestroy(board);
 }
@@ -167,8 +170,10 @@ void _displaySlide(TitleContext* context) {
  
 
 void titleTick(TitleContext* context) {
-  if (context->currentSlide > -1 &&
-      context->currentSlide < TITLE_NUM_INTRO_SLIDES) {
+  if (context->creatingCharacter) {
+    // Do nothing
+  } else if (context->currentSlide > -1 &&
+            context->currentSlide < TITLE_NUM_INTRO_SLIDES) {
     _displaySlide(context);
   } else {
     // Animate title
@@ -266,11 +271,14 @@ void titleProcessInput(TitleContext* context, int direction) {
     if (!KeyboardIsVisible(&context->kb)) {
       KeyboardSetVisible(&context->kb, true);
     } else {
-      KeyboardAddCharacter(&context->kb, context->board);
+      if (KeyboardSelect(&context->kb, context->board)) {
+	      COITransitionInit(&COI_GLOBAL_WINDOW->transition,
+                          COI_TRANSITION_ENCLOSE,
+                          COI_GLOBAL_WINDOW);
+      }
     }
     COIBoardQueueDraw(context->board);
     break;
-    // _select(context);
   case MOVING_DELETE:
     if (context->kb.currentNameChar == 0) {
       KeyboardSetVisible(&context->kb, false);

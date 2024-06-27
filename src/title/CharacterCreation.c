@@ -86,7 +86,8 @@ void KeyboardMoveCursor(Keyboard* kb, int dX, int dY) {
   COISpriteSetPos(kb->highlight, newX, newY);
 }
 
-void KeyboardAddCharacter(Keyboard* kb, COIBoard* board) {
+// Returns true when we're selecting 'END'
+bool KeyboardSelect(Keyboard* kb, COIBoard* board) {
   const int underscoreY = KEYBOARD_OFFSET_Y - (2 * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
   const int newCharX = KEYBOARD_OFFSET_X + (kb->currentNameChar * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
   char buf[2];
@@ -98,6 +99,8 @@ void KeyboardAddCharacter(Keyboard* kb, COIBoard* board) {
     COIBoardAddString(board, kb->nameStrings[kb->currentNameChar]);
     kb->currentNameChar++;
   }
+
+  return kb->currentGridY == KEYBOARD_GRID_HEIGHT; // True if we're on 'END'
 }
 
 void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board) {
@@ -124,6 +127,30 @@ void KeyboardSetVisible(Keyboard* kb, bool visible) {
 
 bool KeyboardIsVisible(Keyboard* kb) {
   return kb->highlight->_visible;
+}
+
+void KeyboardDestroy(Keyboard* kb, COIBoard* board) {
+  COITextTypeDestroy(kb->textType);
+  COITextTypeDestroy(kb->textTypeWords);
+  COIBoardRemoveString(board, kb->end);
+  COIStringDestroy(kb->end);
+  COIBoardRemoveDynamicSprite(board, kb->highlight);
+  COISpriteDestroy(kb->highlight);
+
+  for (int i = 0; i < KEYBOARD_NUM_CHARS; i++) {
+    COIBoardRemoveString(board, kb->gridStrings[i]);
+    COIStringDestroy(kb->gridStrings[i]);
+  }
+
+  for (int i = 0; i < KEYBOARD_NAME_SIZE; i++) {
+    COIBoardRemoveString(board, kb->underscores[i]);
+    COIStringDestroy(kb->underscores[i]);
+  }
+
+  for (int i = 0; i < kb->currentNameChar; i++) {
+    COIBoardRemoveString(board, kb->nameStrings[i]);
+    COIStringDestroy(kb->nameStrings[i]);
+  }
 }
 
 void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
@@ -186,5 +213,19 @@ void ClassSelectorSetVisible(ClassSelector* cs, bool visible) {
 
 bool ClassSelectorIsVisible(ClassSelector* cs) {
   return cs->leftArrow->_visible;
+}
+
+void ClassSelectorDestroy(ClassSelector* cs, COIBoard* board) {
+  COIBoardRemoveDynamicSprite(board, cs->leftArrow);
+  COISpriteDestroy(cs->leftArrow);
+  COIBoardRemoveDynamicSprite(board, cs->rightArrow);
+  COISpriteDestroy(cs->leftArrow);
+
+  for (int i = 0; i < CLASSSELECTOR_NUM_CLASSES; i++) {
+    COIBoardRemoveDynamicSprite(board, cs->classIcons[i]);
+    COISpriteDestroy(cs->classIcons[i]);
+    COIBoardRemoveString(board, cs->classNames[i]);
+    COIStringDestroy(cs->classNames[i]);
+  }
 }
 

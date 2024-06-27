@@ -28,10 +28,11 @@ typedef struct Keyboard {
 
 void KeyboardInit(Keyboard* kb, COIBoard* board);
 void KeyboardMoveCursor(Keyboard* kb, int dX, int dY);
-void KeyboardAddCharacter(Keyboard* kb, COIBoard* board);
+bool KeyboardSelect(Keyboard* kb, COIBoard* board);
 void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board);
 void KeyboardSetVisible(Keyboard* kb, bool visible);
 bool KeyboardIsVisible(Keyboard* kb);
+void KeyboardDestroy(Keyboard* kb, COIBoard* board);
 
 #define CLASSSELECTOR_NUM_CLASSES 3
 #define CLASSSELECTOR_OFFSET_X 150
@@ -48,5 +49,6 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board);
 void ClassSelectorChange(ClassSelector* cs, int d);
 void ClassSelectorSetVisible(ClassSelector* cs, bool visible);
 bool ClassSelectorIsVisible(ClassSelector* cs);
+void ClassSelectorDestroy(ClassSelector* cs, COIBoard* board);
 
 #endif
