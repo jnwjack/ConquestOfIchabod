@@ -88,19 +88,26 @@ void KeyboardMoveCursor(Keyboard* kb, int dX, int dY) {
 
 // Returns true when we're selecting 'END'
 bool KeyboardSelect(Keyboard* kb, COIBoard* board) {
-  const int underscoreY = KEYBOARD_OFFSET_Y - (2 * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
-  const int newCharX = KEYBOARD_OFFSET_X + (kb->currentNameChar * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
-  char buf[2];
-  if (kb->currentNameChar < KEYBOARD_NAME_SIZE) {
-    unsigned int index = kb->currentGridX + (kb->currentGridY * KEYBOARD_GRID_WIDTH);
-    char c = kb->characters[index];
-    snprintf(buf, 2, "%c", c);
-    kb->nameStrings[kb->currentNameChar] = COIStringCreate(buf, newCharX, underscoreY, kb->textType);
-    COIBoardAddString(board, kb->nameStrings[kb->currentNameChar]);
-    kb->currentNameChar++;
+  if (kb->currentGridY != KEYBOARD_GRID_HEIGHT) {
+    const int underscoreY = KEYBOARD_OFFSET_Y - (2 * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
+    const int newCharX = KEYBOARD_OFFSET_X + (kb->currentNameChar * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
+    char buf[2];
+    if (kb->currentNameChar < KEYBOARD_NAME_SIZE) {
+      unsigned int index = kb->currentGridX + (kb->currentGridY * KEYBOARD_GRID_WIDTH);
+      char c = kb->characters[index];
+      snprintf(buf, 2, "%c", c);
+      kb->name[kb->currentNameChar] = c;
+      kb->nameStrings[kb->currentNameChar] = COIStringCreate(buf, newCharX, underscoreY, kb->textType);
+      COIBoardAddString(board, kb->nameStrings[kb->currentNameChar]);
+      kb->currentNameChar++;
+    }
+
+    return false;
+  } else if (kb->currentNameChar == 0) {
+    return false;
   }
 
-  return kb->currentGridY == KEYBOARD_GRID_HEIGHT; // True if we're on 'END'
+  return true; // True if we're on 'END'
 }
 
 void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board) {
@@ -108,6 +115,7 @@ void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board) {
     COIBoardRemoveString(board, kb->nameStrings[kb->currentNameChar - 1]);
     COIStringDestroy(kb->nameStrings[kb->currentNameChar - 1]);
     kb->currentNameChar--;
+    kb->name[kb->currentNameChar] = 0;
   }
 }
 
@@ -157,10 +165,12 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
   cs->leftArrow = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X, CLASSSELECTOR_OFFSET_Y, 64, 64, 
                                             COI_GLOBAL_LOADER, 46, 
                                             COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  cs->leftArrow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, cs->leftArrow);
   cs->rightArrow = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 240, CLASSSELECTOR_OFFSET_Y, 64, 64, 
                                             COI_GLOBAL_LOADER, 47, 
                                             COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  cs->rightArrow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, cs->rightArrow);
 
   COITextType* textType = COITextTypeCreate(32, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
@@ -219,7 +229,7 @@ void ClassSelectorDestroy(ClassSelector* cs, COIBoard* board) {
   COIBoardRemoveDynamicSprite(board, cs->leftArrow);
   COISpriteDestroy(cs->leftArrow);
   COIBoardRemoveDynamicSprite(board, cs->rightArrow);
-  COISpriteDestroy(cs->leftArrow);
+  COISpriteDestroy(cs->rightArrow);
 
   for (int i = 0; i < CLASSSELECTOR_NUM_CLASSES; i++) {
     COIBoardRemoveDynamicSprite(board, cs->classIcons[i]);

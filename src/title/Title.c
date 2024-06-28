@@ -41,7 +41,7 @@ COIBoard* titleCreateBoard() {
   context->currentSlide = -1;
   context->selectedStringIndex = 0;
   context->creatingCharacter = false;
-  COIBoard* board = COIBoardCreate(255, 0, 0, 225, 640, 480, COI_GLOBAL_LOADER);
+  COIBoard* board = COIBoardCreate(0, 0, 0, 0, 640, 480, COI_GLOBAL_LOADER);
   context->drawing = COISpriteCreateFromAssetID(0, 0, 640, 480,
 						COI_GLOBAL_LOADER,
 						25,
@@ -93,7 +93,7 @@ COIBoard* titleCreateBoard() {
   KeyboardInit(&context->kb, context->board);
   ClassSelectorInit(&context->cs, context->board);
   KeyboardSetVisible(&context->kb, false);
-  context->drawing->_visible = false;
+  ClassSelectorSetVisible(&context->cs, false);
 
   COIBoardSetContext(board, (void*)context);
   return board;
@@ -123,18 +123,41 @@ void titleDestroyBoard(TitleContext* context) {
   COIBoardDestroy(board);
 }
 
-void _setTextBox(TextBox* textBox, char slide) {
+void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
   switch (slide) {
-  case 1:
-  case 2:
-  case 3:
-  case 4:
   case 0:
     TextBoxSetStrings(textBox,
-		      "A long time ago, in the same galaxy though.",
-		      "You are a hero blah blah blah.",
-		      "Something bad happened.",
+		      "A shadow has descended upon the kingdom of Rease.",
+          "The evil witch, Izra, has brought forth a curse onto the land.",
+          "Our only chance is a young hero...",
 		      NULL);
+    break;
+  case 1:
+    context->creatingCharacter = true;
+    ClassSelectorSetVisible(&context->cs, true);
+    break;
+  case 2:
+  {
+    char first[MAX_STRING_SIZE];
+    snprintf(first, MAX_STRING_SIZE, "%s, a %s has risen to the challenge.", 
+            context->kb.name, 
+            playerClassNameFromID(context->cs.currentClass));
+    char second[MAX_STRING_SIZE];
+    snprintf(second, MAX_STRING_SIZE, "%s decides to start their search in Thread Town.", 
+            context->kb.name);
+    TextBoxSetStrings(textBox,
+          first,
+          second,
+          NULL);
+    break;
+  }
+  case 3:
+  case 4:
+    TextBoxSetStrings(textBox,
+      "A long time ago, in the same galaxy though.",
+      "You are a hero blah blah blah.",
+      "Something bad happened.",
+      NULL);
     break;
   default:
     printf("Error when generating intro text.\n");
@@ -156,7 +179,7 @@ void _displaySlide(TitleContext* context) {
       if (context->currentSlide < TITLE_NUM_INTRO_SLIDES) {
 	context->slides[context->currentSlide]->_visible = true;
 	printf("set slide %i to TRUE\n", context->currentSlide);
-	_setTextBox(context->textBox, context->currentSlide);
+	_setTextBox(context, context->textBox, context->currentSlide);
       }
       context->currentSlide++;
     } else if (!context->textBox->currentStringDone) {
@@ -238,17 +261,14 @@ void _select(TitleContext* context) {
   }
 }
 
-void titleProcessInput(TitleContext* context, int direction) {
-  int newIndex = context->selectedStringIndex;
+void _processInputCharacterCreation(TitleContext* context, int direction) {
   switch (direction) {
   case MOVING_LEFT:
-    newIndex = MAX(0, context->selectedStringIndex - 1);
     if (!KeyboardIsVisible(&context->kb)) {
       ClassSelectorChange(&context->cs, -1);
     } else {
       KeyboardMoveCursor(&context->kb, -1, 0);
     }
-    COIBoardQueueDraw(context->board);
     break;
   case MOVING_RIGHT:
     if (!KeyboardIsVisible(&context->kb)) {
@@ -256,28 +276,26 @@ void titleProcessInput(TitleContext* context, int direction) {
     } else {
       KeyboardMoveCursor(&context->kb, 1, 0);
     }
-    newIndex = MIN(2, context->selectedStringIndex + 1);
-    COIBoardQueueDraw(context->board);
     break;
   case MOVING_UP:
     KeyboardMoveCursor(&context->kb, 0, -1);
-    COIBoardQueueDraw(context->board);
     break;
   case MOVING_DOWN:
     KeyboardMoveCursor(&context->kb, 0, 1);
-    COIBoardQueueDraw(context->board);
     break;
   case MOVING_SELECT:
     if (!KeyboardIsVisible(&context->kb)) {
       KeyboardSetVisible(&context->kb, true);
     } else {
       if (KeyboardSelect(&context->kb, context->board)) {
+        context->creatingCharacter = false;
+        ClassSelectorSetVisible(&context->cs, false);
+        KeyboardSetVisible(&context->kb, false);
 	      COITransitionInit(&COI_GLOBAL_WINDOW->transition,
                           COI_TRANSITION_ENCLOSE,
                           COI_GLOBAL_WINDOW);
       }
     }
-    COIBoardQueueDraw(context->board);
     break;
   case MOVING_DELETE:
     if (context->kb.currentNameChar == 0) {
@@ -290,12 +308,38 @@ void titleProcessInput(TitleContext* context, int direction) {
     return;
   }
 
+  COIBoardQueueDraw(context->board);
+}
+
+void _processInputMain(TitleContext* context, int direction) {
+  int newIndex = context->selectedStringIndex;
+  switch (direction) {
+  case MOVING_LEFT:
+    newIndex = MAX(0, context->selectedStringIndex - 1);
+    break;
+  case MOVING_RIGHT:
+    newIndex = MIN(2, context->selectedStringIndex + 1);
+    break;
+  case MOVING_SELECT:
+    _select(context);
+  default:
+    return;
+  }
+
   if (newIndex != context->selectedStringIndex
       && context->currentSlide == -1 /* Are we NOT watching intro? */) {
     _setStringSelected(context, context->selectedStringIndex, false);
     _setStringSelected(context, newIndex, true);
     COIBoardQueueDraw(context->board);
     context->selectedStringIndex = newIndex;
+  }
+}
+
+void titleProcessInput(TitleContext* context, int direction) {
+  if (context->creatingCharacter) {
+    _processInputCharacterCreation(context, direction);
+  } else {
+    _processInputMain(context, direction);
   }
 }
 
