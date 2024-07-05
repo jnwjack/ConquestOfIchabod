@@ -17,7 +17,7 @@ Inventory* createTestInventory(ItemList* items) {
   inventory->backpack[2] = ItemListGetItem(items, ITEM_ID_RUSTY_SWORD);
   inventory->backpack[3] = ItemListGetItem(items, ITEM_ID_STRENGTH_POTION);
 
-  inventory->money = 9999;
+  inventory->money = 314;
 
   return inventory;
 }

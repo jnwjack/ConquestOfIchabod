@@ -3,6 +3,7 @@
 
 #include "COIWindow.h"
 #include "COIMenu.h"
+#include "COISound.h"
 #include "util.h"
 
 #endif

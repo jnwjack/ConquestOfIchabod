@@ -211,6 +211,7 @@ void COIMenuReset(COIMenu* menu) {
 }
 
 void COIMenuIncrement(COIMenu* menu, int step) {
+  COISoundPlay(COI_SOUND_BLIP);
   int nextCurrent = menu->_current + step;
   if (nextCurrent >= menu->_stringCount) {
     menu->_current = 0;
@@ -235,6 +236,7 @@ bool COIMenuHandleInput(COIMenu* menu, int event) {
       COIMenuSetVisible(menu);
       break;
     case MOVING_SELECT:
+      COISoundPlay(COI_SOUND_SELECT);
       selection = true;
       break;
   }

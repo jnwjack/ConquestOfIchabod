@@ -178,26 +178,29 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   bool back = false;
   COIMenu* focusedMenu = armoryContext->confirmActive ? armoryContext->confirmMenu : armoryContext->currentMenu;
   switch (event->type) {
-    case SDL_KEYDOWN:
-      switch (event->key.keysym.sym) {
-        case SDLK_UP:
-	  COIMenuIncrement(focusedMenu, -1);
-	  COIMenuSetVisible(focusedMenu);
-	  break;
-        case SDLK_DOWN:
-	  COIMenuIncrement(focusedMenu, 1);
-	  COIMenuSetVisible(focusedMenu);
-	  break;
-        case SDLK_SPACE:
-	  selection = true;
-	  break;
-        case SDLK_LEFT:
-	  back = true;
-	  break;
-      }
+  case SDL_KEYDOWN:
+    switch (event->key.keysym.sym) {
+    case SDLK_UP:
+      // COISoundPlay(COI_SOUND_BLIP);
+      COIMenuIncrement(focusedMenu, -1);
+      COIMenuSetVisible(focusedMenu);
       break;
-    default:
-      return;
+    case SDLK_DOWN:
+      // COISoundPlay(COI_SOUND_BLIP);
+      COIMenuIncrement(focusedMenu, 1);
+      COIMenuSetVisible(focusedMenu);
+	    break;
+    case SDLK_SPACE:
+      COISoundPlay(COI_SOUND_SELECT); // Should move this event processing to the COIMenuHandleInput function.
+	    selection = true;
+	    break;
+    case SDLK_LEFT:
+	    back = true;
+	    break;
+    }
+    break;
+  default:
+    return;
   }
 
   board->_shouldDraw = true;

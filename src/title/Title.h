@@ -13,7 +13,7 @@
 #define TITLE_STRING_CONTINUE_GAME 1
 #define TITLE_STRING_QUIT_GAME 2
 
-#define TITLE_NUM_INTRO_SLIDES 5
+#define TITLE_NUM_INTRO_SLIDES 7
 #define TITLE_NUM_OPTIONS 3
 
 typedef enum TitleNextBoard {

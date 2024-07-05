@@ -1,5 +1,7 @@
 #include "Title.h"
 
+static int slideAssetIDs[TITLE_NUM_INTRO_SLIDES] = { 51, 52, 53, 54, 55, 55 };
+
 void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
   strings[TITLE_STRING_NEW_GAME] = COIStringCreate("New", 330, 170, textType);
   strings[TITLE_STRING_CONTINUE_GAME] = COIStringCreate("Continue", 450, 170, textType);
@@ -53,7 +55,7 @@ COIBoard* titleCreateBoard() {
   for (int i = 0; i < TITLE_NUM_INTRO_SLIDES; i++) {
     context->slides[i] = COISpriteCreateFromAssetID(0, 0, 640, 480,
 						    COI_GLOBAL_LOADER,
-						    7 + i,
+						    slideAssetIDs[i],
 						    COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     context->slides[i]->_autoHandle = false;
     context->slides[i]->_visible = false;
@@ -127,23 +129,39 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
   switch (slide) {
   case 0:
     TextBoxSetStrings(textBox,
-		      "A shadow has descended upon the kingdom of Rease.",
-          "The evil witch, Izra, has brought forth a curse onto the land.",
-          "Our only chance is a young hero...",
-		      NULL);
+          "In the year 1032, the Kingdom of Rease triumphed over their enemies in the Ash War.    ",
+          "Rease enjoyed over 200 years of peace and prosperity.    ",
+          "The land obtained from their victory bolstered their economy.    ",
+          "All was well.    ",
+          NULL);
     break;
   case 1:
+    TextBoxSetStrings(textBox,
+        "However, a shadow has descended upon Rease.    ",
+        "The evil witch, Izra, brought forth a curse onto the land, corrupting the hearts of its citizens.    ",
+        "Our only chance is a young hero...    ",
+        NULL);
+    break;
+  case 2:
+    context->textBox->box->_visible = false;
     context->creatingCharacter = true;
     ClassSelectorSetVisible(&context->cs, true);
     break;
-  case 2:
+  case 3:
+    TextBoxSetStrings(textBox,
+        "Izra's curse is powered by 10 cores scattered around Rease.    ",
+        "All 10 cores must be destroyed before the curse completely corrupts the world.    ",
+        NULL);
+    break;
+  case 4:
   {
+    printf("NAME: %s\n", context->kb.name);
     char first[MAX_STRING_SIZE];
-    snprintf(first, MAX_STRING_SIZE, "%s, a %s has risen to the challenge.", 
+    snprintf(first, MAX_STRING_SIZE, "%s, a %s has risen to the challenge.    ", 
             context->kb.name, 
             playerClassNameFromID(context->cs.currentClass));
     char second[MAX_STRING_SIZE];
-    snprintf(second, MAX_STRING_SIZE, "%s decides to start their search in Thread Town.", 
+    snprintf(second, MAX_STRING_SIZE, "%s decides to start in Thread Town, where one of cores is rumored to be.    ", 
             context->kb.name);
     TextBoxSetStrings(textBox,
           first,
@@ -151,12 +169,10 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
           NULL);
     break;
   }
-  case 3:
-  case 4:
+  case 5:
     TextBoxSetStrings(textBox,
-      "A long time ago, in the same galaxy though.",
-      "You are a hero blah blah blah.",
-      "Something bad happened.",
+      "All will be lost in 300 days. Go forth, young hero!    ",
+      "Time moves quicker than we think.                       ",
       NULL);
     break;
   default:
@@ -240,12 +256,13 @@ void _closeTitle(TitleContext* context) {
 
 void _select(TitleContext* context) {
   if (context->currentSlide == -1) {
+    COISoundPlay(COI_SOUND_SELECT);
     switch (context->selectedStringIndex) {
     case TITLE_STRING_CONTINUE_GAME:
       if (playerSaveExists()) {
         _closeTitle(context);
-        // context->currentSlide = TITLE_NUM_INTRO_SLIDES; // Skip intro
-        context->currentSlide++;
+        context->currentSlide = TITLE_NUM_INTRO_SLIDES - 1; // Skip intro
+        // context->currentSlide++;
       }
       break;
     case TITLE_STRING_NEW_GAME:
@@ -315,9 +332,11 @@ void _processInputMain(TitleContext* context, int direction) {
   int newIndex = context->selectedStringIndex;
   switch (direction) {
   case MOVING_LEFT:
+  COISoundPlay(COI_SOUND_BLIP);
     newIndex = MAX(0, context->selectedStringIndex - 1);
     break;
   case MOVING_RIGHT:
+  COISoundPlay(COI_SOUND_BLIP);
     newIndex = MIN(2, context->selectedStringIndex + 1);
     break;
   case MOVING_SELECT:

@@ -1,10 +1,12 @@
 #include "COIWindow.h"
+#include "COISound.h"
 
 COIWindow* COI_GLOBAL_WINDOW = NULL;
 
 COIWindow* COIWindowCreate() {
   // Initialize SDL
-  SDL_Init(SDL_INIT_VIDEO);
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+  COISoundInit();
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
 

@@ -621,6 +621,9 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
 
 static void _showSplash(BattleContext* context, BattleResult result, bool levelUp) {
   COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
+  if (result == BR_WIN) { 
+    COISoundPlay(COI_SOUND_CELEBRATION);
+  }
   context->splash = BattleSplashCreate(context->board,
 				       context->textType,
 				       box,
@@ -706,6 +709,7 @@ BattleResult battleFinished(BattleContext* context) {
 
 // When selecting what character should do, handle each option in menu.
 BattleResult battleHandleActionSelection(BattleContext* context) {
+  COISoundPlay(COI_SOUND_SELECT);
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
     _attack(context);

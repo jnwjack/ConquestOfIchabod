@@ -12,7 +12,7 @@ WEB_FILES = --preload-file=assets --preload-file=test_data --preload-file=src/en
 SRCS = $(shell find src -name "*.c")
 OUTPUT = coi
 WEB_OUTPUT = coi.html
-LIBS = -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf
+LIBS = -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 DEBUGFLAGS = -g3
 NATIVE_FLAGS = -D__NATIVE__=1
 WINDOWS_CC = gcc

@@ -694,6 +694,7 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
 }
 
 void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox) {
+  COISoundPlay(COI_SOUND_SELECT);
   if (overlay->topRightMenu == overlay->baseMenu) {
     _baseMenuSelect(overlay);
   } else if (overlay->topRightMenu == overlay->itemsMenu ||

@@ -5,6 +5,7 @@
 #include "COIString.h"
 #include "COITextType.h"
 #include "COIBoard.h"
+#include "COISound.h"
 #include <stdbool.h>
 #include <stdlib.h>
 

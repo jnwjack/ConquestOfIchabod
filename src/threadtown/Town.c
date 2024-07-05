@@ -121,7 +121,7 @@ void _createNPCs(TownContext* context) {
   actorFaceRight(context->npcs[1]);
 
   context->npcs[2] = actorCreateOfType(ACTOR_CHAGGAI,
-				       1920,
+				       2240,
 				       2048,
 				       COI_GLOBAL_LOADER,
 				       COI_GLOBAL_WINDOW);
@@ -177,7 +177,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->talkingActorType = ACTOR_CHAGGAI;
   
   // Yes/No dialog
-  COISprite* frame = COISpriteCreateFromAssetID(40, 250, 150, 80,
+  COISprite* frame = COISpriteCreateFromAssetID(70, 250, 150, 80,
 						COI_GLOBAL_LOADER,
 						5,
 						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
@@ -339,7 +339,7 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
 void _talkToLandlord(TownContext* context) {
   if (context->pInfo->renting) {
     TextBoxSetStrings(context->textBox,
-		      "Rent's due on the first.",
+		      "Rent's due in 20 days.",
 		      NULL);
   } else {
     TextBoxSetStrings(context->textBox,
@@ -355,7 +355,7 @@ void _talkToMerchant(TownContext* context) {
 		      NULL);
   } else {
     TextBoxSetStrings(context->textBox,
-		    "Hey I'm the merchant.",
+		    "I have an opening for a clerk in my shop. Need a job?",
 		    NULL);
   }
   
@@ -363,6 +363,7 @@ void _talkToMerchant(TownContext* context) {
 }
 
 void _confirmMenuSelect(TownContext* context) {
+  COISoundPlay(COI_SOUND_SELECT);
   TextBoxNextString(context->textBox);
   bool choseYes = COIMenuGetCurrentValue(context->confirmMenu) == 0;
   if (choseYes) {
@@ -404,6 +405,7 @@ bool _shouldPromptForAnswer(TownContext* context) {
 
 void townProcessDirectionalInput(TownContext* context, int direction) {
   if (context->pauseOverlay->visible) {
+    // COISoundPlay(COI_SOUND_BLIP);
     PauseOverlayProcessInput(context->pauseOverlay, direction);
     COIBoardQueueDraw(context->board);
   } else if (context->confirmMenu->_frame->_visible) {
@@ -445,9 +447,8 @@ void townProcessSelectionInput(TownContext* context) {
 	break;
       default:
 	TextBoxSetStrings(context->textBox,
-			  "This is the first string.",
-			  "Hi! How are you?",
-			  "The quick brown fox jumps over the lazy dog.",
+			  "I saw something scary in the northeast.",
+			  "I'd take shelter if I were you.",
 			  NULL);
       }
       COIBoardQueueDraw(context->board);
