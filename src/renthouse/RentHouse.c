@@ -12,6 +12,7 @@ static void _heal(RentHouseContext* context) {
   
   
   if (!context->pInfo->alreadyHealed) {
+    COISoundPlay(COI_SOUND_SELECT);
     char hpString[MAX_STRING_SIZE];
     char spString[MAX_STRING_SIZE];
     char tpString[MAX_STRING_SIZE];
@@ -32,6 +33,7 @@ static void _heal(RentHouseContext* context) {
     player->tp = player->tpMax;
     player->sp = player->spMax;
   } else {
+    COISoundPlay(COI_SOUND_INVALID);
     TextBoxSetStrings(context->textBox,
 		      "You must sleep before you may heal again.",
 		      NULL);
@@ -44,10 +46,12 @@ static void _sleep_coi(RentHouseContext* context) {
 #else
 static void _sleep(RentHouseContext* context) {
 #endif
+// JNW: left off here, can't sleep if evicted
   TextBoxSetStrings(context->textBox,
 		    "You sleep...",
 		    NULL);
   TimeStateIncrement(12);
+  playerCheckForEviction(context->pInfo);
   context->statusWindow._refreshFlags |= RENT_HOUSE_REFRESH_DAYS;
   context->pInfo->alreadyHealed = false;
 }
@@ -103,8 +107,13 @@ static void _makeStatWindowStrings(RentHouseContext* context) {
   }
   if (window->_refreshFlags & RENT_HOUSE_REFRESH_DAYS) {
     _destroyString(context->board, window->daysLeft);
-    snprintf(temp, MAX_STRING_SIZE, "Days Left: %lu", context->pInfo->nextRentDate - GLOBAL_TIME.day);
-    window->daysLeft = COIStringCreate(temp, 0, 0, context->textType);
+    long daysLeft = (long)context->pInfo->nextRentDate - (long)GLOBAL_TIME.day;
+    if (daysLeft < 0) {
+      window->daysLeft = COIStringCreate("Days Left: LATE", 0, 0, context->textType);
+    } else {
+      snprintf(temp, MAX_STRING_SIZE, "Days Left: %lu", context->pInfo->nextRentDate - GLOBAL_TIME.day);
+      window->daysLeft = COIStringCreate(temp, 0, 0, context->textType);
+    }
     COIStringPositionBelowString(window->daysLeft, window->price, false);
     COIStringSetVisible(window->daysLeft, true);
     COIBoardAddString(context->board, window->daysLeft);

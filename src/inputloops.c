@@ -53,8 +53,9 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
   case BR_WIN:
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
     COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
-    battleDestroyBoard(board);
     TimeStateIncrement(1);
+    playerCheckForEviction(battleContext->pInfo);
+    battleDestroyBoard(board);
     break;
   default:
     board->_shouldDraw = true;
@@ -195,6 +196,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 	    selection = true;
 	    break;
     case SDLK_LEFT:
+      COISoundPlay(COI_SOUND_SELECT);
 	    back = true;
 	    break;
     }
@@ -362,9 +364,11 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case RENTABLE_HOUSE_DOOR:
       player->movementDirection = MOVING_NONE;
-      townContext->pauseOverlay->dirty = true;
-      otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
-      COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
+      if (townContext->pInfo->renting == RS_RENTING) {
+        townContext->pauseOverlay->dirty = true;
+        otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
+        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
+      }
       break;
     default:
       //townMovePlayer(townContext);

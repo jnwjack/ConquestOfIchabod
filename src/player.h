@@ -11,6 +11,12 @@
 #define PLAYER_CLASS_WIZARD 1
 #define PLAYER_CLASS_ROGUE 2
 
+typedef enum RentStatus {
+  RS_RENTING = 0,
+  RS_NOT_RENTING,
+  RS_EVICTED
+} RentStatus;
+
 typedef struct ClassProgression {
   unsigned int* techs;
   unsigned int* specials;
@@ -30,7 +36,7 @@ typedef struct ClassProgression {
 typedef struct PlayerInfo {
   char name[MAX_NAME_SIZE];
 
-  bool renting;
+  RentStatus renting;
   bool working;
   bool alreadyHealed; // Can only heal once per rest via house.
   unsigned long nextRentDate;
@@ -70,5 +76,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 bool playerSaveExists();
 
 char* playerClassNameFromID(unsigned int id);
+
+void playerCheckForEviction(PlayerInfo* pInfo);
 
 #endif

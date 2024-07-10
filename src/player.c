@@ -18,10 +18,10 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->level = 1;
   info->xp = 0;
   info->xpForLevelUp = 50;
-  info->renting = false;
+  info->renting = RS_NOT_RENTING;
   info->working = false;
   info->alreadyHealed = false;
-  info->nextRentDate = 30;
+  info->nextRentDate = 3;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
   // Should change based on class type
@@ -310,6 +310,13 @@ char* playerClassNameFromID(unsigned int id) {
   default:
     printf("Error: Invalid class ID\n");
     return "NONE";
+  }
+}
+
+void playerCheckForEviction(PlayerInfo* pInfo) {
+  long daysLeft = (long)pInfo->nextRentDate - (long)GLOBAL_TIME.day;
+  if (pInfo->renting == RS_RENTING && daysLeft < 0) {
+    pInfo->renting = RS_EVICTED;
   }
 }
 

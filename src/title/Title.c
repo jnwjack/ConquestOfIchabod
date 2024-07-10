@@ -256,20 +256,24 @@ void _closeTitle(TitleContext* context) {
 
 void _select(TitleContext* context) {
   if (context->currentSlide == -1) {
-    COISoundPlay(COI_SOUND_SELECT);
     switch (context->selectedStringIndex) {
     case TITLE_STRING_CONTINUE_GAME:
       if (playerSaveExists()) {
+        COISoundPlay(COI_SOUND_SELECT);
         _closeTitle(context);
         context->currentSlide = TITLE_NUM_INTRO_SLIDES - 1; // Skip intro
         // context->currentSlide++;
+      } else {
+        COISoundPlay(COI_SOUND_INVALID);
       }
       break;
     case TITLE_STRING_NEW_GAME:
+      COISoundPlay(COI_SOUND_SELECT);
       _closeTitle(context);
       context->currentSlide++;
       break;
     case TITLE_STRING_QUIT_GAME:
+      COISoundPlay(COI_SOUND_SELECT);
       COI_GLOBAL_WINDOW->shouldQuit = true;
       break;
     default:
@@ -332,11 +336,11 @@ void _processInputMain(TitleContext* context, int direction) {
   int newIndex = context->selectedStringIndex;
   switch (direction) {
   case MOVING_LEFT:
-  COISoundPlay(COI_SOUND_BLIP);
+    COISoundPlay(COI_SOUND_BLIP);
     newIndex = MAX(0, context->selectedStringIndex - 1);
     break;
   case MOVING_RIGHT:
-  COISoundPlay(COI_SOUND_BLIP);
+    COISoundPlay(COI_SOUND_BLIP);
     newIndex = MIN(2, context->selectedStringIndex + 1);
     break;
   case MOVING_SELECT:

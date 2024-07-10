@@ -478,33 +478,40 @@ static void _returnToItemsMenu(PauseOverlay* overlay) {
   COIMenuSetVisible(overlay->topRightMenu);
 }
 
-static void _baseMenuSelect(PauseOverlay* overlay) {
+static bool _baseMenuSelect(PauseOverlay* overlay) {
+  bool validSelection = false;
   COIMenuSetInvisible(overlay->baseMenu);
   switch (overlay->topRightMenu->_current) {
   case PAUSE_OVERLAY_ITEMS:
     if (overlay->itemsMenu->_stringCount > 0) {
       overlay->topRightMenu = overlay->itemsMenu;
+      validSelection = true;
     }
     break;
   case PAUSE_OVERLAY_WEAPONS:
     if (overlay->weaponsMenu->_stringCount > 0) {
       overlay->topRightMenu = overlay->weaponsMenu;
       _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
+      validSelection = true;
     }
     break;
   case PAUSE_OVERLAY_ARMOR:
     if (overlay->armorMenu->_stringCount > 0) {
       overlay->topRightMenu = overlay->armorMenu;
       _updateStatChanges(overlay, COIMenuGetCurrentValue(overlay->topRightMenu));
+      validSelection = true;
     }
     break;
   case PAUSE_OVERLAY_QUIT:
     overlay->topRightMenu = overlay->quitMenu;
+    validSelection = true;
     break;
   default:
     overlay->topRightMenu = overlay->baseMenu;
+    validSelection = true;
   }
   COIMenuSetVisible(overlay->topRightMenu);
+  return validSelection;
 }
 
 static void _subMenuSelect(PauseOverlay* overlay) {
@@ -694,9 +701,12 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
 }
 
 void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox) {
-  COISoundPlay(COI_SOUND_SELECT);
+  // True if the 'select' event causes something to happen.
+  // Used to determine what sound we play on selection
+  bool validSelection = true;
+
   if (overlay->topRightMenu == overlay->baseMenu) {
-    _baseMenuSelect(overlay);
+    validSelection = _baseMenuSelect(overlay);
   } else if (overlay->topRightMenu == overlay->itemsMenu ||
 	     overlay->topRightMenu == overlay->weaponsMenu ||
 	     overlay->topRightMenu == overlay->armorMenu) {
@@ -710,9 +720,15 @@ void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox) {
   } else {
     _itemsMenuSelect(overlay, textBox);
   }
+  if (validSelection) {
+    COISoundPlay(COI_SOUND_SELECT);
+  } else {
+    COISoundPlay(COI_SOUND_INVALID);
+  }
 }
 
 void PauseOverlayBack(PauseOverlay* overlay) {
+  COISoundPlay(COI_SOUND_INVALID);
   if ((overlay->topRightMenu == overlay->equipMenu) ||
       (overlay->topRightMenu == overlay->unequipMenu)) {
     _returnToEquipableMenu(overlay);

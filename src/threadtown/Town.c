@@ -337,14 +337,31 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
 }
 
 void _talkToLandlord(TownContext* context) {
-  if (context->pInfo->renting) {
-    TextBoxSetStrings(context->textBox,
-		      "Rent's due in 20 days.",
-		      NULL);
-  } else {
+  if (context->pInfo->renting == RS_RENTING) {
+    unsigned long daysLeft = context->pInfo->nextRentDate - GLOBAL_TIME.day;
+    if (daysLeft == 1) {
+      TextBoxSetStrings(context->textBox,
+        "Rent's due tomorrow.",
+        NULL);
+    } else if (daysLeft == 0) {
+      TextBoxSetStrings(context->textBox,
+        "Rent's due today.",
+        NULL);
+    } else {
+      char temp[MAX_STRING_SIZE];
+      snprintf(temp, MAX_STRING_SIZE, "Rent's due in %lu days.", context->pInfo->nextRentDate - GLOBAL_TIME.day);
+      TextBoxSetStrings(context->textBox,
+            temp,
+            NULL);
+    }
+  } else if (context->pInfo->renting == RS_NOT_RENTING) {
     TextBoxSetStrings(context->textBox,
 		      "I'm renting out a room. Interested?",
 		      NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+          "Get out of my face, freeloader.",
+          NULL);
   }
 }
 
@@ -369,12 +386,13 @@ void _confirmMenuSelect(TownContext* context) {
   if (choseYes) {
     switch (context->talkingActorType) {
     case ACTOR_LANDLORD:
-      context->pInfo->renting = true;
+      context->pInfo->renting = RS_RENTING;
       _talkToLandlord(context);
       break;
     case ACTOR_MERCHANT:
       if (context->pInfo->working) {
 	TimeStateIncrement(12);
+  playerCheckForEviction(context->pInfo);
 	COITransitionInit(&COI_GLOBAL_WINDOW->transition,
 			  COI_TRANSITION_ENCLOSE,
 			  COI_GLOBAL_WINDOW);
@@ -387,13 +405,14 @@ void _confirmMenuSelect(TownContext* context) {
       printf("Error: confirm menu appeared for invalid actor type\n");
     }
   }
+  context->talkingActorType = ACTOR_NONE; // We're definitely not talking to anyone now.
   COIMenuSetInvisible(context->confirmMenu);
   COIBoardQueueDraw(context->board);
 }
 
 bool _shouldPromptForAnswer(TownContext* context) {
   if (context->talkingActorType == ACTOR_LANDLORD &&
-      !context->pInfo->renting &&
+      context->pInfo->renting == RS_NOT_RENTING &&
       context->textBox->currentStringDone) {
     return true;
   } else if (context->talkingActorType == ACTOR_MERCHANT &&
