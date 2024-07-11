@@ -22,16 +22,27 @@ static void _heal(RentHouseContext* context) {
     snprintf(hpString, MAX_STRING_SIZE, "%i damage healed.", amountHealed);
     snprintf(tpString, MAX_STRING_SIZE, "%i TP restored.", regainedTP);
     snprintf(spString, MAX_STRING_SIZE, "%i SP restored.", regainedSP);
-    TextBoxSetStrings(context->textBox,
+    if (!context->pInfo->rentHouseBaldUsed && GLOBAL_TIME.day > 1) {
+      TextBoxSetStrings(context->textBox,
 		      "You tend to your wounds.",
 		      hpString,
 		      tpString,
+          "Feeling your hair, you notice that you have a bald spot.",
 		      spString,
 		      NULL);
-    context->pInfo->alreadyHealed = true;
-    player->hp = player->hpMax;
-    player->tp = player->tpMax;
-    player->sp = player->spMax;
+      context->pInfo->rentHouseBaldUsed = true;
+    } else {
+      TextBoxSetStrings(context->textBox,
+            "You tend to your wounds.",
+            hpString,
+            tpString,
+            spString,
+            NULL);
+      context->pInfo->alreadyHealed = true;
+      player->hp = player->hpMax;
+      player->tp = player->tpMax;
+      player->sp = player->spMax;
+    }
   } else {
     COISoundPlay(COI_SOUND_INVALID);
     TextBoxSetStrings(context->textBox,

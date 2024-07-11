@@ -40,6 +40,9 @@ typedef struct PlayerInfo {
   bool working;
   bool alreadyHealed; // Can only heal once per rest via house.
   unsigned long nextRentDate;
+
+  // Weird happenings
+  bool rentHouseBaldUsed;
   
   Actor** party;
   int partySize;

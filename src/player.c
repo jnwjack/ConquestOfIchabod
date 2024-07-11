@@ -21,6 +21,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->renting = RS_NOT_RENTING;
   info->working = false;
   info->alreadyHealed = false;
+  info->rentHouseBaldUsed = false;
   info->nextRentDate = 3;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
@@ -221,6 +222,8 @@ void playerEncode(PlayerInfo* info) {
   _encodeInt(info->party[0]->sprite->_x, temp, fp);
   _encodeInt(info->party[0]->sprite->_y, temp, fp);
 
+  _encodeInt((int)info->rentHouseBaldUsed, temp, fp);
+
 
   fclose(fp);
 }
@@ -293,6 +296,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 
   COISpriteSetPos(info->party[0]->sprite, _decodeInt(&line, &len, fp, buf), _decodeInt(&line, &len, fp, buf));
 
+  info->rentHouseBaldUsed = (bool)_decodeInt(&line, &len, fp, buf);
 
   fclose(fp);
 

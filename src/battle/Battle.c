@@ -495,6 +495,7 @@ void _techSelection(BattleContext* context) {
     COIBoardAddString(context->board, tNames[selectedTech]);
     COIMenuSetVisible(context->subMenu);
     _disableTechParticlesIfNecessary(context, context->turnIndex);
+    COISoundPlay(COI_SOUND_SELECT);
   } else if (ally->tp >= tech->cost + activeTPCost) {
     tech->active = true;
     COIBoardRemoveString(context->board, tNames[selectedTech]);
@@ -503,6 +504,9 @@ void _techSelection(BattleContext* context) {
     COIBoardAddString(context->board, tNames[selectedTech]);
     COIMenuSetVisible(context->subMenu);
     context->techParticles[context->turnIndex]->_visible = true;
+    COISoundPlay(COI_SOUND_SELECT);
+  } else {
+    COISoundPlay(COI_SOUND_INVALID);
   }
 }
 
@@ -687,10 +691,10 @@ void battleTick(BattleContext* context) {
     if (sprite->_visible) {
       sprite->_animationTicks++;
       if (sprite->_visible && sprite->_animationTicks > BATTLE_TECH_PARTICLE_TICKS) {
-	int oldCol = sprite->_srcRect->x / sprite->_srcRect->w;
-	COISpriteSetSheetIndex(sprite, 0, (oldCol + 1) % 5);
-	sprite->_animationTicks = 0;
-	COIBoardQueueDraw(context->board);
+        int oldCol = sprite->_srcRect->x / sprite->_srcRect->w;
+        COISpriteSetSheetIndex(sprite, 0, (oldCol + 1) % 5);
+        sprite->_animationTicks = 0;
+        COIBoardQueueDraw(context->board);
       }
     }
   }
@@ -856,73 +860,70 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     switch (context->sceneStage) {
     case SS_MOVE_FORWARD:
       if (_moveActorForward(context, action.actor)) {
-	context->sceneStage = SS_TEXT;
+	      context->sceneStage = SS_TEXT;
+        COISoundPlay(COI_SOUND_HIT);
       }
       break;
     case SS_TEXT:
       if (!context->summary) {
-	// We're working with the target's sprite in this section
-	action.target->sprite->_autoHandle = false;
-	// Create ActionSummary. This holds the COIStrings
-	// that describe the current action.
-	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
-	box->_visible = true;
-	context->summary = battleBehaviorDoAction(&action, context->textType, context->board, box, context->pInfo);
-	// If it's a item, remove it from backpack on use
-	if (action.type == ITEM) {
-	  inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
-						   ItemListGetItem(context->pInfo->inventory->items,
-								   action.index));
-	}
+        // We're working with the target's sprite in this section
+        action.target->sprite->_autoHandle = false;
+        // Create ActionSummary. This holds the COIStrings
+        // that describe the current action.
+        COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
+        box->_visible = true;
+        context->summary = battleBehaviorDoAction(&action, context->textType, context->board, box, context->pInfo);
+        // If it's a item, remove it from backpack on use
+        if (action.type == ITEM) {
+          inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
+          ItemListGetItem(context->pInfo->inventory->items, action.index));
+        }
       } else if (context->summary->finished) {
-	ActionSummaryDestroy(context->summary, context->board);
-	context->summary = NULL;
-	context->sceneStage = SS_MOVE_BACKWARDS;
-	COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
-	box->_visible = false;
-	// We're done with the target's sprite
-	if (actorIsDead(action.target)) {
-	  action.target->sprite->_visible = false;
-	} else {
-	  action.target->sprite->_autoHandle = true;
-	}
+        ActionSummaryDestroy(context->summary, context->board);
+        context->summary = NULL;
+        context->sceneStage = SS_MOVE_BACKWARDS;
+        COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
+        box->_visible = false;
+        // We're done with the target's sprite
+        if (actorIsDead(action.target)) {
+          action.target->sprite->_visible = false;
+        } else {
+          action.target->sprite->_autoHandle = true;
+        }
       } else {
-	ActionSummaryAdvance(context->summary, selection);
-	// Flicker effect on target actor
-	if (context->summary->currentString > 0) {
-	  action.target->sprite->_visible = true;
-	}
-	else if (context->summary->ticks % 10 == 0) {
-	  action.target->sprite->_visible = !action.target->sprite->_visible;
-	}
+        ActionSummaryAdvance(context->summary, selection);
+        // Flicker effect on target actor
+        if (context->summary->currentString > 0) {
+          action.target->sprite->_visible = true;
+        }
+        else if (context->summary->ticks % 10 == 0) {
+          action.target->sprite->_visible = !action.target->sprite->_visible;
+        }
       }
-      
       break;
     case SS_MOVE_BACKWARDS:
       if (_moveActorBackwards(context, action.actor)) {
-	actorStandStill(action.actor);
-	context->sceneStage = SS_MOVE_FORWARD;
-	// If we're done, move to next action
-	context->currentActionIndex++;
+        actorStandStill(action.actor);
+        context->sceneStage = SS_MOVE_FORWARD;
+        // If we're done, move to next action
+        context->currentActionIndex++;
 
-	_updateStatuses(context);
+	      _updateStatuses(context);
 
-	BattleResult res = battleFinished(context);
+	      BattleResult res = battleFinished(context);
 	
-	// We're done with the battle, display the splash screen
-	if (res != BR_CONTINUE) {
-	  _disableAllTechs(context->allies[0]);
-	  _showSplash(context, res, context->pInfo->xp + context->xpYield >= context->pInfo->xpForLevelUp);
-	  context->sceneStage = SS_SPLASH;
-	}
+        // We're done with the battle, display the splash screen
+        if (res != BR_CONTINUE) {
+          _disableAllTechs(context->allies[0]);
+          _showSplash(context, res, context->pInfo->xp + context->xpYield >= context->pInfo->xpForLevelUp);
+          context->sceneStage = SS_SPLASH;
+        }
       }
       break;
-
     default:
       printf("Invalid scene stage.\n");
     }
   }
-
   return BR_CONTINUE;
 }
 
