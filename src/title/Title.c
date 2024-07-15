@@ -285,6 +285,7 @@ void _select(TitleContext* context) {
 void _processInputCharacterCreation(TitleContext* context, int direction) {
   switch (direction) {
   case MOVING_LEFT:
+    COISoundPlay(COI_SOUND_BLIP);
     if (!KeyboardIsVisible(&context->kb)) {
       ClassSelectorChange(&context->cs, -1);
     } else {
@@ -292,6 +293,7 @@ void _processInputCharacterCreation(TitleContext* context, int direction) {
     }
     break;
   case MOVING_RIGHT:
+    COISoundPlay(COI_SOUND_BLIP);
     if (!KeyboardIsVisible(&context->kb)) {
       ClassSelectorChange(&context->cs, 1);
     } else {
@@ -299,13 +301,17 @@ void _processInputCharacterCreation(TitleContext* context, int direction) {
     }
     break;
   case MOVING_UP:
+    COISoundPlay(COI_SOUND_BLIP);
     KeyboardMoveCursor(&context->kb, 0, -1);
     break;
   case MOVING_DOWN:
+    COISoundPlay(COI_SOUND_BLIP);
     KeyboardMoveCursor(&context->kb, 0, 1);
     break;
   case MOVING_SELECT:
+    COISoundPlay(COI_SOUND_SELECT);
     if (!KeyboardIsVisible(&context->kb)) {
+      COISoundPlay(COI_SOUND_SELECT);
       KeyboardSetVisible(&context->kb, true);
     } else {
       if (KeyboardSelect(&context->kb, context->board)) {
@@ -319,6 +325,7 @@ void _processInputCharacterCreation(TitleContext* context, int direction) {
     }
     break;
   case MOVING_DELETE:
+    COISoundPlay(COI_SOUND_INVALID);
     if (context->kb.currentNameChar == 0) {
       KeyboardSetVisible(&context->kb, false);
     } else {

@@ -46,7 +46,7 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
   COIBoard* nextBoard = NULL;
   switch (result) {
   case BR_LOSS:
-    nextBoard = gameOverCreateBoard(battleContext->window, board->loader);
+    nextBoard = gameOverCreateBoard(battleContext->window, board->loader, GAME_OVER_DEATH, battleContext->pInfo);
     COIWindowSetBoard(battleContext->window, nextBoard, gameOver);
     break;
   case BR_FLEE:
@@ -227,9 +227,9 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case 1:
       if (armoryContext->currentMenu == armoryContext->buyMenu) {
-	armoryBuyItem(board);
+	      armoryBuyItem(board);
       } else {
-	armorySellItem(board);
+	      armorySellItem(board);
       }
       break;
     }
@@ -272,13 +272,14 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 }
 
 void gameOver(COIBoard* board, SDL_Event* event, void* context) {
+  GameOverContext* gameOverContext = (GameOverContext*)context;
   switch (event->type) {
   case SDL_KEYDOWN:
     switch(event->key.keysym.sym) {
     case SDLK_SPACE:
     case SDLK_ESCAPE:
       COIWindowSetBoard(COI_GLOBAL_WINDOW, titleCreateBoard(), title);
-      gameOverDestroyBoard(board);
+      gameOverDestroyBoard(gameOverContext);
       break;
     }
     default:
@@ -291,8 +292,12 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   Actor* player = townContext->pInfo->party[0];
 
   if (!TimeStateInFuture(&END_TIME)) {
-    COIBoard* gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW,
-					     COI_GLOBAL_LOADER);
+    COIBoard* gameOverBoard;
+    if (townContext->pInfo->working) {
+      gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME_AND_JOB, townContext->pInfo);
+    } else {
+      gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME, townContext->pInfo);
+    }
     COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOverBoard, gameOver);
     return;
   }

@@ -58,13 +58,19 @@ static void _sleep_coi(RentHouseContext* context) {
 static void _sleep(RentHouseContext* context) {
 #endif
 // JNW: left off here, can't sleep if evicted
-  TextBoxSetStrings(context->textBox,
-		    "You sleep...",
-		    NULL);
-  TimeStateIncrement(12);
-  playerCheckForEviction(context->pInfo);
-  context->statusWindow._refreshFlags |= RENT_HOUSE_REFRESH_DAYS;
-  context->pInfo->alreadyHealed = false;
+  long daysLeft = (long)context->pInfo->nextRentDate - (long)GLOBAL_TIME.day;
+  if (daysLeft >= 0) {
+    COISoundPlay(COI_SOUND_SELECT);
+    TextBoxSetStrings(context->textBox,
+          "You sleep...",
+          NULL);
+    TimeStateIncrement(12);
+    playerCheckForEviction(context->pInfo);
+    context->statusWindow._refreshFlags |= RENT_HOUSE_REFRESH_DAYS;
+    context->pInfo->alreadyHealed = false;
+  } else {
+    COISoundPlay(COI_SOUND_INVALID);
+  }
 }
 
 bool _tooEarlyForPayment(PlayerInfo* pInfo) {
@@ -74,11 +80,13 @@ bool _tooEarlyForPayment(PlayerInfo* pInfo) {
 static void _pay(RentHouseContext* context) {
   char temp[MAX_STRING_SIZE];
   if (_tooEarlyForPayment(context->pInfo)) {
+    COISoundPlay(COI_SOUND_INVALID);
     TextBoxSetStrings(context->textBox,
 		      "It is too early to pay.",
 		      NULL);
   } else if (context->pInfo->inventory->money >= RENT_HOUSE_PRICE &&
       !_tooEarlyForPayment(context->pInfo)) {
+    COISoundPlay(COI_SOUND_SELECT);
     snprintf(temp, MAX_STRING_SIZE, "Rent paid (%i gold).", RENT_HOUSE_PRICE);
     TextBoxSetStrings(context->textBox,
 		      temp,
@@ -89,6 +97,7 @@ static void _pay(RentHouseContext* context) {
 					     RENT_HOUSE_REFRESH_DAYS);
 
   } else {
+    COISoundPlay(COI_SOUND_INVALID);
     snprintf(temp, MAX_STRING_SIZE, "You are not able to afford rent (%i gold).", RENT_HOUSE_PRICE);
     TextBoxSetStrings(context->textBox,
 		      temp,
