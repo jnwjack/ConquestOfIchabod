@@ -25,7 +25,7 @@ EM_BOOL one_iter(double time, void* userData) {
 */
 
 
-void _init() {
+static void _init() {
   
   // Initialize global window and asset loader
   COIWindowInit();

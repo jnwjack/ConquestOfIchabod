@@ -2,7 +2,7 @@
 #include "COISound.h"
 
 Mix_Chunk* blip = NULL;
-Mix_Chunk* select = NULL;
+Mix_Chunk* select_sound = NULL;
 Mix_Chunk* celebration = NULL;
 Mix_Chunk* invalid = NULL;
 Mix_Chunk* hit = NULL;
@@ -21,7 +21,7 @@ Mix_Chunk* _loadSound(const char* soundString) {
 void COISoundInit() {
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   blip = _loadSound("cursor.wav");
-  select  = _loadSound("select.wav");
+  select_sound  = _loadSound("select.wav");
   celebration = _loadSound("celebration.wav");
   invalid = _loadSound("invalid.wav");
   hit = _loadSound("hit.wav");
@@ -33,7 +33,7 @@ void COISoundPlay(COISoundID sound) {
     Mix_PlayChannel(-1, blip, 0);
     break;
   case COI_SOUND_SELECT:
-    Mix_PlayChannel(-1, select, 0);
+    Mix_PlayChannel(-1, select_sound, 0);
     break;
   case COI_SOUND_CELEBRATION:
     Mix_PlayChannel(-1, celebration, 0);
@@ -51,7 +51,7 @@ void COISoundPlay(COISoundID sound) {
 
 void COISoundShutdown() {
   Mix_FreeChunk(blip);
-  Mix_FreeChunk(select);
+  Mix_FreeChunk(select_sound);
   Mix_FreeChunk(celebration);
   Mix_FreeChunk(invalid);
 }
