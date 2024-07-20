@@ -549,6 +549,19 @@ void _selectAttackTarget(BattleContext* context) {
   action->target = context->enemies[context->targetedActorIndex];
   action->type = ATTACK;
   action->index = -1; // Unused
+  action->successfulFlee = false;
+}
+
+void _selectFlee(BattleContext* context) {
+  BattleAction* action = &context->actions[context->turnIndex];
+  Actor* actor = context->allies[context->turnIndex];
+  action->actor = actor;
+  // Randomly pick target to flee "against"
+  int targetIndex = generateRandomCharInRange(0, context->numEnemies - 1);
+  action->target = context->enemies[targetIndex];
+  action->type = FLEE;
+  action->index = -1; // Unused
+  action->successfulFlee = false;
 }
 
 void _selectItemTarget(BattleContext* context) {
@@ -559,6 +572,7 @@ void _selectItemTarget(BattleContext* context) {
   action->type = ITEM;
   Item** items = context->pInfo->inventory->backpack;
   action->index = items[COIMenuGetCurrentValue(context->subMenu)]->id;
+  action->successfulFlee = false;
 }
 
 void _selectSpecialTarget(BattleContext* context) {
@@ -571,6 +585,7 @@ void _selectSpecialTarget(BattleContext* context) {
   action->target = actors[context->targetedActorIndex];
   action->type = SPECIAL;
   action->index = COIMenuGetCurrentValue(context->subMenu);
+  action->successfulFlee = false;
 }
 
 // Return true if we're done moving
@@ -736,8 +751,9 @@ BattleResult battleHandleActionSelection(BattleContext* context) {
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
-    _disableAllTechs(context->allies[0]);
-    return BR_FLEE;
+    _selectFlee(context);
+    _changeTurn(context, 1);
+    break;
   default:
     printf("Invalid action in battle.\n");
     return BR_CONTINUE;
@@ -872,11 +888,14 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         // that describe the current action.
         COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
         box->_visible = true;
-        context->summary = battleBehaviorDoAction(&action, context->textType, context->board, box, context->pInfo);
+        context->summary = battleBehaviorDoAction(&context->actions[context->currentActionIndex], context->textType, context->board, box, context->pInfo);
         // If it's a item, remove it from backpack on use
         if (action.type == ITEM) {
           inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
           ItemListGetItem(context->pInfo->inventory->items, action.index));
+        }
+        if (action.type == FLEE) {
+          context->actions[context->currentActionIndex].successfulFlee = true;
         }
       } else if (context->summary->finished) {
         ActionSummaryDestroy(context->summary, context->board);
@@ -905,6 +924,10 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       if (_moveActorBackwards(context, action.actor)) {
         actorStandStill(action.actor);
         context->sceneStage = SS_MOVE_FORWARD;
+        if (action.successfulFlee) {
+          _disableAllTechs(context->allies[0]);
+          return BR_FLEE;
+        }
         // If we're done, move to next action
         context->currentActionIndex++;
 

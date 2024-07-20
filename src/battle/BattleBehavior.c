@@ -253,6 +253,17 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     snprintf(temp, MAX_STRING_SIZE, "%s USES %s ON %s", aName, ItemListStringFromItemID(action->index), tName);
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
     break;
+  case FLEE:
+    snprintf(temp, MAX_STRING_SIZE, "%s TRIES TO FLEE", aName);
+    summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+    if (action->target->agi > action->actor->agi) {
+      snprintf(temp, MAX_STRING_SIZE, "BLOCKED BY %s!", tName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+    } else {
+      action->successfulFlee = true;
+      ActionSummaryAddString(summary, "YOU ESCAPE!", board, box, textType);
+    }
+    break;
   default:
     printf("Invalid action type.\n");
     summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);

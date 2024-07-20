@@ -21,6 +21,7 @@ typedef struct BattleAction {
   float attackModifier; // Effectiveness modifier from actor/target
   float spCostModifier;
   bool damageAttacker;
+  bool successfulFlee;
 } BattleAction;
 
 // Data structure that contains text that describes an

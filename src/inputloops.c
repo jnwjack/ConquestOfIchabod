@@ -51,6 +51,7 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
     break;
   case BR_FLEE:
   case BR_WIN:
+    printf("FLED\n");
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
     COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
     TimeStateIncrement(1);
