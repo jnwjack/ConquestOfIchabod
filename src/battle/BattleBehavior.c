@@ -5,9 +5,12 @@
 
 // Action with actor having higher AGI is smaller
 int _compareActions(BattleAction a, BattleAction b) {
-  if (a.actor->agi > b.actor->agi) {
+  int aAgi = actorModifiedAgi(a.actor);
+  int bAgi = actorModifiedAgi(b.actor);
+
+  if (aAgi > bAgi) {
     return -1;
- } else if (a.actor->agi < b.actor->agi) {
+ } else if (aAgi < bAgi) {
     return 1;
   } else {
     return 0;
@@ -193,8 +196,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     aDef = playerAdjustedDEF(pInfo);
   } else {
     aName = actorGetNameFromType(a->actorType);
-    aAtk = a->atk;
-    aDef = a->def;
+    aAtk = actorModifiedAtk(a);
+    aDef = actorModifiedDef(a);
   }
   if (t->actorType == ACTOR_PLAYER) {
     tName = pInfo->name;
@@ -203,7 +206,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   } else {
     tName = actorGetNameFromType(t->actorType);
     tAtk = actorModifiedAtk(t);
-    tDef = t->def;
+    tDef = actorModifiedDef(t);
   }
 
   char temp[MAX_STRING_SIZE];
@@ -256,7 +259,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   case FLEE:
     snprintf(temp, MAX_STRING_SIZE, "%s TRIES TO FLEE", aName);
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-    if (action->target->agi > action->actor->agi) {
+    if (actorModifiedAgi(action->target) > actorModifiedAgi(action->actor)) {
       snprintf(temp, MAX_STRING_SIZE, "BLOCKED BY %s!", tName);
       ActionSummaryAddString(summary, temp, board, box, textType);
     } else {

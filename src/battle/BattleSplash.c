@@ -309,8 +309,8 @@ bool LevelUpSplashProcessSelection(LevelUpSplash* splash, PlayerInfo* pInfo) {
         IntListAdd(&pInfo->party[0]->specials, playerGetNextSpecial(pInfo));
         pInfo->classProgression.specialsIndex++;
       } else {
-        pInfo->party[0]->atk += 3;
-        pInfo->party[0]->def += 3;
+        pInfo->party[0]->atk.base += 3;
+        pInfo->party[0]->def.base += 3;
       }
       done = true;
     }

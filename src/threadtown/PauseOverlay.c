@@ -138,6 +138,17 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
   }
 }
 
+// Return green, red, or regular text type depending on if we
+// have an adjusted stat.
+COITextType* _textTypeForStat(PauseOverlay* overlay, Stat* stat) {
+  COITextType* textType = overlay->textType;
+  int modifiedStat = actorModifiedStat(stat);
+  if (modifiedStat != stat->base) {
+    textType = modifiedStat < stat->base ? overlay->negTextType : overlay->posTextType;
+  }
+
+  return textType;
+}
 
 static void _makeStatStrings(PauseOverlay* overlay) {
   Actor* player = overlay->pInfo->party[0];
@@ -159,24 +170,18 @@ static void _makeStatStrings(PauseOverlay* overlay) {
   COIStringPositionBelowString(overlay->tp, overlay->sp, false);
   COIBoardAddString(overlay->board, overlay->tp);
 
-  // Change text color if we have a stat buff/debuff
-  COITextType* textTypeAtk = overlay->textType;
-  int modifiedAtk = actorModifiedAtk(player);
-  if (modifiedAtk != player->atk) {
-    textTypeAtk = modifiedAtk < player->atk ? overlay->negTextType : overlay->posTextType;
-  }
   snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedATK(overlay->pInfo));
-  overlay->atk = COIStringCreate(temp, 0, 0, textTypeAtk);
+  overlay->atk = COIStringCreate(temp, 0, 0, _textTypeForStat(overlay, &player->atk));
   COIStringPositionBelowString(overlay->atk, overlay->tp, false);
   COIBoardAddString(overlay->board, overlay->atk);
 
   snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedDEF(overlay->pInfo));
-  overlay->def = COIStringCreate(temp, 0, 0, overlay->textType);
+  overlay->def = COIStringCreate(temp, 0, 0, _textTypeForStat(overlay, &player->def));
   COIStringPositionBelowString(overlay->def, overlay->atk, false);
   COIBoardAddString(overlay->board, overlay->def);
 
-  snprintf(temp, MAX_STRING_SIZE, "%i", player->agi);
-  overlay->agi = COIStringCreate(temp, 0, 0, overlay->textType);
+  snprintf(temp, MAX_STRING_SIZE, "%i", playerAdjustedAGI(overlay->pInfo));
+  overlay->agi = COIStringCreate(temp, 0, 0, _textTypeForStat(overlay, &player->agi));
   COIStringPositionBelowString(overlay->agi, overlay->def, false);
   COIBoardAddString(overlay->board, overlay->agi);
 }

@@ -161,7 +161,7 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
             context->kb.name, 
             playerClassNameFromID(context->cs.currentClass));
     char second[MAX_STRING_SIZE];
-    snprintf(second, MAX_STRING_SIZE, "%s decides to start in Thread Town, where one of cores is rumored to be.    ", 
+    snprintf(second, MAX_STRING_SIZE, "%s decides to start in Thread Town, where the first of the cores is rumored to be.    ", 
             context->kb.name);
     TextBoxSetStrings(textBox,
           first,

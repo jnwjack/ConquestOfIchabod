@@ -69,12 +69,12 @@ int playerAdjustedDEF(PlayerInfo* info) {
   Actor* player = info->party[0];
   Inventory* inventory = info->inventory;
   int defItemTotal = inventoryDEFItemTotalStrength(inventory);
-  return ItemAdjustStat(player->atk, defItemTotal);
+  return ItemAdjustStat(actorModifiedDef(player), defItemTotal);
 }
 
 int playerAdjustedAGI(PlayerInfo* info) {
   Actor* player = info->party[0];
-  return player->agi;
+  return actorModifiedAgi(player);
 }
 
 int playerAdjustedHP(PlayerInfo* info) {
@@ -118,10 +118,10 @@ char _rotateChar(unsigned char c, int shift) {
     return '\0';
   }
 
-  unsigned char normalized = c - '0';
+  unsigned char normalized = c - '!';
   unsigned char offset = normalized + shift;
-  const unsigned char numVals = 'z' - '0';
-  return (char)((offset % numVals) + '0');
+  const unsigned char numVals = 'z' - '!';
+  return (char)((offset % numVals) + '!');
 }
 
 void _encodeString(char* string, FILE* fp) {
@@ -135,7 +135,7 @@ void _encodeString(char* string, FILE* fp) {
 void _decodeString(char* string, char* output) {
   size_t len = strnlen(string, MAX_STRING_SIZE);
   for (int i = 0; i < len; i++) {
-    output[i] = _rotateChar((unsigned char)string[i], 59);
+    output[i] = _rotateChar((unsigned char)string[i], 74);
   }
   output[len] = '\0';
 }
@@ -163,6 +163,36 @@ unsigned long _decodeULong(char** line, size_t* len, FILE* fp, char* buf) {
   return res;
 }
 
+void _encodeTimeState(TimeState* ts, char* buf, FILE* fp) {
+  _encodeInt((int)ts->val, buf, fp);
+  _encodeULong(ts->day, buf, fp);
+  _encodeInt((int)ts->phase, buf, fp);
+}
+
+void _decodeTimeState(char** line, size_t* len, FILE* fp, char* buf, TimeState* ts) {
+  ts->val = (unsigned char)_decodeInt(line, len, fp, buf);
+  ts->day = _decodeULong(line, len, fp, buf);
+  ts->phase = (TimeStatePhase)_decodeInt(line, len, fp, buf);
+}
+
+void _encodeStat(Stat* val, char* buf, FILE* fp) {
+  _encodeInt(val->base, buf, fp);
+  snprintf(buf, MAX_STRING_SIZE, "%f", val->factor);
+  printf("FACTOR: %f\n", val->factor);
+  _encodeString(buf, fp);
+  _encodeTimeState(&val->end, buf, fp);
+}
+
+void _decodeStat(char** line, size_t* len, FILE* fp, char* buf, Stat* stat) {
+  stat->base = _decodeInt(line, len, fp, buf);
+
+  getline(line, len, fp);
+  _decodeString(*line, buf);
+  stat->factor = atof(buf);
+  
+  _decodeTimeState(line, len, fp, buf, &stat->end);
+}
+
 void playerEncode(PlayerInfo* info) {
   FILE* fp = fopen("src/engine/etc/save.dat", "w");
 
@@ -171,9 +201,9 @@ void playerEncode(PlayerInfo* info) {
   char temp[MAX_STRING_SIZE];
 
   // Stats
-  _encodeInt(info->party[0]->atk, temp, fp);
-  _encodeInt(info->party[0]->def, temp, fp);
-  _encodeInt(info->party[0]->agi, temp, fp);
+  _encodeStat(&info->party[0]->atk, temp, fp);
+  _encodeStat(&info->party[0]->def, temp, fp);
+  _encodeStat(&info->party[0]->agi, temp, fp);
   _encodeInt(info->party[0]->hp, temp, fp);
   _encodeInt(info->party[0]->hpMax, temp, fp);
   _encodeInt(info->party[0]->sp, temp, fp);
@@ -203,9 +233,7 @@ void playerEncode(PlayerInfo* info) {
   _encodeInt(info->inventory->money, temp, fp);
 
   // Time State
-  _encodeInt((int)GLOBAL_TIME.val, temp, fp);
-  _encodeULong(GLOBAL_TIME.day, temp, fp);
-  _encodeInt((int)GLOBAL_TIME.phase, temp, fp);
+  _encodeTimeState(&GLOBAL_TIME, temp, fp);
 
   // Abilities
   _encodeInt(info->party[0]->techList->count, temp, fp);
@@ -251,9 +279,9 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   PlayerInfo* info = playerInfoCreate(name, playerSprite, inventory);
 
   int atk, def, agi, hp, hpMax, sp, spMax, tp, tpMax, level;
-  info->party[0]->atk = _decodeInt(&line, &len, fp, buf);
-  info->party[0]->def = _decodeInt(&line, &len, fp, buf);
-  info->party[0]->agi = _decodeInt(&line, &len, fp, buf);
+  _decodeStat(&line, &len, fp, buf, &info->party[0]->atk);
+  _decodeStat(&line, &len, fp, buf, &info->party[0]->def);
+  _decodeStat(&line, &len, fp, buf, &info->party[0]->agi);
   info->party[0]->hp = _decodeInt(&line, &len, fp, buf);
   info->party[0]->hpMax = _decodeInt(&line, &len, fp, buf);
   info->party[0]->sp = _decodeInt(&line, &len, fp, buf);
@@ -281,9 +309,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   }
   info->inventory->money = _decodeInt(&line, &len, fp, buf);
 
-  GLOBAL_TIME.val = (unsigned char)_decodeInt(&line, &len, fp, buf);
-  GLOBAL_TIME.day = _decodeULong(&line, &len, fp, buf);
-  GLOBAL_TIME.phase = (TimeStatePhase)_decodeInt(&line, &len, fp, buf);
+  _decodeTimeState(&line, &len, fp, buf, &GLOBAL_TIME);
 
   int numTechs = _decodeInt(&line, &len, fp, buf);
   for (int i = 0; i < numTechs; i++) {

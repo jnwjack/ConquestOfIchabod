@@ -5,6 +5,13 @@
 // For a 3 x 4 spritesheet
 static int _spriteSheetOrderCols[] = { 0, 2, 1, 2 };
 
+int actorModifiedStat(Stat* stat) {
+  if (TimeStateInFuture(&stat->end)) {
+    return stat->factor * stat->base;
+  }
+  return stat->base;
+}
+
 Actor* actorCreate(int actorType, COISprite* sprite,
 		   int atk, int def, int agi, int hp, int tp, int sp) {
   Actor* actor = malloc(sizeof(Actor));
@@ -12,12 +19,15 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   actor->sprite = sprite;
   COISpriteSetSheetIndex(actor->sprite, 2, 2);
 
-  actor->atk = atk;
-  actor->atkModifier.factor = 1.0;
-  //TimeStateCopyGlobalTime(&actor->atkModifier.end);
+  actor->atk.base = atk;
+  actor->atk.factor = 1.0;
   
-  actor->def = def;
-  actor->agi = agi;
+  actor->def.base = def;
+  actor->def.factor = 1.0;
+
+  actor->agi.base = agi;
+  actor->agi.factor = 1.0;
+
   actor->hp = hp;
   actor->tp = tp;
   actor->sp = sp;
@@ -279,18 +289,23 @@ void actorTurnAround(Actor* actor) {
 }
 
 int actorModifiedAtk(Actor* actor) {
-  if (TimeStateInFuture(&actor->atkModifier.end)) {
-    return actor->atkModifier.factor * actor->atk;
-  }
-  return actor->atk;
+  return actorModifiedStat(&actor->atk);
+}
+
+int actorModifiedDef(Actor* actor) {
+  return actorModifiedStat(&actor->def);
+}
+
+int actorModifiedAgi(Actor* actor) {
+  return actorModifiedStat(&actor->agi);
 }
 
 void actorUseConsumable(Actor* actor, Item* item) {
-  StatModifier* modifier;
+  Stat* modifier;
   
   switch (item->id) {
   case ITEM_ID_STRENGTH_POTION:
-    modifier = &actor->atkModifier;
+    modifier = &actor->atk;
     break;
   default:
     printf("Invalid consumable item.\n");

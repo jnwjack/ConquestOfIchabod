@@ -23,10 +23,11 @@
 
 // Represents the effect of buffs/debuffs on a single stat.
 // Caused by spells, potions, etc.
-typedef struct StatModifier {
-  float factor;
-  TimeState end; // Point at which effect is over
-} StatModifier;
+typedef struct Stat {
+  int base;
+  float factor;  // Modifier factor, affected by buffs/debuffs, etc.
+  TimeState end; // Point at which modifier effect is over
+} Stat;
 
 // Holds data about a character in the world
 // Sprite, stats, walking behaviors, etc.
@@ -39,12 +40,9 @@ typedef struct Actor {
   COISprite* sprite;
 
   // Battle statistics
-  int atk;
-  // Can add this for other stats. Probably want to package base stat and modifier
-  // into the same data structure.
-  StatModifier atkModifier;
-  int def;
-  int agi;
+  Stat atk;
+  Stat def;
+  Stat agi;
   int hp;
   int tp; // For tech
   int sp; // For special
@@ -88,7 +86,10 @@ void actorFaceDown(Actor* actor);
 void actorMeetGaze(Actor* a, Actor* b);
 void actorFaceDirection(Actor* actor, int direction);
 void actorTurnAround(Actor* actor);
+int actorModifiedStat(Stat* stat);
 int actorModifiedAtk(Actor* actor);
+int actorModifiedDef(Actor* actor);
+int actorModifiedAgi(Actor* actor);
 void actorUseConsumable(Actor* actor, Item* item);
 
 #endif
