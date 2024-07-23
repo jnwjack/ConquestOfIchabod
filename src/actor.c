@@ -42,8 +42,6 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   }
 
   IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
-  IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
-  IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
 
   actor->movementDirection = MOVING_NONE;
   actor->nextMovementDirection = MOVING_NONE;
@@ -114,13 +112,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 15, 10, 8, 25, 10, 30);
   
   COISpriteSetSheetIndex(actor->sprite, 3, 0);
-  
-  techAddToList(actor->techList, TECH_ID_FOCUS);
-  techAddToList(actor->techList, TECH_ID_COUNTER);
-  techAddToList(actor->techList, TECH_ID_BRACE);
-  techAddToList(actor->techList, TECH_ID_RAGE);
     
-
   return actor;
 }
 

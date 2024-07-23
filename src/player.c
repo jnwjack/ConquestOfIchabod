@@ -242,6 +242,7 @@ void playerEncode(PlayerInfo* info) {
     _encodeInt(info->party[0]->techList->techs[i]->id, temp, fp);
   }
   _encodeInt(info->party[0]->specials.length, temp, fp);
+  printf("num specials: %i\n", info->party[0]->specials.length);
   for (int i = 0; i < info->party[0]->specials.length; i++) {
     _encodeInt(info->party[0]->specials.values[i], temp, fp);
   }
@@ -316,6 +317,8 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
     techAddToList(info->party[0]->techList, _decodeInt(&line, &len, fp, buf));
   }
   int numSpecials = _decodeInt(&line, &len, fp, buf);
+  printf("num specials: %i\n", numSpecials);
+  printf("num specials on startup: %i\n", info->party[0]->specials.length);
   for (int i = 0; i < numSpecials; i++) {
     IntListAdd(&info->party[0]->specials, _decodeInt(&line, &len, fp, buf));
   }
