@@ -174,7 +174,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   COIBoardShiftFrameY(board, playerCenterY - COI_GLOBAL_WINDOW->_height / 2);
 
   _createNPCs(context);
-  context->talkingActorType = ACTOR_CHAGGAI;
+  context->talkingActorType = ACTOR_NONE;
   
   // Yes/No dialog
   COISprite* frame = COISpriteCreateFromAssetID(70, 250, 150, 80,
@@ -375,8 +375,6 @@ void _talkToMerchant(TownContext* context) {
 		    "I have an opening for a clerk in my shop. Need a job?",
 		    NULL);
   }
-  
-  
 }
 
 void _confirmMenuSelect(TownContext* context) {
@@ -391,32 +389,35 @@ void _confirmMenuSelect(TownContext* context) {
       break;
     case ACTOR_MERCHANT:
       if (context->pInfo->working) {
-	TimeStateIncrement(12);
-  playerCheckForEviction(context->pInfo);
-	COITransitionInit(&COI_GLOBAL_WINDOW->transition,
-			  COI_TRANSITION_ENCLOSE,
-			  COI_GLOBAL_WINDOW);
+	      TimeStateIncrement(12);
+        playerCheckForEviction(context->pInfo);
+	      COITransitionInit(&COI_GLOBAL_WINDOW->transition,
+			      COI_TRANSITION_ENCLOSE,
+			      COI_GLOBAL_WINDOW);
       } else {
-	context->pInfo->working = true;
-	_talkToMerchant(context);
+	      context->pInfo->working = true;
+	      _talkToMerchant(context);
+        // printf("talked to merchant 2\n");
       }
       break;
     default:
       printf("Error: confirm menu appeared for invalid actor type\n");
     }
   }
-  context->talkingActorType = ACTOR_NONE; // We're definitely not talking to anyone now.
   COIMenuSetInvisible(context->confirmMenu);
   COIBoardQueueDraw(context->board);
 }
 
 bool _shouldPromptForAnswer(TownContext* context) {
+  if (context->talkingActorType == ACTOR_MERCHANT) {
+    printf("SPEAKING TO MERCHANT\n");
+  }
   if (context->talkingActorType == ACTOR_LANDLORD &&
       context->pInfo->renting == RS_NOT_RENTING &&
       context->textBox->currentStringDone) {
     return true;
   } else if (context->talkingActorType == ACTOR_MERCHANT &&
-	     context->textBox->currentStringDone) {
+	    context->textBox->currentStringDone) {
     return true;
   }
   return false;
@@ -459,16 +460,17 @@ void townProcessSelectionInput(TownContext* context) {
       context->talkingActorType = talkingNPC->actorType;
       switch (context->talkingActorType) {
       case ACTOR_LANDLORD:
-	_talkToLandlord(context);
-	break;
+	      _talkToLandlord(context);
+	      break;
       case ACTOR_MERCHANT:
-	_talkToMerchant(context);
-	break;
+	      _talkToMerchant(context);
+        // printf("talked to merchant 1\n");
+	      break;
       default:
-	TextBoxSetStrings(context->textBox,
-			  "I saw something scary in the northeast.",
-			  "I'd take shelter if I were you.",
-			  NULL);
+	      TextBoxSetStrings(context->textBox,
+			      "I saw something scary in the northeast.",
+			      "I'd take shelter if I were you.",
+			      NULL);
       }
       COIBoardQueueDraw(context->board);
     }

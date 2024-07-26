@@ -938,6 +938,9 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         // We're done with the battle, display the splash screen
         if (res != BR_CONTINUE) {
           _disableAllTechs(context->allies[0]);
+          printf("context->pInfo->xp: %lu\n", context->pInfo->xp);
+          printf("context->xpYield: %lu\n", context->xpYield);
+          printf("context->pInfo->xpForLevelUp: %lu\n", context->pInfo->xpForLevelUp);
           _showSplash(context, res, context->pInfo->xp + context->xpYield >= context->pInfo->xpForLevelUp);
           context->sceneStage = SS_SPLASH;
         }

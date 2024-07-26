@@ -53,9 +53,12 @@ unsigned long _getXPForLevel(unsigned long oldXP) {
 void playerAddXP(PlayerInfo* info, unsigned long xp) {
   info->xp += xp;
   if (info->xp >= info->xpForLevelUp) {
+    printf("CURRENT XP: %lu\n", info->xp);
     info->level++;
     info->xp -= info->xpForLevelUp;
     info->xpForLevelUp = _getXPForLevel(info->xpForLevelUp);
+    printf("CURRENT XP AFTER SUBTRACTION: %lu\n", info->xp);
+    printf("XP REQUIRED FOR LEVEL UP: %lu\n", info->xpForLevelUp);
   }
 }
 
