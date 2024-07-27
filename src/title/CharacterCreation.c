@@ -1,8 +1,8 @@
 #include "CharacterCreation.h"
 
 void KeyboardInit(Keyboard* kb, COIBoard* board) {
-  kb->textType = COITextTypeCreate(32, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  kb->textTypeWords = COITextTypeCreate(20, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  kb->textType = COITextTypeCreate(24, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  kb->textTypeWords = COITextTypeCreate(12, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   kb->currentNameChar = 0;
 
   for (char i = 0; i < 26; i++) {
@@ -173,7 +173,7 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
   cs->rightArrow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, cs->rightArrow);
 
-  COITextType* textType = COITextTypeCreate(32, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COITextType* textType = COITextTypeCreate(24, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
   cs->currentClass = PLAYER_CLASS_FIGHTER;
   cs->classIcons[PLAYER_CLASS_FIGHTER] = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 120, CLASSSELECTOR_OFFSET_Y, 64, 64,

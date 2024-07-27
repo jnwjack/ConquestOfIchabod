@@ -262,6 +262,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     if (actorModifiedAgi(action->target) > actorModifiedAgi(action->actor)) {
       snprintf(temp, MAX_STRING_SIZE, "BLOCKED BY %s!", tName);
       ActionSummaryAddString(summary, temp, board, box, textType);
+      action->successfulFlee = false;
     } else {
       action->successfulFlee = true;
       ActionSummaryAddString(summary, "YOU ESCAPE!", board, box, textType);

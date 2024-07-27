@@ -214,7 +214,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
   COIString** allStrings = malloc(sizeof(COIString*) * (BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies));
 
-  context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
+  context->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
   
   COISprite** sprites = COIBoardGetSprites(board);
 
@@ -261,7 +261,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Things next to each ally. Status strings and tech particles
   context->techParticles = malloc(sizeof(COISprite*) * context->numAllies);
   for (int i = 0; i < context->numAllies; i++) {
-    context->allyStatuses[i] = AllyStatusCreate(context->board, window, 15);
+    context->allyStatuses[i] = AllyStatusCreate(context->board, window, 8);
     AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
     context->techParticles[i] = COISpriteCreateFromAssetID(context->allies[i]->sprite->_x - 9,
 							   context->allies[i]->sprite->_y - 9,
@@ -374,10 +374,21 @@ void _attack(BattleContext* context) {
   context->pointer->_visible = true;
 }
 
-void _item(BattleContext* context) {
+bool _item(BattleContext* context) {
+  bool hasValidItems = false;
+  Item** items = context->pInfo->inventory->backpack;
+  for (int i = 0; i < context->pInfo->inventory->numBackpackItems; i++) {
+    if (ItemCanUseInBattle(items[i])) {
+      hasValidItems = true;
+    }
+  }
+
+  if (!hasValidItems) {
+    return false;
+  }
+
   COIMenuFreeComponents(context->subMenu, context->board);
   //  ItemList* itemList = context->pInfo->inventory->items;
-  Item** items = context->pInfo->inventory->backpack;
   for (int i = 0; i < context->pInfo->inventory->numBackpackItems; i++) {
     if (ItemCanUseInBattle(items[i])) {
       COIString* string = COIStringCreate(ItemListStringFromItemID(items[i]->id),
@@ -390,9 +401,18 @@ void _item(BattleContext* context) {
   }
 
   COIMenuSetVisible(context->subMenu);
+
+  context->menuFocus = SUB_MENU;
+  context->subMenuType = SM_ITEM;
+
+  return true;
 }
 
-void _special(BattleContext* context) {
+bool _special(BattleContext* context) {
+  if (context->allies[context->turnIndex]->specials.length < 1) {
+    return false;
+  }
+
   // Clean up previous COIStrings
   COIMenuFreeComponents(context->subMenu, context->board);
 
@@ -408,9 +428,17 @@ void _special(BattleContext* context) {
   }
   
   COIMenuSetVisible(context->subMenu);
+
+  context->menuFocus = SUB_MENU;
+  context->subMenuType = SM_SPECIAL;
+  return true;
 }
 
-void _tech(BattleContext* context) {
+bool _tech(BattleContext* context) {
+  if (context->allies[context->turnIndex]->techList->count < 1) {
+    return false;
+  }
+
   context->pointingAtEnemies = false;
   context->targetedActorIndex = 0;
   _adjustPointer(context);
@@ -434,6 +462,11 @@ void _tech(BattleContext* context) {
   COIMenuSetVisible(context->subMenu);
 
   free(tNames);
+
+  context->menuFocus = SUB_MENU;
+  context->subMenuType = SM_TECH;
+
+  return true;
 }
 
 void _pickNPCActions(BattleContext* context) {
@@ -728,26 +761,20 @@ BattleResult battleFinished(BattleContext* context) {
 
 // When selecting what character should do, handle each option in menu.
 BattleResult battleHandleActionSelection(BattleContext* context) {
-  COISoundPlay(COI_SOUND_SELECT);
+  bool successful = true;
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
     _attack(context);
     context->menuFocus = ACTORS;
     break;
   case BATTLE_TECH:
-    _tech(context);
-    context->menuFocus = SUB_MENU;
-    context->subMenuType = SM_TECH;
+    successful = _tech(context);
     break;
   case BATTLE_SPECIAL:
-    _special(context);
-    context->menuFocus = SUB_MENU;
-    context->subMenuType = SM_SPECIAL;
+    successful = _special(context);
     break;
   case BATTLE_ITEM:
-    _item(context);
-    context->menuFocus = SUB_MENU;
-    context->subMenuType = SM_ITEM;
+    successful = _item(context);
     break;
   case BATTLE_FLEE:
     // Replace this with probability check, flee may fail
@@ -756,7 +783,12 @@ BattleResult battleHandleActionSelection(BattleContext* context) {
     break;
   default:
     printf("Invalid action in battle.\n");
-    return BR_CONTINUE;
+  }
+
+  if (successful) {
+    COISoundPlay(COI_SOUND_SELECT);
+  } else {
+    COISoundPlay(COI_SOUND_INVALID);
   }
   
   
@@ -894,9 +926,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
           inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
           ItemListGetItem(context->pInfo->inventory->items, action.index));
         }
-        if (action.type == FLEE) {
-          context->actions[context->currentActionIndex].successfulFlee = true;
-        }
       } else if (context->summary->finished) {
         ActionSummaryDestroy(context->summary, context->board);
         context->summary = NULL;
@@ -926,6 +955,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         context->sceneStage = SS_MOVE_FORWARD;
         if (action.successfulFlee) {
           _disableAllTechs(context->allies[0]);
+          printf("bad\n");
           return BR_FLEE;
         }
         // If we're done, move to next action

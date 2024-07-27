@@ -166,7 +166,7 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
     splash->descStrings[i] = NULL;
   }
 
-  COITextType* tt = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COITextType* tt = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
   COISprite* menuFrame = COISpriteCreateFromAssetID(50,
                                                   125,

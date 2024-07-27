@@ -3,7 +3,7 @@
 COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOverType type, PlayerInfo* pInfo) {
   COIBoard* board = COIBoardCreate(20, 20, 20, 225, 640, 480, loader);
   
-  COITextType* textType = COITextTypeCreate(40, 255, 255, 255, COIWindowGetRenderer(window));
+  COITextType* textType = COITextTypeCreate(32, 255, 255, 255, COIWindowGetRenderer(window));
 
   // Replace with 640 x 480 COISprite that displays "game over" image.
   GameOverContext* context = malloc(sizeof(GameOverContext));
@@ -11,7 +11,7 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
   switch (type) {
   case GAME_OVER_DEATH:
   {
-    COITextType* deathType = COITextTypeCreate(32, 0, 0, 0, COIWindowGetRenderer(window));
+    COITextType* deathType = COITextTypeCreate(24, 0, 0, 0, COIWindowGetRenderer(window));
     COIString* nameString = COIStringCreate(pInfo->name, 250, 355, deathType);
     COIBoardAddString(board, nameString);
 
@@ -23,7 +23,7 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
     break;
   case GAME_OVER_TIME_AND_JOB:
   {
-    COITextType* timeAndJobType = COITextTypeCreate(8, 0, 0, 0, COIWindowGetRenderer(window));
+    COITextType* timeAndJobType = COITextTypeCreate(6, 0, 0, 0, COIWindowGetRenderer(window));
     COIString* nameString = COIStringCreate(pInfo->name, 395, 320, timeAndJobType);
     COIBoardAddString(board, nameString);
 

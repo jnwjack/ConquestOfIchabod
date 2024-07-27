@@ -72,8 +72,8 @@ COIBoard* titleCreateBoard() {
   context->name->_autoHandle = false;
   context->name->_visible = true;
   
-  COITextType* white = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COITextType* gray = COITextTypeCreate(25, 120, 120, 120, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COITextType* white = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COITextType* gray = COITextTypeCreate(16, 120, 120, 120, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
   _makeStrings(board, context->strings, white);
   _makeStrings(board, context->grayStrings, gray);
@@ -85,7 +85,7 @@ COIBoard* titleCreateBoard() {
   COITextTypeDestroy(white);
   COITextTypeDestroy(gray);
 
-  context->tBoxTextType = COITextTypeCreate(25,
+  context->tBoxTextType = COITextTypeCreate(16,
 					    255, 255, 255,
 					    COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   context->textBox = TextBoxCreate(board, context->tBoxTextType);

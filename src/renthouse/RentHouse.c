@@ -166,7 +166,7 @@ static void _makeStatWindow(RentHouseContext* context) {
 COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard) {
   RentHouseContext* context = malloc(sizeof(RentHouseContext));
   context->board = COIBoardCreate(107, 112, 96, 255, 640, 480, COI_GLOBAL_LOADER);
-  context->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  context->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   context->outsideBoard = outsideBoard;
   context->pInfo = pInfo;
   context->textBox = TextBoxCreate(context->board, context->textType);

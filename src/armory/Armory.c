@@ -246,7 +246,7 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
   armoryContext->sellItems = NULL;
   armoryContext->buyItems = NULL;
 
-  armoryContext->textType = COITextTypeCreate(25, 255, 255, 255, COIWindowGetRenderer(window));
+  armoryContext->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
   armoryContext->mainStrings[0] = COIStringCreate("Buy", 0, 0, armoryContext->textType);
   armoryContext->mainStrings[1] = COIStringCreate("Sell", 0, 0, armoryContext->textType);
   armoryContext->mainStrings[2] = COIStringCreate("Exit", 0, 0, armoryContext->textType);
