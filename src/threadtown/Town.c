@@ -159,7 +159,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->board = board;
   context->willEnterBattle = false;
   context->_npcTicks = 0;
-  context->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
+  context->textType = COITextTypeCreate(15, 255, 255, 255, COIWindowGetRenderer(window));
   
   
   // Only 1 persistent sprite: the player
