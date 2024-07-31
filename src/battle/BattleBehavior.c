@@ -277,7 +277,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       // Only handling 
       ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
       modifier->actor = a;
-      modifier->turnsLeft = 1;
+      modifier->turnsLeft = 0;
       modifier->type = MT_PARRYING;
       LinkedListAdd(modifiers, (void*)modifier);
     } else {
