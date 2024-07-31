@@ -11,6 +11,16 @@ typedef enum {
   INACTIVE
 } ActionType;
 
+typedef enum ModifierType {
+  MT_PARRYING
+} ModifierType;
+
+typedef struct ActorBattleModifier {
+  ModifierType type;
+  unsigned int turnsLeft;
+  Actor* actor;
+} ActorBattleModifier;
+
 typedef struct BattleAction {
   Actor* actor; // Who is acting?
   Actor* target; // Targeted actor of attack/special/item
@@ -48,7 +58,9 @@ BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, in
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b);
 void battleBehaviorSortActions(BattleAction* actions, int numActions);
 
-ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo);
+ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo, LinkedList* modifiers);
+void battleBehaviorUpdateModifiersTimeLeft(LinkedList* modifiers);
+void battleBehaviorsDestroyModifiers(LinkedList* modifiers);
 
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...);
 void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString);

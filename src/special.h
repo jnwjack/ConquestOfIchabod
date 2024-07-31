@@ -42,7 +42,7 @@ typedef enum {
   SPECIAL_DAMAGING,
   SPECIAL_HEALING,
   SPECIAL_BUFF,
-  SPECIAL_DEBUFF
+  SPECIAL_DEBUFF,
 } SpecialType;
 
 char* specialName(int id);

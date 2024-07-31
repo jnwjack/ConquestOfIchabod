@@ -144,7 +144,7 @@ void battleBehaviorSortActions(BattleAction* actions, int numActions) {
   _sortHelper(actions, 0, numActions - 1);
 }
 
-ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo) {
+ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo, LinkedList* modifiers) {
   Actor* a = action->actor;
   Actor* t = action->target;
   char* aName;
@@ -162,11 +162,11 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       a->tp -= tech->cost;
       switch (tech->id) {
       case TECH_ID_FOCUS:
-	action->spCostModifier *= tech->strength;
-	break;
+        action->spCostModifier *= tech->strength;
+        break;
       case TECH_ID_RAGE:
-	action->attackModifier *= tech->strength;
-	break;
+        action->attackModifier *= tech->strength;
+        break;
       }
     }
   }
@@ -177,14 +177,14 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     if (tech->active) {
       switch (tech->id) {
       case TECH_ID_COUNTER:
-	action->damageAttacker = true;
-	break;
+        action->damageAttacker = true;
+        break;
       case TECH_ID_BRACE:
-	action->attackModifier *= tech->strength;
-	break;
+        action->attackModifier *= tech->strength;
+        break;
       case TECH_ID_RAGE:
-	action->attackModifier *= tech->strength;
-	break;
+        action->attackModifier *= tech->strength;
+        break;
       }
     }
   }
@@ -210,15 +210,38 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   }
 
   char temp[MAX_STRING_SIZE];
-  SpecialType spType;
+  SpecialType spType; 
   switch (action->type) {
   case ATTACK:
-    // Save attack value and defense value in BattleAction on creation
     damage = MAX(1, aAtk - tDef) * action->attackModifier;
     sprintf(atkString, "%s ATTACKS %s", aName, tName);
-    sprintf(dmgString, "%i DAMAGE DEALT", damage);
+    summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
+
+    // Check for modifiers that affect an incoming attack
+    bool attackFails = false;
+    LinkedListResetCursor(modifiers);
+    ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
+    while (currentModifier) {
+      if (currentModifier->actor == t && currentModifier->type == MT_PARRYING) {
+        int parryDamage = damage * 2;
+        a->hp = MAX(0, a->hp - parryDamage);
+        snprintf(temp, MAX_STRING_SIZE, "%s PARRIES!", tName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", parryDamage, aName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+        attackFails = true;
+      }
+      currentModifier = LinkedListNext(modifiers);
+    }
+
+    if (attackFails) {
+      break;
+    }
+
+    // Save attack value and defense value in BattleAction on creation
     t->hp = MAX(0, t->hp - damage);
-    summary = ActionSummaryCreate(board, box, textType, atkString, dmgString, NULL);
+    sprintf(dmgString, "%i DAMAGE DEALT", damage);
+    ActionSummaryAddString(summary, dmgString, board, box, textType);
     if (action->damageAttacker) {
       a->hp = MAX(0, a->hp - damage / 2);
       snprintf(temp, MAX_STRING_SIZE, "%s COUNTERS!", tName);
@@ -247,6 +270,16 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
       snprintf(temp, MAX_STRING_SIZE, "%i HP RESTORED", amountHealed);
       ActionSummaryAddString(summary, temp, board, box, textType);
+    } else if (action->index == SPECIAL_ID_PARRY) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
+	       aName, specialVerb(action->index), specialName(action->index));
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      // Only handling 
+      ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
+      modifier->actor = a;
+      modifier->turnsLeft = 1;
+      modifier->type = MT_PARRYING;
+      LinkedListAdd(modifiers, (void*)modifier);
     } else {
       summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
     }
@@ -287,6 +320,30 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   }
   
   return summary;
+}
+
+void battleBehaviorUpdateModifiersTimeLeft(LinkedList* modifiers) {
+  // Check for modifiers that affect an incoming attack
+  LinkedListResetCursor(modifiers);
+  ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
+  while (currentModifier) {
+    if (currentModifier->turnsLeft == 0) {
+      LinkedListRemove(modifiers, (void*)currentModifier);
+    } else {
+      currentModifier->turnsLeft--;
+    }
+    currentModifier = LinkedListNext(modifiers);
+  }
+}
+
+void battleBehaviorsDestroyModifiers(LinkedList* modifiers) {
+  LinkedListResetCursor(modifiers);
+  ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
+  while (currentModifier) {
+    free(currentModifier);
+    currentModifier = LinkedListNext(modifiers);
+  }
+  LinkedListDestroy(modifiers);
 }
 
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...) {

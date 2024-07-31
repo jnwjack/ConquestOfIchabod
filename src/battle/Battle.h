@@ -93,6 +93,7 @@ typedef struct BattleContext {
   int numEnemies;
 
   Actor** allies;
+  LinkedList* modifiers;
   COIString** allyNames;
   int numAllies;
   AllyStatus** allyStatuses;

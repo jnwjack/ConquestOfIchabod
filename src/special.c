@@ -48,8 +48,9 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_HEAL:
     return SPECIAL_HEALING;
   case SPECIAL_ID_CURSE:
-  case SPECIAL_ID_PARRY:
     return SPECIAL_DEBUFF;
+  case SPECIAL_ID_PARRY:
+    return SPECIAL_BUFF;
   default:
     printf("Invalid id for special type lookup.\n");
     return SPECIAL_DAMAGING;

@@ -18,6 +18,9 @@
 #define ACTOR_WIRE_MOTHER 8
 #define ACTOR_VOLCANETTE 9
 
+// Buff values
+#define ACTOR_BUFF_PARRYING 1
+
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8
 

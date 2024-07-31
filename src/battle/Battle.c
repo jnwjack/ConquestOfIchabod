@@ -186,7 +186,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->numAllies = pInfo->partySize;
   for (int i = 0; i < context->numAllies; i++) {
     actorFaceLeft(context->allies[i]);
-    
   }
   COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
   _centerActorsInBox(context->allies, context->numAllies, aBox);
@@ -278,6 +277,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     COISpriteSetSheetIndex(context->techParticles[i], 0, 0);
     COIBoardAddDynamicSprite(board, context->techParticles[i]);
   }
+
+  context->modifiers = LinkedListCreate();
 
   context->levelUpSplash = NULL;
 
@@ -885,6 +886,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 
     // Disable TECHs that we will not be able to afford next turn
     // Only doing this for the player right now. Not handling other allies or enemies
+    battleBehaviorUpdateModifiersTimeLeft(context->modifiers);
     _disableTechsIfTooExpensive(context->allies[0]);
     _disableTechParticlesIfNecessary(context, 0);
     
@@ -920,7 +922,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         // that describe the current action.
         COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
         box->_visible = true;
-        context->summary = battleBehaviorDoAction(&context->actions[context->currentActionIndex], context->textType, context->board, box, context->pInfo);
+        context->summary = battleBehaviorDoAction(&context->actions[context->currentActionIndex], context->textType, context->board, box, context->pInfo, context->modifiers);
         // If it's a item, remove it from backpack on use
         if (action.type == ITEM) {
           inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
@@ -1004,6 +1006,7 @@ void battleDestroyBoard(COIBoard* board) {
   if (context->levelUpSplash) {
     LevelUpSplashDestroy(context->levelUpSplash, board);
   }
+  battleBehaviorsDestroyModifiers(context->modifiers);
   free(context->techParticles);
   free(context->allyStatuses);
   free(context->enemies);
