@@ -12,7 +12,8 @@ typedef enum {
 } ActionType;
 
 typedef enum ModifierType {
-  MT_PARRYING
+  MT_PARRYING,
+  MT_CURSED
 } ModifierType;
 
 typedef struct ActorBattleModifier {

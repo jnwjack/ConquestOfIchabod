@@ -63,7 +63,12 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_TENTACLE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
-    return actorCreate(actorType, sprite, 15, 10, 8, 25, 10, 30);
+    {
+      Actor* actor = actorCreate(actorType, sprite, 15, 10, 8, 25, 10, 30);
+      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
+      IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
+      return actor;
+    }
   case ACTOR_CHAGGAI:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
@@ -90,6 +95,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 2, 12, 0, 75);
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
+      IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       return actor;
     }
   case ACTOR_VOLCANETTE:
@@ -99,6 +105,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
       IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
+      IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       return actor;
     }
   default:
