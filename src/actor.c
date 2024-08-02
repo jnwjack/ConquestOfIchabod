@@ -67,6 +67,8 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       Actor* actor = actorCreate(actorType, sprite, 15, 10, 8, 25, 10, 30);
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
+      IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
+      IntListAdd(&actor->specials, SPECIAL_ID_REINFORCE);
       return actor;
     }
   case ACTOR_CHAGGAI:
@@ -96,6 +98,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
+      IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       return actor;
     }
   case ACTOR_VOLCANETTE:

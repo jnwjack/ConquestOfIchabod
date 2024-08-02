@@ -12,6 +12,10 @@ char* specialName(int id) {
     return "Parry";
   case SPECIAL_ID_CURSE:
     return "Curse";
+  case SPECIAL_ID_DRAIN_SPIRIT:
+    return "Drain Spirit";
+  case SPECIAL_ID_REINFORCE:
+    return "Reinforce";
   }
 
   return "ERROR";
@@ -34,6 +38,8 @@ int specialStrength(int id) {
     return 8;
   case SPECIAL_ID_HEAL:
     return 12;
+  case SPECIAL_ID_DRAIN_SPIRIT:
+    return 5;
   default:
     return -1;
   }
@@ -48,8 +54,10 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_HEAL:
     return SPECIAL_HEALING;
   case SPECIAL_ID_CURSE:
+  case SPECIAL_ID_DRAIN_SPIRIT:
     return SPECIAL_DEBUFF;
   case SPECIAL_ID_PARRY:
+  case SPECIAL_ID_REINFORCE:
     return SPECIAL_BUFF;
   default:
     printf("Invalid id for special type lookup.\n");
@@ -66,6 +74,7 @@ int specialCost(int id) {
   switch (id) {
   case SPECIAL_ID_FIREBALL:
     return 8;
+  case SPECIAL_ID_DRAIN_SPIRIT:
   case SPECIAL_ID_ICE_SPEAR:
     return 4;
   case SPECIAL_ID_HEAL:
@@ -91,6 +100,8 @@ char* specialDescription(int id) {
     return "Any healing effect applied to the target will instead deal damage";
   case SPECIAL_ID_PARRY:
     return "Block attack and deal damage to attacker";
+  case SPECIAL_ID_DRAIN_SPIRIT:
+    return "Reduce the target's SP";
   default:
     return "Error: Not implemented";
   }

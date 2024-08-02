@@ -308,6 +308,25 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       modifier->turnsLeft = 3;
       modifier->type = MT_CURSED;
       LinkedListAdd(modifiers, (void*)modifier);
+    } else if (action->index == SPECIAL_ID_DRAIN_SPIRIT) {
+      int spLost = specialStrength(action->index);
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      t->sp = MAX(0, t->sp - spLost);
+      snprintf(temp, MAX_STRING_SIZE, "SP REDUCED BY %i", spLost);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+    } else if (action->index == SPECIAL_ID_REINFORCE) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      TimeStateCopyGlobalTime(&t->def.end);
+      TimeStateAddVal(&t->def.end, 1);
+      if (!TimeStateInFuture(&t->def.end) || t->def.factor < 1) {
+        t->def.factor = 1.5;
+      } else {
+        t->def.factor *= 1.5;
+      }
     } else {
       summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
     }
