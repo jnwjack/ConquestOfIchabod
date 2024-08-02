@@ -24,13 +24,10 @@ static bool squareHasAsset(GtkWidget* square) {
 }
 
 static void updateSquare(GtkWidget* square, int assetIndex, int width, int height) {
-  // Store the index of the asset - used when we write to file
-  // Also store the width and height of the asset.
-  // Pretty bad way of doing this. We're storing it in the accessibility text.
-  char indexString[100];
   gtk_picture_set_filename(GTK_PICTURE(square), assetStrings[assetIndex]);
-  sprintf(indexString, "%i %i %i", assetIndex, width, height);
-  gtk_picture_set_alternative_text(GTK_PICTURE(square), indexString);
+  g_object_set_data(G_OBJECT(square), "assetIndex", GINT_TO_POINTER(assetIndex));
+  g_object_set_data(G_OBJECT(square), "width", GINT_TO_POINTER(width));
+  g_object_set_data(G_OBJECT(square), "height", GINT_TO_POINTER(height));
 }
 
 static void occupyNearbySquares(int baseX, int baseY, int width, int height) {
@@ -83,7 +80,7 @@ static const char** readAssetStrings(const char* filename) {
   FILE* fp = NULL;
   size_t len;
   int numStrings = countLines(filename) + 1;
-  const char** strings = malloc(sizeof(const char*) * numStrings);
+  char** strings = malloc(sizeof(char*) * numStrings);
   fp = fopen(filename, "r");
   int i = 0;
   while(getline(&line, &len, fp) != -1) {
@@ -95,7 +92,7 @@ static const char** readAssetStrings(const char* filename) {
   strings[i] = NULL;
 
   fclose(fp);
-  return strings;
+  return (const char **)strings;
 }
 
 static void selectAsset(GtkWidget* dropDown, GParamSpec* pspec, gpointer data) {
@@ -132,10 +129,9 @@ static void removeAssetFromSquare (GtkGestureClick *gesture,
     int areaX, areaY;
     gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
 
-    char* altText = gtk_picture_get_alternative_text(GTK_PICTURE(area));
-    int index = atoi(strsep(&altText, " "));
-    int width = atoi(strsep(&altText, " "));
-    int height = atoi(strsep(&altText, " "));
+    int assetIndex = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "assetIndex"));
+    int width = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "width"));
+    int height = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "height"));
     int squareCountX = width / 32;
     int squareCountY = height / 32;
     for (int x = 0; x < squareCountX; x++) {
@@ -152,20 +148,19 @@ static void removeAssetFromSquare (GtkGestureClick *gesture,
 
 
 static void generateSpritemap(GtkWidget* button, gpointer data) {
+  GtkWidget *grid = GTK_WIDGET(data);
+  GtkLayoutManager *manager = gtk_widget_get_layout_manager(grid);
   FILE* fp = fopen("spritemap.dat", "w");
-  for (int x = 0; x < 150; x++) {
-    for (int y = 0; y < 150; y++) {
-      GtkWidget* picture = gtk_grid_get_child_at(GTK_GRID(data), x, y);
-      if (gtk_picture_get_file(GTK_PICTURE(picture)) != NULL) {
-	// Get index, width, and height from accessibility text
-	char* altText = gtk_picture_get_alternative_text(GTK_PICTURE(picture));
-	int index = atoi(strsep(&altText, " "));
-	int w = atoi(strsep(&altText, " "));
-	int h = atoi(strsep(&altText, " "));
-	
-	//const char* index = gtk_picture_get_alternative_text(GTK_PICTURE(picture));
-	fprintf(fp, "%i %i %i %i %i\n", index, x*32, y*32, w, h);
-      }
+  for (GtkWidget *picture = gtk_widget_get_first_child(grid); picture != NULL; picture = gtk_widget_get_next_sibling(picture)) {
+    if (gtk_picture_get_file(GTK_PICTURE(picture)) != NULL) {
+      GtkGridLayoutChild *loc = GTK_GRID_LAYOUT_CHILD(gtk_layout_manager_get_layout_child(manager, picture));
+      int x = gtk_grid_layout_child_get_column(loc);
+      int y = gtk_grid_layout_child_get_row(loc);
+      int assetIndex = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(picture), "assetIndex"));
+      int width = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(picture), "width"));
+      int height = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(picture), "height"));
+
+      fprintf(fp, "%i %i %i %i %i\n", assetIndex, x*32, y*32, width, height);
     }
   }
 
