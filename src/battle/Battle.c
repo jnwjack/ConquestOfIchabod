@@ -625,9 +625,9 @@ void _selectSpecialTarget(BattleContext* context) {
 // Return true if we're done moving
 bool _moveActorBackwards(BattleContext* context, Actor* actor) {
   // If actor is dead, don't do anything
-  if (actorIsDead(actor)) {
-    return true;
-  }
+  // if (actorIsDead(actor)) {
+  //   return true;
+  // }
   
   // If actor's an enemy, decrease x. If it's an ally, increase x.
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
@@ -653,9 +653,9 @@ bool _moveActorBackwards(BattleContext* context, Actor* actor) {
 // Return true if we're done moving
 bool _moveActorForward(BattleContext* context, Actor* actor) {
   // If actor is dead, don't do anything
-  if (actorIsDead(actor)) {
-    return true;
-  }
+  // if (actorIsDead(actor)) {
+  //   return true;
+  // }
   
   // If actor's an enemy, increase x. If it's an ally, decrease x.
   if (actor->sprite->_x + BATTLE_MAX_MOVEMENT < BATTLE_A_OFFSET_X) {
@@ -901,15 +901,14 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     _focusActionMenu(context);
   } else {
     BattleAction action = context->actions[context->currentActionIndex];
-    // Actor may die before it's able to take its turn. Move to next action
-    if (actorIsDead(action.actor)) {
-      context->sceneStage = SS_MOVE_FORWARD;
-      context->currentActionIndex++;
-      return BR_CONTINUE;
-    }
     switch (context->sceneStage) {
     case SS_MOVE_FORWARD:
-      if (_moveActorForward(context, action.actor)) {
+      // Actor may die before it's able to take its turn. Move to next action
+      if (actorIsDead(action.actor)) {
+        context->sceneStage = SS_MOVE_FORWARD;
+        context->currentActionIndex++;
+        return BR_CONTINUE;
+      } else if (_moveActorForward(context, action.actor)) {
 	      context->sceneStage = SS_TEXT;
         COISoundPlay(COI_SOUND_HIT);
       }

@@ -39,10 +39,10 @@ static void _heal(RentHouseContext* context) {
             spString,
             NULL);
       context->pInfo->alreadyHealed = true;
-      player->hp = player->hpMax;
-      player->tp = player->tpMax;
-      player->sp = player->spMax;
     }
+    player->hp = player->hpMax;
+    player->tp = player->tpMax;
+    player->sp = player->spMax;
   } else {
     COISoundPlay(COI_SOUND_INVALID);
     TextBoxSetStrings(context->textBox,
