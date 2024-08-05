@@ -196,7 +196,7 @@ static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
   overlay->statWindow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, overlay->statWindow);
   overlay->name = COIStringCreate(pInfo->name, 0, 0, textType);
-  overlay->class = COIStringCreate("Fighter", 0, 0, textType);
+  overlay->class = COIStringCreate(playerClassNameFromID(pInfo->class), 0, 0, textType);
   COIStringConfineToSprite(overlay->name, overlay->statWindow);
   COIBoardAddString(board, overlay->name);
   COIStringConfineToSprite(overlay->class, overlay->statWindow);

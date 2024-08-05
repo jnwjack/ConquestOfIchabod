@@ -38,6 +38,7 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_DISTRACT 6 // Target's next move must target actor
 #define SPECIAL_ID_DRAIN_SPIRIT 7 // Drain target's TP or SP
 #define SPECIAL_ID_REINFORCE 8
+#define SPECIAL_ID_AVALANCHE 9
 
 typedef enum {
   SPECIAL_DAMAGING,
@@ -53,5 +54,6 @@ char* specialVerb(int id);
 int specialStrength(int id);
 int specialCost(int id);
 char* specialDescription(int id);
+int specialSecondaryStrength(int id);
 
 #endif

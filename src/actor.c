@@ -21,12 +21,15 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 
   actor->atk.base = atk;
   actor->atk.factor = 1.0;
+  TimeStateCopyGlobalTime(&actor->atk.end);
   
   actor->def.base = def;
   actor->def.factor = 1.0;
+  TimeStateCopyGlobalTime(&actor->def.end);
 
   actor->agi.base = agi;
   actor->agi.factor = 1.0;
+  TimeStateCopyGlobalTime(&actor->agi.end);
 
   actor->hp = hp;
   actor->tp = tp;

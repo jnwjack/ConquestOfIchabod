@@ -3,6 +3,8 @@
 
 #include "../player.h"
 
+#define BB_MAX_ENEMY_COUNT 5
+
 typedef enum {
   ATTACK,
   SPECIAL,
@@ -33,6 +35,8 @@ typedef struct BattleAction {
   float spCostModifier;
   bool damageAttacker;
   bool successfulFlee;
+  int numOtherTargets;
+  Actor* otherTargets[BB_MAX_ENEMY_COUNT];
 } BattleAction;
 
 // Data structure that contains text that describes an
@@ -54,6 +58,8 @@ ActionType battleBehaviorPickActionType(int actorType);
 Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** enemies, int numEnemies, Actor** allies, int numAllies);
 int battleBehaviorPickIndex(ActionType action, Actor* actor);
 BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies);
+
+void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIndex, Actor** targetActors, int numTargetActors, Actor* actor);
 
 // Sorting
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b);

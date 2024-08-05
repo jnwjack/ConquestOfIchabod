@@ -35,6 +35,7 @@ typedef struct ClassProgression {
 // Party members, inventory, etc.
 typedef struct PlayerInfo {
   char name[MAX_NAME_SIZE];
+  int class;
 
   RentStatus renting;
   bool working;
@@ -57,7 +58,7 @@ typedef struct PlayerInfo {
 } PlayerInfo;
 
 void playerAddXP(PlayerInfo* info, unsigned long xp);
-PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory);
+PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory, int class);
 void playerInfoDestroy(PlayerInfo* info);
 
 // Stat values affected by gear

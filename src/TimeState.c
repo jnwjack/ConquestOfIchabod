@@ -1,4 +1,5 @@
 #include "TimeState.h"
+#include <stdio.h>
 
 TimeState GLOBAL_TIME = { TS_MORNING, 0, 0 };
 TimeState END_TIME = { TS_MORNING, 0, 5 };

@@ -5,7 +5,9 @@ char* specialName(int id) {
   case SPECIAL_ID_FIREBALL:
     return "Fireball";
   case SPECIAL_ID_ICE_SPEAR:
-    return "Ice Spear";
+    return "Blitz Fire";
+  case SPECIAL_ID_AVALANCHE:
+    return "Avalanche";
   case SPECIAL_ID_HEAL:
     return "Heal";
   case SPECIAL_ID_PARRY:
@@ -34,8 +36,10 @@ int specialStrength(int id) {
   switch (id) {
   case SPECIAL_ID_FIREBALL:
     return 10;
+  case SPECIAL_ID_AVALANCHE:
+    return 7;
   case SPECIAL_ID_ICE_SPEAR:
-    return 8;
+    return 5;
   case SPECIAL_ID_HEAL:
     return 12;
   case SPECIAL_ID_DRAIN_SPIRIT:
@@ -50,6 +54,7 @@ SpecialType specialType(int id) {
   switch (id) {
   case SPECIAL_ID_ICE_SPEAR:
   case SPECIAL_ID_FIREBALL:
+  case SPECIAL_ID_AVALANCHE:
     return SPECIAL_DAMAGING;
   case SPECIAL_ID_HEAL:
     return SPECIAL_HEALING;
@@ -73,6 +78,7 @@ bool specialTargetsEnemies(int id) {
 int specialCost(int id) {
   switch (id) {
   case SPECIAL_ID_FIREBALL:
+  case SPECIAL_ID_AVALANCHE:
     return 8;
   case SPECIAL_ID_DRAIN_SPIRIT:
   case SPECIAL_ID_ICE_SPEAR:
@@ -93,6 +99,8 @@ char* specialDescription(int id) {
   case SPECIAL_ID_FIREBALL:
     return "Deal high damage to a single target";
   case SPECIAL_ID_ICE_SPEAR:
+    return "Deal weak damage to a single target";
+  case SPECIAL_ID_AVALANCHE:
     return "Deal moderate damage to multiple targets";
   case SPECIAL_ID_HEAL:
     return "Restore HP to a friendly target";
@@ -105,5 +113,10 @@ char* specialDescription(int id) {
   default:
     return "Error: Not implemented";
   }
+}
+
+// Strength value for spells that apply a secondary, weaker effect. Ex: Avalanche
+int specialSecondaryStrength(int id) {
+  return specialStrength(id) * 0.75;
 }
 

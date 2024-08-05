@@ -155,7 +155,6 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
     break;
   case 4:
   {
-    printf("NAME: %s\n", context->kb.name);
     char first[MAX_STRING_SIZE];
     snprintf(first, MAX_STRING_SIZE, "%s, a %s has risen to the challenge.    ", 
             context->kb.name, 

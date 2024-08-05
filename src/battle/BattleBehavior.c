@@ -19,6 +19,8 @@ int _compareActions(BattleAction a, BattleAction b) {
 
 // QuickSort
 void _sortHelper(BattleAction* actions, int lo, int hi) {
+  // BattleAction* actions = *actionsPtr;
+
   int size = (hi+1) - lo;
   if (size < 2) {
     return;
@@ -80,6 +82,31 @@ ActionType battleBehaviorPickActionType(int actorType) {
   }
 }
 
+// Handle behavior that's specific to each special
+void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIndex, Actor** targetActors, int numTargetActors, Actor* actor) {
+  action->actor = actor;
+  action->type = SPECIAL;
+  action->target = targetActors[targetIndex];
+  action->index = specialID;
+  action->successfulFlee = false;
+  action->numOtherTargets = 0;
+  if (specialID == SPECIAL_ID_AVALANCHE) {
+    // Special case: also do damage to adjacent targets
+    int targetAbove = targetIndex - 1;
+    int targetBelow = targetIndex + 1;
+    if (targetAbove >= 0 && !actorIsDead(targetActors[targetAbove])) {
+      action->otherTargets[action->numOtherTargets] = targetActors[targetAbove];
+      // action->otherTargets[action->numOtherTargets] = NULL;
+      action->numOtherTargets++;
+    } 
+    if (targetBelow < numTargetActors && !actorIsDead(targetActors[targetBelow])) {
+      // action->otherTargets[action->numOtherTargets] = NULL;
+      action->otherTargets[action->numOtherTargets] = targetActors[targetBelow];
+      action->numOtherTargets++;
+    }
+  }
+}
+
 Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** enemies, int numEnemies, Actor** allies, int numAllies) {
   switch (action->type) {
   case ATTACK:
@@ -112,14 +139,15 @@ int battleBehaviorPickIndex(ActionType action, Actor* actor) {
 BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies) {
   BattleAction action;
   action.actor = actor;
+  action.type = battleBehaviorPickActionType(actor->actorType);
+  action.index = battleBehaviorPickIndex(action.type, actor);
+  action.target = battleBehaviorPickTarget(actor->actorType, &action, actorEnemies, numEnemies, actorAllies, numAllies);
+  action.numOtherTargets = 0;
   if (actorIsDead(actor)) {
     action.type = INACTIVE;
     return action;
   }
-  
-  action.type = battleBehaviorPickActionType(actor->actorType);
-  action.index = battleBehaviorPickIndex(action.type, actor);
-  action.target = battleBehaviorPickTarget(actor->actorType, &action, actorEnemies, numEnemies, actorAllies, numAllies);
+
   
 
   return action;
@@ -127,22 +155,38 @@ BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, in
 
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
   BattleAction temp = *a;
-  
   a->actor = b->actor;
   a->target = b->target;
   a->type = b->type;
   a->index = b->index;
+  a->attackModifier = b->attackModifier;
+  a->spCostModifier = b->spCostModifier;
+  a->damageAttacker = b->damageAttacker;
+  a->successfulFlee = b->successfulFlee;
+  a->numOtherTargets = b->numOtherTargets;
+  for (int i = 0; i < a->numOtherTargets; i++) {
+    a->otherTargets[i] = b->otherTargets[i];
+  }
 
   b->actor = temp.actor;
   b->target = temp.target;
   b->type = temp.type;
   b->index = temp.index;
+  b->attackModifier = temp.attackModifier;
+  b->spCostModifier = temp.spCostModifier;
+  b->damageAttacker = temp.damageAttacker;
+  b->successfulFlee = temp.successfulFlee;
+  b->numOtherTargets = temp.numOtherTargets;
+  for (int i = 0; i < b->numOtherTargets; i++) {
+    b->otherTargets[i] = temp.otherTargets[i];
+  }
 }
 
 
 
-void battleBehaviorSortActions(BattleAction* actions, int numActions) {
-  _sortHelper(actions, 0, numActions - 1);
+void battleBehaviorSortActions(BattleAction* actionsPtr, int numActions) {
+  // BattleAction* actions = *actionsPtr;
+  _sortHelper(actionsPtr, 0, numActions - 1);
 }
 
 ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo, LinkedList* modifiers) {
@@ -210,6 +254,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     tDef = actorModifiedDef(t);
   }
 
+  // JNW: cleanup. Pull each action type out into its own function
   char temp[MAX_STRING_SIZE];
   SpecialType spType; 
   bool actionFails = false;
@@ -263,6 +308,16 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
       snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
       ActionSummaryAddString(summary, temp, board, box, textType);
+
+      for (int i = 0; i < action->numOtherTargets; i++) {
+        Actor* otherT = action->otherTargets[i];
+        damage = specialSecondaryStrength(action->index);
+        otherT->hp = MAX(0, otherT->hp - damage);
+
+        snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
+	        actorGetNameFromType(otherT->actorType), damage);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+      }
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
       LinkedListResetCursor(modifiers);
@@ -353,6 +408,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
   }
 
+
+  // Check for death
   if (actorIsDead(a)) {
     a->sprite->_autoHandle = false;
     a->sprite->_visible = false;
@@ -365,7 +422,17 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     snprintf(temp, MAX_STRING_SIZE, "%s DIES", tName);
     ActionSummaryAddString(summary, temp, board, box, textType);
   }
-  
+  for (int i = 0; i < action->numOtherTargets; i++) {
+    Actor* otherT = action->otherTargets[i];
+    if (actorIsDead(otherT)) {
+      otherT->sprite->_autoHandle = false;
+      otherT->sprite->_visible = false;
+      snprintf(temp, MAX_STRING_SIZE, "%s DIES", actorGetNameFromType(otherT->actorType));
+      ActionSummaryAddString(summary, temp, board, box, textType);
+    }
+  }
+
+
   return summary;
 }
 

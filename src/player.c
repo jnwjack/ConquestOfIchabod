@@ -8,9 +8,13 @@ static unsigned int LEVELUP_SPECIALS_MIN_LEVELS[] = { 1 };
 #define LEVELUP_NUM_TECHS_FIGHTER 4
 #define LEVELUP_NUM_SPECIALS_FIGHTER 1
 
-PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory) {
+static unsigned int LEVELUP_SPECIALS_MAGE[] = { SPECIAL_ID_AVALANCHE, SPECIAL_ID_FIREBALL, SPECIAL_ID_CURSE };
+#define LEVELUP_NUM_SPECIALS_MAGE 3
+
+PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory, int class) {
   PlayerInfo* info = malloc(sizeof(PlayerInfo));
 
+  info->class = class;
   info->inventory = inventory;
   info->party = malloc(sizeof(Actor*) * MAX_PARTY_SIZE);
   info->party[0] = actorCreatePlayer(sprite);
@@ -26,10 +30,17 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
   // Should change based on class type
-  info->classProgression.specials = LEVELUP_SPECIALS_FIGHTER;
-  info->classProgression.techs = LEVELUP_TECHS_FIGHTER;
-  info->classProgression.numTechs = LEVELUP_NUM_TECHS_FIGHTER;
-  info->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_FIGHTER;
+  if (info->class == PLAYER_CLASS_WIZARD) {
+    info->classProgression.specials = LEVELUP_SPECIALS_MAGE;
+    info->classProgression.techs = LEVELUP_TECHS_FIGHTER;
+    info->classProgression.numTechs = LEVELUP_NUM_TECHS_FIGHTER;
+    info->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_MAGE;
+  } else {
+    info->classProgression.specials = LEVELUP_SPECIALS_FIGHTER;
+    info->classProgression.techs = LEVELUP_TECHS_FIGHTER;
+    info->classProgression.numTechs = LEVELUP_NUM_TECHS_FIGHTER;
+    info->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_FIGHTER;
+  }
   info->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS;
   info->classProgression.techsLevels = LEVELUP_TECHS_MIN_LEVELS;
 
@@ -203,6 +214,8 @@ void playerEncode(PlayerInfo* info) {
 
   char temp[MAX_STRING_SIZE];
 
+  _encodeInt(info->class, temp, fp);
+
   // Stats
   _encodeStat(&info->party[0]->atk, temp, fp);
   _encodeStat(&info->party[0]->def, temp, fp);
@@ -279,8 +292,9 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 
   getline(&line, &len, fp);
   _decodeString(line, name);
+  int class = _decodeInt(&line, &len, fp, buf);
 
-  PlayerInfo* info = playerInfoCreate(name, playerSprite, inventory);
+  PlayerInfo* info = playerInfoCreate(name, playerSprite, inventory, class);
 
   int atk, def, agi, hp, hpMax, sp, spMax, tp, tpMax, level;
   _decodeStat(&line, &len, fp, buf, &info->party[0]->atk);
@@ -320,8 +334,6 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
     techAddToList(info->party[0]->techList, _decodeInt(&line, &len, fp, buf));
   }
   int numSpecials = _decodeInt(&line, &len, fp, buf);
-  printf("num specials: %i\n", numSpecials);
-  printf("num specials on startup: %i\n", info->party[0]->specials.length);
   for (int i = 0; i < numSpecials; i++) {
     IntListAdd(&info->party[0]->specials, _decodeInt(&line, &len, fp, buf));
   }

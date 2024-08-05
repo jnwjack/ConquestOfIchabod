@@ -189,9 +189,9 @@ void COIStringPositionBelowString(COIString* below, COIString* above, bool onlyS
   // Use the x-position of 'above' as x for 'below'.
 
   if (onlySetY) {
-    COIStringSetY(below, above->yBottomLine + above->fontSize + 10);
+    COIStringSetY(below, above->yBottomLine + above->fontSize + COI_PADDING);
   } else {
-    COIStringSetPos(below, above->x, above->yBottomLine + above->fontSize + 10);
+    COIStringSetPos(below, above->x, above->yBottomLine + above->fontSize + COI_PADDING);
   }
 }
 

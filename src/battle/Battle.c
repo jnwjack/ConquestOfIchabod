@@ -260,7 +260,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Things next to each ally. Status strings and tech particles
   context->techParticles = malloc(sizeof(COISprite*) * context->numAllies);
   for (int i = 0; i < context->numAllies; i++) {
-    context->allyStatuses[i] = AllyStatusCreate(context->board, window, 8);
+    context->allyStatuses[i] = AllyStatusCreate(context->board, window, 10);
     AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
     context->techParticles[i] = COISpriteCreateFromAssetID(context->allies[i]->sprite->_x - 9,
 							   context->allies[i]->sprite->_y - 9,
@@ -584,6 +584,7 @@ void _selectAttackTarget(BattleContext* context) {
   action->type = ATTACK;
   action->index = -1; // Unused
   action->successfulFlee = false;
+  action->numOtherTargets = 0;
 }
 
 void _selectFlee(BattleContext* context) {
@@ -593,9 +594,14 @@ void _selectFlee(BattleContext* context) {
   // Randomly pick target to flee "against"
   int targetIndex = generateRandomCharInRange(0, context->numEnemies - 1);
   action->target = context->enemies[targetIndex];
+  while (!actorIsDead(action->target)) {
+    targetIndex = (targetIndex + 1) % context->numEnemies;
+    action->target = context->enemies[targetIndex];
+  }
   action->type = FLEE;
   action->index = -1; // Unused
   action->successfulFlee = false;
+  action->numOtherTargets = 0;
 }
 
 void _selectItemTarget(BattleContext* context) {
@@ -607,6 +613,7 @@ void _selectItemTarget(BattleContext* context) {
   Item** items = context->pInfo->inventory->backpack;
   action->index = items[COIMenuGetCurrentValue(context->subMenu)]->id;
   action->successfulFlee = false;
+  action->numOtherTargets = 0;
 }
 
 void _selectSpecialTarget(BattleContext* context) {
@@ -615,11 +622,7 @@ void _selectSpecialTarget(BattleContext* context) {
   Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
 
   Actor* actor = context->allies[context->turnIndex];
-  action->actor = actor;
-  action->target = actors[context->targetedActorIndex];
-  action->type = SPECIAL;
-  action->index = COIMenuGetCurrentValue(context->subMenu);
-  action->successfulFlee = false;
+  battleBehaviorMakeSpecial(action, COIMenuGetCurrentValue(context->subMenu), context->targetedActorIndex, actors, numActors, actor);
 }
 
 // Return true if we're done moving
@@ -812,6 +815,7 @@ void battleHandleActorSelect(BattleContext* context) {
     printf("Invalid actor selection in battle.\n");
     break;
   }
+  BattleAction* action = &context->actions[context->turnIndex];
   _changeTurn(context, 1);
 }
 
@@ -939,14 +943,28 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         } else {
           action.target->sprite->_autoHandle = true;
         }
+        for (int i = 0; i < action.numOtherTargets; i++) {
+          if (actorIsDead(action.otherTargets[i])) {
+            action.otherTargets[i]->sprite->_visible = false;
+          } else {
+            action.otherTargets[i]->sprite->_autoHandle = true;
+          }
+        }
       } else {
         ActionSummaryAdvance(context->summary, selection);
-        // Flicker effect on target actor
+        // Flicker effect on target actor and other targets
         if (context->summary->currentString > 0) {
           action.target->sprite->_visible = true;
+          for (int i = 0; i < action.numOtherTargets; i++) {
+            action.otherTargets[i]->sprite->_visible = true;
+          }
         }
         else if (context->summary->ticks % 10 == 0) {
           action.target->sprite->_visible = !action.target->sprite->_visible;
+          for (int i = 0; i < action.numOtherTargets; i++) {
+            action.otherTargets[i]->sprite->_autoHandle = false;
+            action.otherTargets[i]->sprite->_visible = !action.otherTargets[i]->sprite->_visible;
+          }
         }
       }
       break;
@@ -956,7 +974,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         context->sceneStage = SS_MOVE_FORWARD;
         if (action.successfulFlee) {
           _disableAllTechs(context->allies[0]);
-          printf("bad\n");
           return BR_FLEE;
         }
         // If we're done, move to next action

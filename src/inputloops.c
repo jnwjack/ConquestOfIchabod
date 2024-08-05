@@ -153,7 +153,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 
     // Initialize player data
     COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-    PlayerInfo* pInfo = playerInfoCreate(titleContext->kb.name, playerSprite, inventory); // jnw cleanup: leaks
+    PlayerInfo* pInfo = playerInfoCreate(titleContext->kb.name, playerSprite, inventory, titleContext->cs.currentClass); // jnw cleanup: leaks
     COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
     titleDestroyBoard(titleContext);
