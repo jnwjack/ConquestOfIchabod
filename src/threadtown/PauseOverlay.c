@@ -739,6 +739,7 @@ void PauseOverlayBack(PauseOverlay* overlay) {
     _returnToEquipableMenu(overlay);
   } else if (overlay->topRightMenu != overlay->baseMenu) {
     _returnToBaseMenu(overlay);
+    _updateStatChanges(overlay, -1);
   }
 }
 
