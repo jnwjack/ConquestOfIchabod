@@ -133,8 +133,10 @@ int generateRandomChar() {
 }
 
 bool generateRandomBoolWeighted(double weight) {
-  char low = weight * 0xFF;
-  return generateRandomChar() <= low;
+  int low = weight * 0xFF;
+  int randomVal = generateRandomChar();
+  printf("LOW: %i RAND: %i\n", low, randomVal);
+  return randomVal <= low;
 }
 
 int generateRandomCharInRange(int lowInclusive, int highInclusive) {

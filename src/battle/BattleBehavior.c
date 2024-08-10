@@ -80,7 +80,7 @@ ActionType battleBehaviorPickActionType(int actorType) {
   default:
     return ATTACK;
   }
-}
+} 
 
 // Handle behavior that's specific to each special
 void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIndex, Actor** targetActors, int numTargetActors, Actor* actor) {
@@ -91,19 +91,59 @@ void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIn
   action->successfulFlee = false;
   action->numOtherTargets = 0;
   if (specialID == SPECIAL_ID_AVALANCHE) {
-    // Special case: also do damage to adjacent targets
-    int targetAbove = targetIndex - 1;
-    int targetBelow = targetIndex + 1;
-    if (targetAbove >= 0 && !actorIsDead(targetActors[targetAbove])) {
-      action->otherTargets[action->numOtherTargets] = targetActors[targetAbove];
-      // action->otherTargets[action->numOtherTargets] = NULL;
-      action->numOtherTargets++;
-    } 
-    if (targetBelow < numTargetActors && !actorIsDead(targetActors[targetBelow])) {
-      // action->otherTargets[action->numOtherTargets] = NULL;
-      action->otherTargets[action->numOtherTargets] = targetActors[targetBelow];
-      action->numOtherTargets++;
+    // Working with different enemy ordering
+    for (int i = 0; i < numTargetActors; i++) {
+      if (actorIsDead(targetActors[i])) {
+        continue;
+      }
+      switch (i) {
+      case 0:
+        if (targetIndex == 1 || targetIndex == 2 || targetIndex == 3) {
+          action->otherTargets[action->numOtherTargets] = targetActors[i];
+          action->numOtherTargets++;
+        } 
+        break;
+      case 1:
+        if (targetIndex == 0 || targetIndex == 2 || targetIndex == 4) {
+          action->otherTargets[action->numOtherTargets] = targetActors[i];
+          action->numOtherTargets++;
+        } 
+        break;
+      case 2:
+        if (targetIndex != 2) {
+          action->otherTargets[action->numOtherTargets] = targetActors[i];
+          action->numOtherTargets++;
+        } 
+        break;
+      case 3:
+        if (targetIndex == 0 || targetIndex == 2) {
+          action->otherTargets[action->numOtherTargets] = targetActors[i];
+          action->numOtherTargets++;
+        } 
+        break;
+      case 4:
+        if (targetIndex == 1 || targetIndex == 2) {
+          action->otherTargets[action->numOtherTargets] = targetActors[i];
+          action->numOtherTargets++;
+        } 
+        break;
+      default:
+        printf("Error in handling ajacent targets\n.");
+      }
     }
+    // // Special case: also do damage to adjacent targets
+    // int targetAbove = targetIndex - 1;
+    // int targetBelow = targetIndex + 1;
+    // if (targetAbove >= 0 && !actorIsDead(targetActors[targetAbove])) {
+    //   action->otherTargets[action->numOtherTargets] = targetActors[targetAbove];
+    //   // action->otherTargets[action->numOtherTargets] = NULL;
+    //   action->numOtherTargets++;
+    // } 
+    // if (targetBelow < numTargetActors && !actorIsDead(targetActors[targetBelow])) {
+    //   // action->otherTargets[action->numOtherTargets] = NULL;
+    //   action->otherTargets[action->numOtherTargets] = targetActors[targetBelow];
+    //   action->numOtherTargets++;
+    // }
   }
 }
 
@@ -199,6 +239,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   int damage = 0;
   ActionSummary* summary;
   _initializeAction(action);
+  double hitRate = BB_DEFAULT_HIT_RATE;
 
   // Apply actor TECH
   for (int i = 0; i < a->techList->count; i++) {
@@ -263,37 +304,40 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     damage = MAX(1, aAtk - tDef) * action->attackModifier;
     sprintf(atkString, "%s ATTACKS %s", aName, tName);
     summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
-
-    // Check for modifiers that affect an incoming attack
-    LinkedListResetCursor(modifiers);
-    ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
-    while (currentModifier) {
-      if (currentModifier->actor == t && currentModifier->type == MT_PARRYING) {
-        int parryDamage = damage * 2;
-        a->hp = MAX(0, a->hp - parryDamage);
-        snprintf(temp, MAX_STRING_SIZE, "%s PARRIES!", tName);
-        ActionSummaryAddString(summary, temp, board, box, textType);
-        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", parryDamage, aName);
-        ActionSummaryAddString(summary, temp, board, box, textType);
-        actionFails = true;
+    if (generateRandomBoolWeighted(hitRate)) {
+      // Check for modifiers that affect an incoming attack
+      LinkedListResetCursor(modifiers);
+      ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
+      while (currentModifier) {
+        if (currentModifier->actor == t && currentModifier->type == MT_PARRYING) {
+          int parryDamage = damage * 2;
+          a->hp = MAX(0, a->hp - parryDamage);
+          snprintf(temp, MAX_STRING_SIZE, "%s PARRIES!", tName);
+          ActionSummaryAddString(summary, temp, board, box, textType);
+          snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", parryDamage, aName);
+          ActionSummaryAddString(summary, temp, board, box, textType);
+          actionFails = true;
+        }
+        currentModifier = LinkedListNext(modifiers);
       }
-      currentModifier = LinkedListNext(modifiers);
-    }
 
-    if (actionFails) {
-      break;
-    }
+      if (actionFails) {
+        break;
+      }
 
-    // Save attack value and defense value in BattleAction on creation
-    t->hp = MAX(0, t->hp - damage);
-    sprintf(dmgString, "%i DAMAGE DEALT", damage);
-    ActionSummaryAddString(summary, dmgString, board, box, textType);
-    if (action->damageAttacker) {
-      a->hp = MAX(0, a->hp - damage / 2);
-      snprintf(temp, MAX_STRING_SIZE, "%s COUNTERS!", tName);
-      ActionSummaryAddString(summary, temp, board, box, textType);
-      snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", damage / 2, aName);
-      ActionSummaryAddString(summary, temp, board, box, textType);
+      // Save attack value and defense value in BattleAction on creation
+      t->hp = MAX(0, t->hp - damage);
+      sprintf(dmgString, "%i DAMAGE DEALT", damage);
+      ActionSummaryAddString(summary, dmgString, board, box, textType);
+      if (action->damageAttacker) {
+        a->hp = MAX(0, a->hp - damage / 2);
+        snprintf(temp, MAX_STRING_SIZE, "%s COUNTERS!", tName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", damage / 2, aName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+      }
+    } else {
+      ActionSummaryAddString(summary, "THE ATTACK MISSES!", board, box, textType);
     }
     break;
   case SPECIAL:

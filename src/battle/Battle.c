@@ -79,7 +79,32 @@ static COISprite** _getPersistentSprites(BattleContext* context) {
   return allSprites;
 }
 
-static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
+static void _positionEnemies(Actor** enemies, int numEnemies) {
+  for (int i = 0; i < numEnemies; i++) {
+    int xOffset;
+    int yOffset;
+    int columnPosition;
+    if (i < 2) {
+      xOffset = 170;
+      yOffset = 170;
+      columnPosition = i;
+    } else {
+      xOffset = 70;
+      yOffset = 138;
+      if (i == 2) {
+        columnPosition = 1;
+      } else if (i == 3) {
+        columnPosition = 0;
+      } else {
+        columnPosition = 2;
+      }
+    }
+
+    COISpriteSetPos(enemies[i]->sprite, xOffset, yOffset + (BATTLE_Y_STEP * columnPosition));
+  }
+}
+
+static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {\
   int boxCenterX = box->_x + box->_width / 2;
   for (int i = 0; i < numAllies; i++) {
     COISprite* actor = allies[i]->sprite;
@@ -233,7 +258,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COISprite* eBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_E_BOX];
   eBox->_autoHandle = false;
   eBox->_visible = false;
-  _centerActorsInBox(context->enemies, context->numEnemies, eBox);
+  // _centerActorsInBox(context->enemies, context->numEnemies, eBox);
+  _positionEnemies(context->enemies, context->numEnemies);
   
   COIBoardSetPersistentSprites(board, _getPersistentSprites(context), context->numEnemies + context->numAllies);
 
@@ -594,8 +620,9 @@ void _selectFlee(BattleContext* context) {
   // Randomly pick target to flee "against"
   int targetIndex = generateRandomCharInRange(0, context->numEnemies - 1);
   action->target = context->enemies[targetIndex];
-  while (!actorIsDead(action->target)) {
+  while (actorIsDead(action->target)) {
     targetIndex = (targetIndex + 1) % context->numEnemies;
+    printf("uh oh: %i\n", targetIndex);
     action->target = context->enemies[targetIndex];
   }
   action->type = FLEE;

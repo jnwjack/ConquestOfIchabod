@@ -12,7 +12,7 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
   case GAME_OVER_DEATH:
   {
     COITextType* deathType = COITextTypeCreate(24, 0, 0, 0, COIWindowGetRenderer(window));
-    COIString* nameString = COIStringCreate(pInfo->name, 250, 355, deathType);
+    COIString* nameString = COIStringCreate(pInfo->name, 250, 360, deathType);
     COIBoardAddString(board, nameString);
 
     context->background = COISpriteCreateFromAssetID(0, 0, 640, 480, loader, 56, COIWindowGetRenderer(window));
