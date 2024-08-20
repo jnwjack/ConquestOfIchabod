@@ -39,6 +39,10 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_DRAIN_SPIRIT 7 // Drain target's TP or SP
 #define SPECIAL_ID_REINFORCE 8
 #define SPECIAL_ID_AVALANCHE 9
+#define SPECIAL_ID_HOWL 10 // Actor and everyone nearby has boosted AGI.
+#define SPECIAL_ID_NEUTRALIZE 11 // Return all stat changes on target to 1.0.
+#define SPECIAL_ID_HASTE 12
+#define SPECIAL_ID_SILENCE 13 // Target can't use specials for a bit
 
 typedef enum {
   SPECIAL_DAMAGING,
@@ -49,6 +53,7 @@ typedef enum {
 
 char* specialName(int id);
 bool specialTargetsEnemies(int id);
+bool specialTargetsSelf(int id);
 SpecialType specialType(int id);
 char* specialVerb(int id);
 int specialStrength(int id);

@@ -18,6 +18,14 @@ char* specialName(int id) {
     return "Drain Spirit";
   case SPECIAL_ID_REINFORCE:
     return "Reinforce";
+  case SPECIAL_ID_HOWL:
+    return "Howl";
+  case SPECIAL_ID_NEUTRALIZE:
+    return "Neutralize";
+  case SPECIAL_ID_HASTE:
+    return "Haste";
+  case SPECIAL_ID_SILENCE:
+    return "Silence";
   }
 
   return "ERROR";
@@ -27,6 +35,8 @@ char* specialVerb(int id) {
   switch (id) {
   case SPECIAL_ID_PARRY:
     return "READIES";
+  case SPECIAL_ID_HOWL:
+    return "USES";
   default:
     return "CASTS";
   }
@@ -60,14 +70,22 @@ SpecialType specialType(int id) {
     return SPECIAL_HEALING;
   case SPECIAL_ID_CURSE:
   case SPECIAL_ID_DRAIN_SPIRIT:
+  case SPECIAL_ID_NEUTRALIZE:
+  case SPECIAL_ID_SILENCE:
     return SPECIAL_DEBUFF;
   case SPECIAL_ID_PARRY:
   case SPECIAL_ID_REINFORCE:
+  case SPECIAL_ID_HOWL:
+  case SPECIAL_ID_HASTE:
     return SPECIAL_BUFF;
   default:
     printf("Invalid id for special type lookup.\n");
     return SPECIAL_DAMAGING;
   }
+}
+
+bool specialTargetsSelf(int id) {
+  return id == SPECIAL_ID_HOWL;
 }
 
 bool specialTargetsEnemies(int id) {
@@ -110,6 +128,8 @@ char* specialDescription(int id) {
     return "Block attack and deal damage to attacker";
   case SPECIAL_ID_DRAIN_SPIRIT:
     return "Reduce the target's SP";
+  case SPECIAL_ID_SILENCE:
+    return "Prevent the target from using SPECIAL for five turns";
   default:
     return "Error: Not implemented";
   }
@@ -117,6 +137,6 @@ char* specialDescription(int id) {
 
 // Strength value for spells that apply a secondary, weaker effect. Ex: Avalanche
 int specialSecondaryStrength(int id) {
-  return specialStrength(id) * 0.75;
+  return specialStrength(id) * 0.25;
 }
 

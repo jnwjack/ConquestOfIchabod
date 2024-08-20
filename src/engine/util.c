@@ -135,7 +135,6 @@ int generateRandomChar() {
 bool generateRandomBoolWeighted(double weight) {
   int low = weight * 0xFF;
   int randomVal = generateRandomChar();
-  printf("LOW: %i RAND: %i\n", low, randomVal);
   return randomVal <= low;
 }
 
@@ -147,5 +146,9 @@ int generateRandomCharInRange(int lowInclusive, int highInclusive) {
 // Randomly pick between left, right, up, or down
 int generateRandomDirectionalMovement() {
   return (generateRandomChar() % 4) + 1;
+}
+
+int generateRandomCharWithCenter(int center, int rangeSize) {
+  return generateRandomCharInRange(center - rangeSize, center + rangeSize);
 }
 

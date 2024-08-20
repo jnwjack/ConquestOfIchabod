@@ -500,7 +500,7 @@ void _pickNPCActions(BattleContext* context) {
   // Actions stored like this: |Ally|...|Ally|Enemy|...|Enemy|
   int offset = context->numAllies;
   for (int i = 0; i < context->numEnemies; i++) {
-    context->actions[offset + i] = battleBehaviorGenerateAction(context->enemies[i], context->allies, context->numAllies, context->enemies, context->numEnemies);
+    battleBehaviorGenerateAction(&context->actions[offset + i], context->enemies[i], context->allies, context->numAllies, context->enemies, context->numEnemies);
   }
 }
 
@@ -649,6 +649,7 @@ void _selectSpecialTarget(BattleContext* context) {
   Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
 
   Actor* actor = context->allies[context->turnIndex];
+  printf("player making special...\n");
   battleBehaviorMakeSpecial(action, COIMenuGetCurrentValue(context->subMenu), context->targetedActorIndex, actors, numActors, actor);
 }
 
@@ -884,8 +885,10 @@ void battleHandleSubMenuSelection(BattleContext* context) {
 // Returns true if battle is finished
 BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
   int numActions = context->numAllies + context->numEnemies;
+  // printf("0");
   
   if(context->sceneStage == SS_SPLASH) {
+    // printf("1");
     // If the splash screen has finished animating
     if (BattleSplashFinished(context->splash)) {
       BattleResult battleResult = battleFinished(context);
@@ -913,6 +916,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       return BR_CONTINUE;
     }
   } else if (context->currentActionIndex >= numActions) {
+    // printf("2");
     // We're done processing actions, user can control again
 
     // Disable TECHs that we will not be able to afford next turn
@@ -931,6 +935,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     context->pointer->_visible = true;
     _focusActionMenu(context);
   } else {
+    // printf("3");
     BattleAction action = context->actions[context->currentActionIndex];
     switch (context->sceneStage) {
     case SS_MOVE_FORWARD:
@@ -945,6 +950,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       }
       break;
     case SS_TEXT:
+      // printf("4");
       if (!context->summary) {
         // We're working with the target's sprite in this section
         action.target->sprite->_autoHandle = false;
@@ -959,6 +965,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
           ItemListGetItem(context->pInfo->inventory->items, action.index));
         }
       } else if (context->summary->finished) {
+        // printf("5");
         ActionSummaryDestroy(context->summary, context->board);
         context->summary = NULL;
         context->sceneStage = SS_MOVE_BACKWARDS;
@@ -978,6 +985,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
           }
         }
       } else {
+        // printf("6");
         ActionSummaryAdvance(context->summary, selection);
         // Flicker effect on target actor and other targets
         if (context->summary->currentString > 0) {
@@ -996,6 +1004,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       }
       break;
     case SS_MOVE_BACKWARDS:
+      // printf("7");
       if (_moveActorBackwards(context, action.actor)) {
         actorStandStill(action.actor);
         context->sceneStage = SS_MOVE_FORWARD;
@@ -1025,6 +1034,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       printf("Invalid scene stage.\n");
     }
   }
+  // printf("8\n");
   return BR_CONTINUE;
 }
 

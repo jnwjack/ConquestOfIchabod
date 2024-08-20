@@ -3,6 +3,49 @@
 #include "../items.h"
 #include <assert.h>
 
+static bool _checkForModifier(Actor* actor, ModifierType type, LinkedList* modifiers) {
+  LinkedListResetCursor(modifiers);
+  ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
+  while (currentModifier) {
+    if (currentModifier->actor == actor && currentModifier->type == type) {
+      return true;
+    }
+    currentModifier = LinkedListNext(modifiers);
+  }
+
+  return false;
+}
+
+static int _randomGaussian(int mean) {
+  int randomInt = generateRandomCharInRange(mean - 5, mean + 5);
+
+  const double variance = 1.0;
+  const double e = 2.71828;
+  const double pi = 3.14159;
+
+  printf("randomint: %i\n", randomInt);
+  
+  double exponent = -1.0 * pow((double)randomInt - mean, 2.0) / (2.0 * variance);
+  printf("exponent: %f\n", exponent);
+  double result = exp(exponent) / sqrt(2.0 * pi * variance);
+  printf("result: %f\n", result);
+  return (int)result;
+}
+
+static int _randomDamage(int damage) {
+  return MAX(1, generateRandomCharWithCenter(damage, MAX(1, damage / 10)));
+}
+
+static void _buffStat(Stat* stat) {
+  TimeStateCopyGlobalTime(&stat->end);
+  TimeStateAddVal(&stat->end, 1);
+  if (!TimeStateInFuture(&stat->end) || stat->factor < 1) {
+    stat->factor = 1.5;
+  } else {
+    stat->factor *= 1.5;
+  }
+}
+
 // Action with actor having higher AGI is smaller
 int _compareActions(BattleAction a, BattleAction b) {
   int aAgi = actorModifiedAgi(a.actor);
@@ -84,14 +127,23 @@ ActionType battleBehaviorPickActionType(int actorType) {
 
 // Handle behavior that's specific to each special
 void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIndex, Actor** targetActors, int numTargetActors, Actor* actor) {
+  printf("making special..\n");
   action->actor = actor;
+  printf("making special..1\n");
   action->type = SPECIAL;
+  printf("making special.2\n");
+  printf("num target actors:%i target actor index: %i\n", numTargetActors, targetIndex);
   action->target = targetActors[targetIndex];
+  printf("making special.3\n");
   action->index = specialID;
+  printf("making special.4\n");
   action->successfulFlee = false;
+  printf("making special.5\n");
   action->numOtherTargets = 0;
-  if (specialID == SPECIAL_ID_AVALANCHE) {
+  printf("phew...\n");
+  if (specialID == SPECIAL_ID_AVALANCHE || specialID == SPECIAL_ID_HOWL) {
     // Working with different enemy ordering
+    printf("num target actors: %i\n", numTargetActors);
     for (int i = 0; i < numTargetActors; i++) {
       if (actorIsDead(targetActors[i])) {
         continue;
@@ -131,19 +183,6 @@ void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIn
         printf("Error in handling ajacent targets\n.");
       }
     }
-    // // Special case: also do damage to adjacent targets
-    // int targetAbove = targetIndex - 1;
-    // int targetBelow = targetIndex + 1;
-    // if (targetAbove >= 0 && !actorIsDead(targetActors[targetAbove])) {
-    //   action->otherTargets[action->numOtherTargets] = targetActors[targetAbove];
-    //   // action->otherTargets[action->numOtherTargets] = NULL;
-    //   action->numOtherTargets++;
-    // } 
-    // if (targetBelow < numTargetActors && !actorIsDead(targetActors[targetBelow])) {
-    //   // action->otherTargets[action->numOtherTargets] = NULL;
-    //   action->otherTargets[action->numOtherTargets] = targetActors[targetBelow];
-    //   action->numOtherTargets++;
-    // }
   }
 }
 
@@ -154,6 +193,8 @@ Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** ene
   case SPECIAL:
     if (specialTargetsEnemies(action->index)) {
       return _pickRandomAliveActor(enemies, numEnemies);
+    } else if (specialTargetsSelf(action->index)) {
+      return action->actor;
     } else {
       return _pickRandomAliveActor(allies, numAllies);
     }
@@ -176,25 +217,36 @@ int battleBehaviorPickIndex(ActionType action, Actor* actor) {
   }
 }
 
-BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies) {
-  BattleAction action;
-  action.actor = actor;
-  action.type = battleBehaviorPickActionType(actor->actorType);
-  action.index = battleBehaviorPickIndex(action.type, actor);
-  action.target = battleBehaviorPickTarget(actor->actorType, &action, actorEnemies, numEnemies, actorAllies, numAllies);
-  action.numOtherTargets = 0;
-  if (actorIsDead(actor)) {
-    action.type = INACTIVE;
-    return action;
+void battleBehaviorGenerateAction(BattleAction* action, Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies) {
+  action->actor = actor;
+  action->type = battleBehaviorPickActionType(actor->actorType);
+  action->index = battleBehaviorPickIndex(action->type, actor);
+  action->target = battleBehaviorPickTarget(actor->actorType, action, actorEnemies, numEnemies, actorAllies, numAllies);
+  action->numOtherTargets = 0;
+  if (action->type == SPECIAL) {
+    int targetIndex = 0; // This will break if we ever have more than one character in parties.
+    // Will stay at 0 if we're targeting the player's party.
+    for (int i = 0; i < numAllies; i++) {
+      if (action->target == actorAllies[i]) {
+        targetIndex = i;
+        break;
+      }
+    }
+    Actor** actors = specialTargetsEnemies(action->index) ? actorEnemies : actorAllies;
+    int numActors = specialTargetsEnemies(action->index) ? numEnemies : numAllies;
+    printf("enemy making special...\n");
+    battleBehaviorMakeSpecial(action, action->index, targetIndex, actors, numActors, actor);
   }
-
-  
-
-  return action;
+  if (actorIsDead(actor)) {
+    action->type = INACTIVE;
+  }
 }
 
 void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
   BattleAction temp = *a;
+  for (int i = 0; i < a->numOtherTargets; i++) {
+    temp.otherTargets[i] = a->otherTargets[i];
+  }
   a->actor = b->actor;
   a->target = b->target;
   a->type = b->type;
@@ -220,6 +272,9 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
   for (int i = 0; i < b->numOtherTargets; i++) {
     b->otherTargets[i] = temp.otherTargets[i];
   }
+
+  a->successfulFlee = false;
+  b->successfulFlee = false;
 }
 
 
@@ -236,7 +291,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   char* tName;
   char atkString[MAX_STRING_SIZE];
   char dmgString[MAX_STRING_SIZE];  
-  int damage = 0;
+  int damageBase, damage = 0;
   ActionSummary* summary;
   _initializeAction(action);
   double hitRate = BB_DEFAULT_HIT_RATE;
@@ -301,27 +356,22 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   bool actionFails = false;
   switch (action->type) {
   case ATTACK:
-    damage = MAX(1, aAtk - tDef) * action->attackModifier;
+    damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
+    damage = _randomDamage(damageBase);
+
+    printf("damage: %i\n", damage);
     sprintf(atkString, "%s ATTACKS %s", aName, tName);
     summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
     if (generateRandomBoolWeighted(hitRate)) {
-      // Check for modifiers that affect an incoming attack
-      LinkedListResetCursor(modifiers);
-      ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
-      while (currentModifier) {
-        if (currentModifier->actor == t && currentModifier->type == MT_PARRYING) {
-          int parryDamage = damage * 2;
-          a->hp = MAX(0, a->hp - parryDamage);
-          snprintf(temp, MAX_STRING_SIZE, "%s PARRIES!", tName);
-          ActionSummaryAddString(summary, temp, board, box, textType);
-          snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", parryDamage, aName);
-          ActionSummaryAddString(summary, temp, board, box, textType);
-          actionFails = true;
-        }
-        currentModifier = LinkedListNext(modifiers);
-      }
+      if (_checkForModifier(t, MT_PARRYING, modifiers)) {
+        int parryDamage = damage * 2;
+        a->hp = MAX(0, a->hp - parryDamage);
+        snprintf(temp, MAX_STRING_SIZE, "%s PARRIES!", tName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", parryDamage, aName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
 
-      if (actionFails) {
+        // Action fails
         break;
       }
 
@@ -341,10 +391,14 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     }
     break;
   case SPECIAL:
+    if (_checkForModifier(a, MT_SILENCED, modifiers)) {
+      summary = ActionSummaryCreate(board, box, textType, "SILENCED!", NULL);
+      break;
+    }
     spType = specialType(action->index);
     a->sp -= (specialCost(action->index) * action->spCostModifier);
     if (spType == SPECIAL_DAMAGING) {
-      damage = specialStrength(action->index);
+      damage = _randomDamage(specialStrength(action->index));
       t->hp = MAX(0, t->hp - damage);
       
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
@@ -355,7 +409,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
 
       for (int i = 0; i < action->numOtherTargets; i++) {
         Actor* otherT = action->otherTargets[i];
-        damage = specialSecondaryStrength(action->index);
+        damage = _randomDamage(specialSecondaryStrength(action->index));
         otherT->hp = MAX(0, otherT->hp - damage);
 
         snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
@@ -364,20 +418,14 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       }
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
-      LinkedListResetCursor(modifiers);
-      ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
-      while (currentModifier) {
-        if (currentModifier->actor == t && currentModifier->type == MT_CURSED) {
-          t->hp = MAX(0, a->hp - amountHealed);
-          snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
-          ActionSummaryAddString(summary, temp, board, box, textType);
-          snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", amountHealed, aName);
-          ActionSummaryAddString(summary, temp, board, box, textType);
-          actionFails = true;
-        }
-        currentModifier = LinkedListNext(modifiers);
-      }
-      if (actionFails) {
+      if (_checkForModifier(t, MT_CURSED, modifiers)) {
+        t->hp = MAX(0, a->hp - amountHealed);
+        snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", amountHealed, aName);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+        
+        // Action fails
         break;
       }
 
@@ -419,13 +467,40 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
 	       aName, specialVerb(action->index), specialName(action->index), tName);
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      TimeStateCopyGlobalTime(&t->def.end);
-      TimeStateAddVal(&t->def.end, 1);
-      if (!TimeStateInFuture(&t->def.end) || t->def.factor < 1) {
-        t->def.factor = 1.5;
-      } else {
-        t->def.factor *= 1.5;
+      _buffStat(&t->def);
+    } else if (action->index == SPECIAL_ID_HOWL || action->index == SPECIAL_ID_HASTE) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
+	       aName, specialVerb(action->index), specialName(action->index));
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      _buffStat(&t->agi);
+      snprintf(temp, MAX_STRING_SIZE, "%s BECOMES FASTER", aName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+      for (int i = 0; i < action->numOtherTargets; i++) {
+        if (actorIsDead(action->otherTargets[i])) {
+          continue;
+        }
+        _buffStat(&action->otherTargets[i]->agi);
+        snprintf(temp, MAX_STRING_SIZE, "%s ALSO BECOMES FASTER", actorGetNameFromType(action->otherTargets[i]->actorType));
+        ActionSummaryAddString(summary, temp, board, box, textType);
       }
+    } else if (action->index == SPECIAL_ID_NEUTRALIZE) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+      t->def.factor = 1.0;
+      t->agi.factor = 1.0;
+      t->atk.factor = 1.0;
+      ActionSummaryAddString(summary, "STATS RETURNED TO NORMAL", board, box, textType);
+    } else if (action->index == SPECIAL_ID_SILENCE) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      // Only handling curse right now
+      ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
+      modifier->actor = t;
+      modifier->turnsLeft = 5;
+      modifier->type = MT_SILENCED;
+      ActionSummaryAddString(summary, "SPECIAL ABILITIES CAN NO LONGER BE USED", board, box, textType);
     } else {
       summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
     }

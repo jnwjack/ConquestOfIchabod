@@ -60,5 +60,6 @@ int generateRandomChar();
 bool generateRandomBoolWeighted(double weight);
 int generateRandomCharInRange(int lowInclusive, int highInclusive);
 int generateRandomDirectionalMovement();
+int generateRandomCharWithCenter(int center, int rangeSize);
 
 #endif

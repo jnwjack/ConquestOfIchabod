@@ -22,6 +22,10 @@ typedef struct PauseOverlay {
   COISprite* statWindow;
   COIString* name;
   COIString* class;
+  COIString* lvLabel;
+  COIString* lv;
+  COIString* goldLabel;
+  COIString* gold;
   COIString* hpLabel;
   COIString* hp;
   COIString* spLabel;

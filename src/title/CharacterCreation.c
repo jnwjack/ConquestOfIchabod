@@ -2,7 +2,7 @@
 
 void KeyboardInit(Keyboard* kb, COIBoard* board) {
   kb->textType = COITextTypeCreate(24, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  kb->textTypeWords = COITextTypeCreate(12, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  kb->textTypeWords = COITextTypeCreate(10, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   kb->currentNameChar = 0;
 
   for (char i = 0; i < 26; i++) {
@@ -32,8 +32,8 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
     }
   }
   kb->end = COIStringCreate("END",
-                            KEYBOARD_OFFSET_X - 10,
-                            KEYBOARD_OFFSET_Y + ((KEYBOARD_GRID_HEIGHT) * (kb->textType->fontSize + KEYBOARD_GRID_PADDING)),
+                            KEYBOARD_OFFSET_X - 5,
+                            KEYBOARD_OFFSET_Y + ((KEYBOARD_GRID_HEIGHT) * (kb->textType->fontSize + KEYBOARD_GRID_PADDING)) + 5,
                             kb->textTypeWords);
   COIBoardAddString(board, kb->end);
 
@@ -50,7 +50,7 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
   kb->currentGridX = 0;
   kb->currentGridY = 0;
 
-  kb->highlight = COISpriteCreateFromAssetID(-(KEYBOARD_GRID_PADDING) + KEYBOARD_OFFSET_X, 
+  kb->highlight = COISpriteCreateFromAssetID(/*-(KEYBOARD_GRID_PADDING) + */KEYBOARD_OFFSET_X - 10, 
                                             -(KEYBOARD_GRID_PADDING / 2) + KEYBOARD_OFFSET_Y, 
                                             kb->textType->fontSize + KEYBOARD_GRID_PADDING, 
                                             kb->textType->fontSize + KEYBOARD_GRID_PADDING,
@@ -81,7 +81,7 @@ void KeyboardMoveCursor(Keyboard* kb, int dX, int dY) {
     kb->currentGridX = 0;
   }
 
-  int newX = -(KEYBOARD_GRID_PADDING) + KEYBOARD_OFFSET_X + kb->currentGridX * (kb->textType->fontSize + KEYBOARD_GRID_PADDING);
+  int newX = /*-(KEYBOARD_GRID_PADDING) + */KEYBOARD_OFFSET_X + kb->currentGridX * (kb->textType->fontSize + KEYBOARD_GRID_PADDING) - 10;
   int newY = -(KEYBOARD_GRID_PADDING / 2) + KEYBOARD_OFFSET_Y + kb->currentGridY * (kb->textType->fontSize + KEYBOARD_GRID_PADDING);
   COISpriteSetPos(kb->highlight, newX, newY);
 }
@@ -193,6 +193,7 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
     cs->classIcons[i]->_visible = visible;
     cs->classNames[i] = COIStringCreate(playerClassNameFromID(i), CLASSSELECTOR_OFFSET_X + 100, CLASSSELECTOR_OFFSET_Y + 100, textType);
     COIBoardAddString(board, cs->classNames[i]);
+    COIStringSetStringCenter(cs->classNames[i], CLASSSELECTOR_OFFSET_X + 152, CLASSSELECTOR_OFFSET_Y + 100);
     COIStringSetVisible(cs->classNames[i], visible);
   }
 

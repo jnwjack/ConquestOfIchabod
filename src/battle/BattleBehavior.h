@@ -17,7 +17,8 @@ typedef enum {
 
 typedef enum ModifierType {
   MT_PARRYING,
-  MT_CURSED
+  MT_CURSED,
+  MT_SILENCED
 } ModifierType;
 
 typedef struct ActorBattleModifier {
@@ -59,7 +60,7 @@ typedef struct ActionSummary {
 ActionType battleBehaviorPickActionType(int actorType);
 Actor* battleBehaviorPickTarget(int actorType, BattleAction* action, Actor** enemies, int numEnemies, Actor** allies, int numAllies);
 int battleBehaviorPickIndex(ActionType action, Actor* actor);
-BattleAction battleBehaviorGenerateAction(Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies);
+void battleBehaviorGenerateAction(BattleAction* action, Actor* actor, Actor** actorEnemies, int numEnemies, Actor** actorAllies, int numAllies);
 
 void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIndex, Actor** targetActors, int numTargetActors, Actor* actor);
 

@@ -232,3 +232,24 @@ bool COIStringAnimateTyping(COIString* string) {
   }
   return false;
 }
+
+void COIStringSetStringCenter(COIString* string, int x, int y) {
+  int rightmostX = -1;
+  int bottommostY = -1;
+  COIChar* current = string->_head;
+  while (current != NULL) {
+    int currentExtentX = current->x + current->w;
+    int currentExtentY = current->y + current->h;
+    if (currentExtentX > rightmostX) {
+      rightmostX = currentExtentX;
+    }
+    if (currentExtentY > bottommostY) {
+      bottommostY = currentExtentY;
+    }
+    current = current->next;
+  }
+
+  int width = rightmostX - string->x;
+  int height = bottommostY - string->y;
+  COIStringSetPos(string, x - width / 2, y - height / 2);
+}

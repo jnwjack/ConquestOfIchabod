@@ -57,5 +57,6 @@ void COIStringPositionRightOfString(COIString* right, COIString* left, int space
 bool COIStringAnimateTyping(COIString* string);
 void COIStringSetY(COIString* obj, int y);
 COIString** COIStringCopyList(COIString** src, int size);
+void COIStringSetStringCenter(COIString* string, int x, int y);
 
 #endif

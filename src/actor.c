@@ -68,7 +68,6 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 10, 8, 25, 10, 30);
-      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       IntListAdd(&actor->specials, SPECIAL_ID_REINFORCE);
@@ -87,8 +86,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 31, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 7, 12, 0, 5);
-      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
-      IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
+      IntListAdd(&actor->specials, SPECIAL_ID_HOWL);
       return actor;
     }
   case ACTOR_FEARWOLF:
@@ -98,7 +96,6 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 28, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 2, 12, 0, 75);
-      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
@@ -108,7 +105,6 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 27, COIWindowGetRenderer(window));
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 10, 12, 0, 75);
-      IntListInitialize(&actor->specials, MAX_TECH_COUNT_ALLY);
       IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
       IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
