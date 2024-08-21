@@ -342,8 +342,87 @@ static int _getIndexAfterOffset(int index, int offset, int n) {
   }
 }
 
+static int _getPointerIndexFromMove(int index, int move, int n) {
+  // Special cases for left and right
+  if (move == MOVING_LEFT) {
+    if (n > 2 && index < 2) {
+      return MAX(n - 1, (index + 3) % n);
+    }
+    return index;
+  }
+  if (move == MOVING_RIGHT) {
+    if (index >= 2) {
+      return MAX(0, index - 4);
+    }
+    return index;
+  }
+
+  // Now handle moving up and down
+  if (index < 2) {
+    int step = move == MOVING_UP ? -1 : 1;
+    int next = index + step;
+    if (next < 0) {
+      return 1;
+    }
+    return next % 2;
+  } else if (index == 2) { // Can move to 3 (up) or 4 (down).
+    if (n == 3) {
+      return index;
+    } else if (n == 4) {
+      return index + 1;
+    } else {
+      return move == MOVING_UP ? index + 1 : index + 2;
+    }
+  } else if (index == 3) { // Can move to 4 (looping around going up) or 2 (down).
+    if (move == MOVING_DOWN || n < 5) {
+      return 2;
+    }    
+    return 4;
+  } else { // Can move to 3 (looping around going down) or 2 (up).
+    return move == MOVING_UP ? index - 2 : index - 1;
+  }
+}
+
+static bool _aliveActorsInLeftColumn(Actor** actors, int n) {
+  for (int i = 2; i < n; i++) {
+    if (!actorIsDead(actors[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool _aliveActorsInRightColumn(Actor** actors, int n) {
+  for (int i = 0; i < MIN(2, n); i++) {
+    if (!actorIsDead(actors[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void _battleInitPointer(BattleContext* context) {
+  int numActors = context->pointingAtEnemies ? context->numEnemies : context->numAllies;
+  Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
+  if (numActors == 1) {
+    return;
+  }
+
+  // Make name of the previous actor invisible
+  _toggleTargetNameVisibility(context, false);
+
+  int currentTargetIndex = 0;
+  // Can't point over dead actor
+  Actor* target = actors[currentTargetIndex];
+  while (actorIsDead(target)) {
+    currentTargetIndex = _getIndexAfterOffset(currentTargetIndex, 1, numActors);
+    target = actors[currentTargetIndex];
+  }
+  context->targetedActorIndex = currentTargetIndex;
+}
+
 // Move pointer to actor 'offset' spaces away
-void battleMovePointer(BattleContext* context, int offset) {
+void battleMovePointer(BattleContext* context, int direction) {
   int numActors = context->pointingAtEnemies ? context->numEnemies : context->numAllies;
   Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
   if (numActors == 1) {
@@ -353,13 +432,28 @@ void battleMovePointer(BattleContext* context, int offset) {
   // Make name of the previous actor invisible
   _toggleTargetNameVisibility(context, false);
   
-  int newTargetIndex = _getIndexAfterOffset(context->targetedActorIndex, offset, numActors);
+  // int newTargetIndex = _getIndexAfterOffset(context->targetedActorIndex, offset, numActors);
+  int newTargetIndex = _getPointerIndexFromMove(context->targetedActorIndex, direction, numActors);
+  printf("index: %i\n", newTargetIndex);
 
   // Can't point over dead actor
   Actor* target = actors[newTargetIndex];
   while (actorIsDead(target)) {
-    int direction = offset > 0 ? 1 : -1; // Move in direction of offset
-    newTargetIndex = _getIndexAfterOffset(newTargetIndex, direction, numActors);
+    // int direction = offset > 0 ? 1 : -1; // Move in direction of offset
+    if (direction == MOVING_LEFT && _aliveActorsInLeftColumn(actors, numActors)) {
+      direction = MOVING_DOWN;
+      newTargetIndex = _getPointerIndexFromMove(newTargetIndex, direction, numActors);
+    } else if (direction == MOVING_RIGHT &&  _aliveActorsInRightColumn(actors, numActors)) {
+      direction = MOVING_DOWN;
+      newTargetIndex = _getPointerIndexFromMove(newTargetIndex, direction, numActors);
+    } else if (direction == MOVING_DOWN || direction == MOVING_UP) {
+      newTargetIndex = _getPointerIndexFromMove(newTargetIndex, direction, numActors);
+    } else {
+      newTargetIndex = context->targetedActorIndex;
+    }
+
+    printf("index on retry: %i\n", newTargetIndex);
+    // newTargetIndex = _getIndexAfterOffset(newTargetIndex, direction, numActors);
     target = actors[newTargetIndex];
   }
 
@@ -395,7 +489,7 @@ void _focusActionMenu(BattleContext* context) {
 void _attack(BattleContext* context) {
   context->pointingAtEnemies = true;
   context->targetedActorIndex = 0;
-  battleMovePointer(context, 0); // Move off of dead actor if we need to
+  _battleInitPointer(context);
   _adjustPointer(context);
   _toggleTargetNameVisibility(context, true);
   context->pointer->_visible = true;
@@ -525,7 +619,7 @@ void _specialSelection(BattleContext* context) {
   if (specialCost(special) <= ally->sp) {
     _adjustPointer(context);
     _toggleTargetNameVisibility(context, true);
-    battleMovePointer(context, 0); // Move off dead actor if we need to
+    _battleInitPointer(context);
     context->pointer->_visible = true;
     COIMenuSetInvisible(context->subMenu);
     context->menuFocus = ACTORS;

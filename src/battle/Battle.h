@@ -146,7 +146,7 @@ COIMenu* battleGetFocusedMenu(BattleContext* context);
 BattleResult battleHandleActionSelection(BattleContext* context);
 void battleHandleSubMenuSelection(BattleContext* context);
 void battleHandleActorSelect(BattleContext* context);
-void battleMovePointer(BattleContext* context, int offset);
+void battleMovePointer(BattleContext* context, int direction);
 void battleSelectAttackTarget(BattleContext* context);
 BattleResult battleAdvanceScene(BattleContext* context, bool selection);
 

@@ -16,6 +16,8 @@
 #define TECH_ID_COUNTER 1 // Hurt attacker when hit
 #define TECH_ID_BRACE 2 // Reduce damage taken
 #define TECH_ID_RAGE 3 // Take more damage, deal more damage
+#define TECH_ID_EAGLEEYE 4 // Can't miss
+#define TECH_ID_QUICKSTRIKE 5 // Damaging specials activate twice.
 // --------------------------------------
 
 #define MAX_TECH_COUNT_ALLY 50

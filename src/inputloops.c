@@ -85,28 +85,34 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
     case SDL_KEYDOWN:
-      if (event->key.keysym.sym == SDLK_LEFT && battleContext->menuFocus != LEVEL_UP) {
-	battleHandleBack(battleContext);
-      }else {
-	if (battleContext->menuFocus == ACTION_MENU) {
-	  selection = handleMenuInput(battleContext->actionMenu, event);
-	} else if (battleContext->menuFocus == SUB_MENU) {
-	  selection = handleMenuInput(battleContext->subMenu, event);
-	} else if (battleContext->menuFocus == LEVEL_UP) {
-    selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
-  } else {
-	  switch (event->key.keysym.sym) {
-	  case SDLK_UP:
-	    battleMovePointer(battleContext, -1);
-	    break;
-	  case SDLK_DOWN:
-	    battleMovePointer(battleContext, 1);
-	    break;
-	  case SDLK_SPACE:
-	    selection = true;
-	    break;
-	  }
-	}
+      if (event->key.keysym.sym == SDLK_x && battleContext->menuFocus != LEVEL_UP) {
+	      battleHandleBack(battleContext);
+      } else {
+        if (battleContext->menuFocus == ACTION_MENU) {
+          selection = handleMenuInput(battleContext->actionMenu, event);
+        } else if (battleContext->menuFocus == SUB_MENU) {
+          selection = handleMenuInput(battleContext->subMenu, event);
+        } else if (battleContext->menuFocus == LEVEL_UP) {
+          selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
+        } else {
+	        switch (event->key.keysym.sym) {
+	        case SDLK_UP:
+            battleMovePointer(battleContext, MOVING_UP);
+            break;
+          case SDLK_DOWN:
+            battleMovePointer(battleContext, MOVING_DOWN);
+            break;
+          case SDLK_LEFT:
+            battleMovePointer(battleContext, MOVING_LEFT);
+            break;
+          case SDLK_RIGHT:
+            battleMovePointer(battleContext, MOVING_RIGHT);
+            break;    
+          case SDLK_z:
+            selection = true;
+            break;
+	        }
+	      }
       }
       break;
     default:
