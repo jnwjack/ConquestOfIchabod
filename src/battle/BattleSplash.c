@@ -158,6 +158,93 @@ void BattleSplashDestroy(BattleSplash* splash, COIBoard* board) {
   free(splash);
 }
 
+// Randomly pick 2 abilities for level-up bonus from the pool of available abilities.
+static void _getAbilityIndices(int* specialIndices, int* techIndices, PlayerInfo* pInfo) {
+  specialIndices[0] = -1;
+  specialIndices[1] = -1;
+  techIndices[0] = -1;
+  techIndices[1] = -1;
+  Actor* player = pInfo->party[0];
+
+  // Get possible specials
+  IntList sl;
+  IntListInitialize(&sl, pInfo->classProgression.numSpecials);
+  for (int i = 0; i < sl.capacity; i++) {
+    if (pInfo->classProgression.specialsLevels[i] <= pInfo->level) {
+      // Don't add it if we already have it.
+      bool shouldAdd = true;
+      for (int j = 0; j < player->specials.length; j++) {
+        if (pInfo->classProgression.specials[i] == player->specials.values[j]) {
+          shouldAdd = false;
+          break;
+        }
+      }
+      if (shouldAdd) {
+        printf("possible special: %i\n", pInfo->classProgression.specials[i]);
+        IntListAdd(&sl, pInfo->classProgression.specials[i]);
+      }
+    }
+  }
+
+  // Get possible techs
+  IntList tl;
+  IntListInitialize(&tl, pInfo->classProgression.numTechs);
+  for (int i = 0; i < tl.capacity; i++) {
+    if (pInfo->classProgression.techsLevels[i] <= pInfo->level) {
+      bool shouldAdd = true;
+      for (int j = 0; j < player->techList->count; j++) {
+        Tech* currentTech = player->techList->techs[j];
+        if (pInfo->classProgression.techs[i] == currentTech->id) {
+          shouldAdd = false;
+          break;
+        }
+      }
+      if (shouldAdd) {
+        printf("possible tech: %i\n", pInfo->classProgression.techs[i]);
+        IntListAdd(&tl, pInfo->classProgression.techs[i]);
+      }
+    }
+  }
+
+  int totalCount = sl.length + tl.length;
+  if (totalCount < 1) {
+    return;
+  }
+
+  // Pick the first ability.
+  int specialCount = 0;
+  int techCount = 0;
+  int firstIndex = generateRandomCharInRange(0, totalCount - 1);
+  printf("first index: %i\n", firstIndex);
+  if (firstIndex < sl.length) {
+    specialIndices[specialCount] = sl.values[firstIndex];
+    specialCount++;
+  } else {
+    techIndices[techCount] = tl.values[firstIndex - sl.length];
+    techCount++;
+  }
+
+  // Pick the second.
+  if (totalCount < 2) {
+    return;
+  }
+  int secondIndex = generateRandomCharInRange(0, totalCount - 2);
+  int trueIndex; // Skipping over first index if we need to.
+  if (secondIndex < firstIndex) {
+    trueIndex = secondIndex;
+  } else {
+    trueIndex = firstIndex + 1 + (secondIndex - firstIndex); // Account for "hole" caused by first index
+  }
+  printf("secondIndex: %i\n trueIndex: %i\n", secondIndex, trueIndex);
+  if (trueIndex < sl.length) {
+    specialIndices[specialCount] = sl.values[trueIndex];
+    specialCount++;
+  } else {
+    techIndices[techCount] = tl.values[trueIndex - sl.length];
+    techCount++;
+  }
+}
+
 LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
   LevelUpSplash* splash = malloc(sizeof(LevelUpSplash));
 
@@ -193,59 +280,120 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
   COIStringSetVisible(increaseName, true);
   COIBoardAddString(board, increaseName);
   COIMenuAddString(splash->menu, increaseName, LEVEL_UP_STAT);
-  splash->descStrings[2] = COIStringCreate("Additional increase to ATK and DEF", 0, 0, tt);
-  splash->costStrings[2] = COIStringCreate("COST: N/A", 0, 0, tt);
-  COIStringConfineToSprite(splash->costStrings[2], splash->descBox);
-  COIStringConfineToSprite(splash->descStrings[2], splash->descBox);
-  COIStringPositionBelowString(splash->descStrings[2], splash->costStrings[2], true);
-  COIBoardAddString(board, splash->descStrings[2]);
-  COIBoardAddString(board, splash->costStrings[2]);
+  splash->descStrings[0] = COIStringCreate("Additional increase to ATK and DEF", 0, 0, tt);
+  splash->costStrings[0] = COIStringCreate("COST: N/A", 0, 0, tt);
+  COIStringConfineToSprite(splash->costStrings[0], splash->descBox);
+  COIStringConfineToSprite(splash->descStrings[0], splash->descBox);
+  COIStringPositionBelowString(splash->descStrings[0], splash->costStrings[0], true);
+  COIBoardAddString(board, splash->descStrings[0]);
+  COIBoardAddString(board, splash->costStrings[0]);
 
   // Tech
-  if (playerHasValidNextTech(pInfo)) {
-    COITextTypeSetColor(tt, 0, 180, 0);
-    char temp[MAX_STRING_SIZE];
-    Tech* tech = playerGetNextTech(pInfo);
-    COIString* techName = techNameAsCOIString(tech, 0, 0, tt, false);
-    COIStringSetVisible(techName, true);
-    COIBoardAddString(board, techName);
-    COIMenuAddString(splash->menu, techName, LEVEL_UP_TECH);
-    snprintf(temp, MAX_STRING_SIZE, "COST: %i TP / turn", tech->cost);
-    splash->costStrings[0] = COIStringCreate(temp, 0, 0, tt);
-    COITextTypeSetColor(tt, 255, 255, 255);
-    splash->descStrings[0] = COIStringCreate(techDescFromID(tech->id), 0, 0, tt);
-    COIStringSetVisible(splash->descStrings[0], false);
-    COIStringSetVisible(splash->costStrings[0], false);
-    COIStringConfineToSprite(splash->costStrings[0], splash->descBox);
-    COIStringConfineToSprite(splash->descStrings[0], splash->descBox);
-    COIStringPositionBelowString(splash->descStrings[0], splash->costStrings[0], true);
-    COIBoardAddString(board, splash->descStrings[0]);
-    COIBoardAddString(board, splash->costStrings[0]);
+  // if (playerHasValidNextTech(pInfo)) {
+  //   COITextTypeSetColor(tt, 0, 180, 0);
+  //   char temp[MAX_STRING_SIZE];
+  //   Tech* tech = playerGetNextTech(pInfo);
+  //   COIString* techName = techNameAsCOIString(tech, 0, 0, tt, false);
+  //   COIStringSetVisible(techName, true);
+  //   COIBoardAddString(board, techName);
+  //   COIMenuAddString(splash->menu, techName, LEVEL_UP_TECH);
+  //   snprintf(temp, MAX_STRING_SIZE, "COST: %i TP / turn", tech->cost);
+  //   splash->costStrings[0] = COIStringCreate(temp, 0, 0, tt);
+  //   COITextTypeSetColor(tt, 255, 255, 255);
+  //   splash->descStrings[0] = COIStringCreate(techDescFromID(tech->id), 0, 0, tt);
+  //   COIStringSetVisible(splash->descStrings[0], false);
+  //   COIStringSetVisible(splash->costStrings[0], false);
+  //   COIStringConfineToSprite(splash->costStrings[0], splash->descBox);
+  //   COIStringConfineToSprite(splash->descStrings[0], splash->descBox);
+  //   COIStringPositionBelowString(splash->descStrings[0], splash->costStrings[0], true);
+  //   COIBoardAddString(board, splash->descStrings[0]);
+  //   COIBoardAddString(board, splash->costStrings[0]);
+  // }
+
+  // // Special
+  // if (playerHasValidNextSpecials(pInfo)) {
+  //   COITextTypeSetColor(tt, 5, 246, 250);
+  //   int special = playerGetNextSpecial(pInfo);
+  //   COIString* sName = COIStringCreate(specialName(special), 0, 0, tt);
+  //   COIStringSetVisible(sName, true);
+  //   COIBoardAddString(board, sName);
+  //   COIMenuAddString(splash->menu, sName, LEVEL_UP_SPECIAL);
+  //   char otherTemp[MAX_STRING_SIZE];
+  //   snprintf(otherTemp, MAX_STRING_SIZE, "COST: %i SP", specialCost(special));
+  //   splash->costStrings[1] = COIStringCreate(otherTemp, 0, 0, tt);
+  //   COITextTypeSetColor(tt, 255, 255, 255);
+  //   splash->descStrings[1] = COIStringCreate(specialDescription(special), 0, 0, tt);
+  //   COIStringSetVisible(splash->descStrings[1], false);
+  //   COIStringSetVisible(splash->costStrings[1], false);
+  //   COIStringConfineToSprite(splash->costStrings[1], splash->descBox);
+  //   COIStringConfineToSprite(splash->descStrings[1], splash->descBox);
+  //   COIStringPositionBelowString(splash->descStrings[1], splash->costStrings[1], true);
+  //   COIBoardAddString(board, splash->descStrings[1]);
+  //   COIBoardAddString(board, splash->costStrings[1]);
+  // }
+
+  int specials[2] = { -1, -1 };
+  int techs[2] = { -1, -1 };
+  splash->techSlots[0] = -1;
+  splash->techSlots[1] = -1;
+  splash->specialSlots[0] = -1;
+  splash->specialSlots[1] = -1;
+  _getAbilityIndices(specials, techs, pInfo);
+
+  char temp[MAX_STRING_SIZE];
+  int indexInMenu = 1;
+  for (int i = 0; i < 2; i++) {
+    if (techs[i] != -1) {
+      COITextTypeSetColor(tt, 0, 180, 0);
+      splash->techSlots[indexInMenu - 1] = techs[i];
+      printf("techs[%i]: %i\n", indexInMenu, techs[i]);
+      Tech* tech = techCreate(techs[i]);
+      COIString* techName = techNameAsCOIString(tech, 0, 0, tt, false);
+      COIStringSetVisible(techName, true);
+      COIBoardAddString(board, techName);
+      COIMenuAddString(splash->menu, techName, LEVEL_UP_TECH);
+      snprintf(temp, MAX_STRING_SIZE, "COST: %i TP / turn", tech->cost);
+      splash->costStrings[indexInMenu] = COIStringCreate(temp, 0, 0, tt);
+      COITextTypeSetColor(tt, 255, 255, 255);
+      splash->descStrings[indexInMenu] = COIStringCreate(techDescFromID(tech->id), 0, 0, tt);
+      COIStringSetVisible(splash->descStrings[indexInMenu], false);
+      COIStringSetVisible(splash->costStrings[indexInMenu], false);
+      COIStringConfineToSprite(splash->costStrings[indexInMenu], splash->descBox);
+      COIStringConfineToSprite(splash->descStrings[indexInMenu], splash->descBox);
+      COIStringPositionBelowString(splash->descStrings[indexInMenu], splash->costStrings[indexInMenu], true);
+      COIBoardAddString(board, splash->descStrings[indexInMenu]);
+      COIBoardAddString(board, splash->costStrings[indexInMenu]);
+      indexInMenu++;
+    }
+  }
+  
+  for (int i = 0; i < 2 && indexInMenu < 3; i++) {
+    if (specials[i] != -1) {
+      COITextTypeSetColor(tt, 5, 246, 250);
+      splash->specialSlots[indexInMenu - 1] = specials[i];
+      printf("specials[%i]: %i\n", indexInMenu, specials[i]);
+      COIString* sName = COIStringCreate(specialName(specials[i]), 0, 0, tt);
+      COIStringSetVisible(sName, true);
+      COIBoardAddString(board, sName);
+      COIMenuAddString(splash->menu, sName, LEVEL_UP_SPECIAL);
+      snprintf(temp, MAX_STRING_SIZE, "COST: %i SP", specialCost(specials[i]));
+      splash->costStrings[indexInMenu] = COIStringCreate(temp, 0, 0, tt);
+      COITextTypeSetColor(tt, 255, 255, 255);
+      splash->descStrings[indexInMenu] = COIStringCreate(specialDescription(specials[i]), 0, 0, tt);
+      COIStringSetVisible(splash->descStrings[indexInMenu], false);
+      COIStringSetVisible(splash->costStrings[indexInMenu], false);
+      COIStringConfineToSprite(splash->costStrings[indexInMenu], splash->descBox);
+      COIStringConfineToSprite(splash->descStrings[indexInMenu], splash->descBox);
+      COIStringPositionBelowString(splash->descStrings[indexInMenu], splash->costStrings[indexInMenu], true);
+      COIBoardAddString(board, splash->descStrings[indexInMenu]);
+      COIBoardAddString(board, splash->costStrings[indexInMenu]);
+      indexInMenu++;
+    }
   }
 
-  // Special
-  if (playerHasValidNextSpecials(pInfo)) {
-    COITextTypeSetColor(tt, 5, 246, 250);
-    int special = playerGetNextSpecial(pInfo);
-    COIString* sName = COIStringCreate(specialName(special), 0, 0, tt);
-    COIStringSetVisible(sName, true);
-    COIBoardAddString(board, sName);
-    COIMenuAddString(splash->menu, sName, LEVEL_UP_SPECIAL);
-    char otherTemp[MAX_STRING_SIZE];
-    snprintf(otherTemp, MAX_STRING_SIZE, "COST: %i SP", specialCost(special));
-    splash->costStrings[1] = COIStringCreate(otherTemp, 0, 0, tt);
-    COITextTypeSetColor(tt, 255, 255, 255);
-    splash->descStrings[1] = COIStringCreate(specialDescription(special), 0, 0, tt);
-    COIStringSetVisible(splash->descStrings[1], false);
-    COIStringSetVisible(splash->costStrings[1], false);
-    COIStringConfineToSprite(splash->costStrings[1], splash->descBox);
-    COIStringConfineToSprite(splash->descStrings[1], splash->descBox);
-    COIStringPositionBelowString(splash->descStrings[1], splash->costStrings[1], true);
-    COIBoardAddString(board, splash->descStrings[1]);
-    COIBoardAddString(board, splash->costStrings[1]);
-  }
 
   // Yes/No menu
+  COITextTypeSetColor(tt, 255, 255, 255);
   COISprite* confirmFrame = COISpriteCreateFromAssetID(250, 250, 150, 80,
                                                       COI_GLOBAL_LOADER,
                                                       5,
@@ -276,16 +424,18 @@ bool LevelUpSplashProcessInput(LevelUpSplash* splash, int event) {
   if (!splash->confirmMenu->_frame->_visible) {
     bool shouldRefresh = event == MOVING_UP || event == MOVING_DOWN;
       if (shouldRefresh) {
-        COIStringSetVisible(splash->descStrings[COIMenuGetCurrentValue(splash->menu)],
+        // COIStringSetVisible(splash->descStrings[COIMenuGetCurrentValue(splash->menu)],
+        //                     false);
+        COIStringSetVisible(splash->descStrings[splash->menu->_current],
                             false);
-        COIStringSetVisible(splash->costStrings[COIMenuGetCurrentValue(splash->menu)],
+        COIStringSetVisible(splash->costStrings[splash->menu->_current],
                             false);
       }
       selection = COIMenuHandleInput(splash->menu, event);
       if (shouldRefresh) {
-        COIStringSetVisible(splash->descStrings[COIMenuGetCurrentValue(splash->menu)],
+        COIStringSetVisible(splash->descStrings[splash->menu->_current],
                             true);
-        COIStringSetVisible(splash->costStrings[COIMenuGetCurrentValue(splash->menu)],
+        COIStringSetVisible(splash->costStrings[splash->menu->_current],
                             true);
       }
   } else {
@@ -302,11 +452,16 @@ bool LevelUpSplashProcessSelection(LevelUpSplash* splash, PlayerInfo* pInfo) {
     if (COIMenuGetCurrentValue(splash->confirmMenu) == 1) {
       int selectedUpgrade = COIMenuGetCurrentValue(splash->menu);
       if (selectedUpgrade == LEVEL_UP_TECH) {
-        Tech* tech = playerGetNextTech(pInfo);
+        int techID = splash->techSlots[splash->menu->_current - 1];
+        printf("TECH: %i\n", techID);
+        Tech* tech = techCreate(techID);
+        // Tech* tech = playerGetNextTech(pInfo);
         techAddToList(pInfo->party[0]->techList, tech->id);
         pInfo->classProgression.techsIndex++;
       } else if (selectedUpgrade == LEVEL_UP_SPECIAL) {
-        IntListAdd(&pInfo->party[0]->specials, playerGetNextSpecial(pInfo));
+        int specialID = splash->specialSlots[splash->menu->_current - 1];
+        printf("SPECIAL: %i\n", specialID);
+        IntListAdd(&pInfo->party[0]->specials, specialID);
         pInfo->classProgression.specialsIndex++;
       } else {
         pInfo->party[0]->atk.base += 3;

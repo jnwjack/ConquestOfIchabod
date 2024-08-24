@@ -48,6 +48,8 @@ typedef struct {
   COIMenu* menu;
   COISprite* descBox;
   COIMenu* confirmMenu;
+  int specialSlots[2];
+  int techSlots[2];
 } LevelUpSplash;
 
 LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo);

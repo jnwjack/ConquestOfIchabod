@@ -234,7 +234,6 @@ void battleBehaviorGenerateAction(BattleAction* action, Actor* actor, Actor** ac
     }
     Actor** actors = specialTargetsEnemies(action->index) ? actorEnemies : actorAllies;
     int numActors = specialTargetsEnemies(action->index) ? numEnemies : numAllies;
-    printf("enemy making special...\n");
     battleBehaviorMakeSpecial(action, action->index, targetIndex, actors, numActors, actor);
   }
   if (actorIsDead(actor)) {
