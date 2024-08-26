@@ -4,6 +4,16 @@
 // SNAKE
 void _snakeUpdate(COITransition* transition, COIWindow* window) {
   transition->currentTick++;
+  int stepSize = 40;
+  int ticksPerSquare = 5;
+  int furthestRect = transition->currentTick / ticksPerSquare;
+  // Speed up transition as we get further along.
+  if (furthestRect > 48 / 2) {
+    transition->currentTick++;
+  }
+  if (furthestRect > 48 * (3/4)) {
+    transition->currentTick++;
+  }
   SDL_Renderer* renderer = COIWindowGetRenderer(window);
 
   Uint8 r, g, b, a;
@@ -13,10 +23,10 @@ void _snakeUpdate(COITransition* transition, COIWindow* window) {
 
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-  int stepSize = 40;
-  int ticksPerSquare = 5;
+  // int ticksPerSquare[3] = { 5, 3, 1};
   for (int i = 0; i < transition->currentTick; i++) {
-    SDL_RenderFillRect(renderer, &transition->rects[i / ticksPerSquare]);
+    int currentRect = i / ticksPerSquare;
+    SDL_RenderFillRect(renderer, &transition->rects[currentRect]);
   }
 
   // 240 = 8 * 6 * 5

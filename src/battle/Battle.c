@@ -548,6 +548,7 @@ bool _special(BattleContext* context) {
     COIMenuAddString(context->subMenu, string, specials->values[i]);
   }
   
+  COIMenuReset(context->subMenu);
   COIMenuSetVisible(context->subMenu);
 
   context->menuFocus = SUB_MENU;
@@ -580,6 +581,7 @@ bool _tech(BattleContext* context) {
   }
   COIMenuSetTexts(context->subMenu, tNames, tList->count);
   
+  COIMenuReset(context->subMenu);
   COIMenuSetVisible(context->subMenu);
 
   free(tNames);

@@ -18,9 +18,16 @@ static int _sdlEventToDirectionalInput(SDL_Event* event) {
     return MOVING_SELECT;
   case SDLK_x:
     return MOVING_DELETE;
+  case SDLK_ESCAPE:
+    return MOVING_PAUSE;
   default:
     return MOVING_NONE;
   }
+}
+
+static void _changeBoardToThreadTown(COIBoard* townBoard) {
+  COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
+  townApplyTimeChanges((TownContext*)townBoard->context);
 }
 
 bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
@@ -42,7 +49,7 @@ bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
   return selection;
 }
 
-void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleResult result) {
+static void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleResult result) {
   COIBoard* nextBoard = NULL;
   switch (result) {
   case BR_LOSS:
@@ -51,9 +58,9 @@ void _processBattleResult(COIBoard* board, BattleContext* battleContext, BattleR
     break;
   case BR_FLEE:
   case BR_WIN:
-    printf("FLED\n");
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
-    COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
+    _changeBoardToThreadTown(battleContext->outside); // Breaks if we have another "overworld" board besides the town.
+    // COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
     TimeStateIncrement(1);
     playerCheckForEviction(battleContext->pInfo);
     battleDestroyBoard(board);
@@ -89,9 +96,9 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
 	      battleHandleBack(battleContext);
       } else {
         if (battleContext->menuFocus == ACTION_MENU) {
-          selection = handleMenuInput(battleContext->actionMenu, event);
+          selection = COIMenuHandleInput(battleContext->actionMenu, _sdlEventToDirectionalInput(event));
         } else if (battleContext->menuFocus == SUB_MENU) {
-          selection = handleMenuInput(battleContext->subMenu, event);
+          selection = COIMenuHandleInput(battleContext->subMenu, _sdlEventToDirectionalInput(event));
         } else if (battleContext->menuFocus == LEVEL_UP) {
           selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
         } else {
@@ -163,7 +170,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
     COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     PlayerInfo* pInfo = playerInfoCreate(titleContext->kb.name, playerSprite, inventory, titleContext->cs.currentClass); // jnw cleanup: leaks
     COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
+    _changeBoardToThreadTown(townBoard);
     titleDestroyBoard(titleContext);
   } else if (nextBoard == TITLE_CONTINUE_GAME) {
     // Global item data
@@ -176,7 +183,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
     COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     PlayerInfo* pInfo = playerDecode(itemList, playerSprite, inventory);
     COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, pInfo);
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
+    _changeBoardToThreadTown(townBoard);
     titleDestroyBoard(titleContext);
   }
 }
@@ -272,7 +279,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIMenuReset(armoryContext->menu);
     COIMenuSetInvisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->menu;
-    COIWindowSetBoard(window, threadTownBoard, &threadTown);
+    _changeBoardToThreadTown(threadTownBoard);
 
     armoryDestroy(armoryContext);
     COIBoardDestroy(board);
@@ -325,27 +332,21 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   
   switch (event->type) {
   case SDL_KEYDOWN:
-    switch (event->key.keysym.sym) {
-    case SDLK_LEFT:
-      townProcessDirectionalInput(townContext, MOVING_LEFT);
-      break;
-    case SDLK_RIGHT:
-      townProcessDirectionalInput(townContext, MOVING_RIGHT);
-      break;
-    case SDLK_UP:
-      townProcessDirectionalInput(townContext, MOVING_UP);
-      break;
-    case SDLK_DOWN:
-      townProcessDirectionalInput(townContext, MOVING_DOWN);
-      break;
-    case SDLK_ESCAPE:
+  {
+    int input = _sdlEventToDirectionalInput(event);
+    switch (input) {
+    case MOVING_PAUSE:
       townTogglePauseOverlay(townContext);
       break;
-    case SDLK_SPACE:
+    case MOVING_SELECT:
       townProcessSelectionInput(townContext);
+      break;
+    default:
+      townProcessDirectionalInput(townContext, input);
       break;
     }
     break;
+  }
   case SDL_KEYUP:
     if ((event->key.keysym.sym == SDLK_LEFT && player->nextMovementDirection == MOVING_LEFT) ||
 	(event->key.keysym.sym == SDLK_RIGHT && player->nextMovementDirection == MOVING_RIGHT) ||
@@ -421,7 +422,7 @@ void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
   RentHouseTick(rhContext);
 
   if (shouldExit) {
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, rhContext->outsideBoard, &threadTown);
+    _changeBoardToThreadTown(rhContext->outsideBoard);
     RentHouseDestroyBoard(rhContext);
   }
 }

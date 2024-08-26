@@ -68,8 +68,22 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
     info->level++;
     info->xp -= info->xpForLevelUp;
     info->xpForLevelUp = _getXPForLevel(info->xpForLevelUp);
+    // Increase stats
+    info->party[0]->atk.base += generateRandomCharInRange(1, 5);
+    info->party[0]->def.base += generateRandomCharInRange(1, 5);
+    info->party[0]->agi.base += generateRandomCharInRange(1, 5);
+    int hpIncrease = generateRandomCharInRange(1, 5);
+    info->party[0]->hpMax += hpIncrease;
+    info->party[0]->hp += hpIncrease;
+    int spIncrease = generateRandomCharInRange(1, 5);
+    info->party[0]->spMax += spIncrease;
+    info->party[0]->sp += spIncrease;
+    int tpIncrease = generateRandomCharInRange(1, 5);
+    info->party[0]->tpMax += tpIncrease;
+    info->party[0]->tp += tpIncrease;
     printf("CURRENT XP AFTER SUBTRACTION: %lu\n", info->xp);
     printf("XP REQUIRED FOR LEVEL UP: %lu\n", info->xpForLevelUp);
+
   }
 }
 

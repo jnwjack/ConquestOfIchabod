@@ -1,5 +1,7 @@
 #include "Town.h"
 
+#define PAY_PER_SHIFT 100
+
 int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
   // Probably want this to only look at visible sprites
   COIBoard* board = context->board;
@@ -95,7 +97,7 @@ Actor* _facingNPC(Actor* player, Actor** npcs) {
   
   for (int i = 0; i < TOWN_NUM_NPCS; i++) {
     if (npcs[i]->sprite->_x == facingX &&
-	npcs[i]->sprite->_y == facingY) {
+	      npcs[i]->sprite->_y == facingY) {
       return npcs[i];
     }
   }
@@ -390,10 +392,13 @@ void _confirmMenuSelect(TownContext* context) {
     case ACTOR_MERCHANT:
       if (context->pInfo->working) {
 	      TimeStateIncrement(12);
+        context->pInfo->inventory->money = (MAX_MONEY, context->pInfo->inventory->money + PAY_PER_SHIFT);
+        context->pauseOverlay->dirty = true; // Reset gold counter
         playerCheckForEviction(context->pInfo);
 	      COITransitionInit(&COI_GLOBAL_WINDOW->transition,
 			      COI_TRANSITION_ENCLOSE,
 			      COI_GLOBAL_WINDOW);
+        townApplyTimeChanges(context);
       } else {
 	      context->pInfo->working = true;
 	      _talkToMerchant(context);
@@ -620,7 +625,17 @@ void townTogglePauseOverlay(TownContext* context) {
   }
 }
 
-
+// Depending on the time, we should change the layout.
+// Ex: The merchant should only appear during the day.
+// Run this whenever we change the active board to the town.
+void townApplyTimeChanges(TownContext* context) {
+  if (GLOBAL_TIME.phase < TS_EVENING) {
+    COISpriteSetPos(context->npcs[4]->sprite, 2080, 2144);
+  } else {
+    // Move merchant off screen.
+    COISpriteSetPos(context->npcs[4]->sprite, -50, -50);
+  }
+}
 
 void townDestroyBoard(TownContext* context) {
   PauseOverlayDestroy(context->pauseOverlay, context->board);
