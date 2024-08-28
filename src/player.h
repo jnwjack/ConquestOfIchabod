@@ -44,6 +44,8 @@ typedef struct PlayerInfo {
 
   // Weird happenings
   bool rentHouseBaldUsed;
+  unsigned int shiftsWorked;
+  TimeState lastXPGain;
   
   Actor** party;
   int partySize;
@@ -58,6 +60,7 @@ typedef struct PlayerInfo {
 } PlayerInfo;
 
 void playerAddXP(PlayerInfo* info, unsigned long xp);
+void playerLevelDown(PlayerInfo* pInfo);
 PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory, int class);
 void playerInfoDestroy(PlayerInfo* info);
 
@@ -79,7 +82,8 @@ void playerEncode(PlayerInfo* info);
 PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* inventory);
 bool playerSaveExists();
 
-char* playerClassNameFromID(unsigned int id);
+char* playerGetClass(PlayerInfo* pInfo);
+char* playerClassNameFromID(int id);
 
 void playerCheckForEviction(PlayerInfo* pInfo);
 

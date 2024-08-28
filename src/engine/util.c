@@ -1,4 +1,5 @@
 #include "util.h"
+#include <assert.h>
 
 LinkedList* LinkedListCreate() {
   LinkedList* list = malloc(sizeof(LinkedList));
@@ -99,6 +100,17 @@ void IntListAdd(IntList* list, int value) {
   }
 }
 
+void IntListDelete(IntList* list, int index) {
+  assert(index >= 0 && index < list->length);
+
+  // Starting at index + 1, shift every element one place
+  // to the left.
+  for (int i = index + 1; i < list->length; i++) {
+    list->values[i - 1] = list->values[i];
+  }
+  list->length--;
+}
+
 void IntListDestroy(IntList* list) {
   free(list->values);
 }
@@ -150,5 +162,9 @@ int generateRandomDirectionalMovement() {
 
 int generateRandomCharWithCenter(int center, int rangeSize) {
   return generateRandomCharInRange(center - rangeSize, center + rangeSize);
+}
+
+bool inputIsDirection(int input) {
+  return input == MOVING_UP || input == MOVING_DOWN || input == MOVING_LEFT || input == MOVING_RIGHT || input == MOVING_NONE;
 }
 

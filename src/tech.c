@@ -61,6 +61,19 @@ void techAddToList(TechList* list, int id) {
   }
 }
 
+void techRemoveFromList(TechList* list, Tech* tech) {
+  for (int i = 0; i < list->count; i++) {
+    if (list->techs[i] == tech) {
+      techDestroy(list->techs[i]);
+      for (int j = i + 1; j < list->count; j++) {
+        list->techs[j - 1] = list->techs[j];
+      }
+    }
+    list->count--;
+    break;
+  }
+}
+
 char* techNameFromID(int id) {
   switch (id) {
   case TECH_ID_FOCUS:

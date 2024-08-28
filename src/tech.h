@@ -43,6 +43,7 @@ void techDestroy(Tech* tech);
 void techDestroyList(TechList* list);
 
 void techAddToList(TechList* list, int id);
+void techRemoveFromList(TechList* list, Tech* tech);
 char* techNameFromID(int id);
 char* techDescFromID(int id);
 

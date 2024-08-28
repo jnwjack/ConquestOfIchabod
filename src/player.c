@@ -16,6 +16,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
 
   info->class = class;
   info->inventory = inventory;
+  TimeStateCopyGlobalTime(&info->lastXPGain);
   info->party = malloc(sizeof(Actor*) * MAX_PARTY_SIZE);
   info->party[0] = actorCreatePlayer(sprite);
   info->partySize = 1;
@@ -27,6 +28,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->alreadyHealed = false;
   info->rentHouseBaldUsed = false;
   info->nextRentDate = 3;
+  info->shiftsWorked = 0;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
   // Should change based on class type
@@ -83,8 +85,8 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
     info->party[0]->tp += tpIncrease;
     printf("CURRENT XP AFTER SUBTRACTION: %lu\n", info->xp);
     printf("XP REQUIRED FOR LEVEL UP: %lu\n", info->xpForLevelUp);
-
   }
+  TimeStateCopyGlobalTime(&info->lastXPGain);
 }
 
 int playerAdjustedATK(PlayerInfo* info) {
@@ -282,6 +284,9 @@ void playerEncode(PlayerInfo* info) {
   _encodeInt(info->party[0]->sprite->_y, temp, fp);
 
   _encodeInt((int)info->rentHouseBaldUsed, temp, fp);
+  _encodeInt((int)info->shiftsWorked, temp, fp);
+
+  _encodeTimeState(&info->lastXPGain, temp, fp);
 
 
   fclose(fp);
@@ -355,13 +360,26 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   COISpriteSetPos(info->party[0]->sprite, _decodeInt(&line, &len, fp, buf), _decodeInt(&line, &len, fp, buf));
 
   info->rentHouseBaldUsed = (bool)_decodeInt(&line, &len, fp, buf);
+  info->shiftsWorked = (unsigned int)_decodeInt(&line, &len, fp, buf);
+
+  _decodeTimeState(&line, &len, fp, buf, &info->lastXPGain);
 
   fclose(fp);
 
   return info;
 }
 
-char* playerClassNameFromID(unsigned int id) {
+char* playerGetClass(PlayerInfo* pInfo) {
+  // If we've worked at the shop enough, the class changes.
+  if (pInfo->shiftsWorked > 2) {
+    return "Clerk";
+  }
+
+  return playerClassNameFromID(pInfo->class);
+}
+ 
+char* playerClassNameFromID(int id) {
+
   switch (id) {
   case PLAYER_CLASS_FIGHTER:
     return "Fighter";
@@ -382,6 +400,37 @@ void playerCheckForEviction(PlayerInfo* pInfo) {
   }
 }
 
+void playerLevelDown(PlayerInfo* pInfo) {
+  if (pInfo->level > 1) {
+    pInfo->level--;
+
+    Actor* player = pInfo->party[0];
+
+    // Reduce ability scores
+    player->atk.base = MAX(1, player->atk.base - generateRandomCharInRange(1, 5));
+    player->def.base = MAX(1, player->def.base - generateRandomCharInRange(1, 5));
+    player->agi.base = MAX(1, player->agi.base - generateRandomCharInRange(1, 5));
+    player->hpMax = MAX(1, player->hpMax - generateRandomCharInRange(1, 5));
+    player->hp = MIN(player->hp, player->hpMax);
+    player->spMax = MAX(1, player->spMax - generateRandomCharInRange(1, 5));
+    player->sp = MIN(player->sp, player->spMax);
+    player->tpMax = MAX(1, player->tpMax - generateRandomCharInRange(1, 5));
+    player->tp = MIN(player->tp, player->tpMax);
+
+    // Remove an ability if we can
+    int totalAbilities = player->specials.length + player->techList->count;
+    if (totalAbilities > 0) {
+      int index = generateRandomCharInRange(0, totalAbilities - 1);
+      if (index < player->specials.length) {
+        // Remove from specials
+        IntListDelete(&player->specials, index);
+      } else {
+        // Remove from techs
+        techRemoveFromList(player->techList, player->techList->techs[index - player->specials.length]);
+      }
+    }
+  }
+}
 
 void playerInfoDestroy(PlayerInfo* info) {
   inventoryDestroy(info->inventory);

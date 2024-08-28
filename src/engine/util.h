@@ -41,9 +41,7 @@ void* LinkedListNext(LinkedList* list);
 void LinkedListResetCursor(LinkedList* list);
 void LinkedListDestroy(LinkedList* list);
 
-// "Add and Read" list. Attempting to delete an element from the underlying array
-// will make bad things happen.
-// Can make this more generic later on.
+// Generic list
 typedef struct IntList {
   int* values;
   int capacity;
@@ -53,6 +51,7 @@ typedef struct IntList {
 void IntListInitialize(IntList* list, int capacity);
 void IntListDestroy(IntList* list);
 void IntListAdd(IntList* list, int value);
+void IntListDelete(IntList* list, int index);
 
 int POW_INT(int x, int y);
 
@@ -62,5 +61,6 @@ bool generateRandomBoolWeighted(double weight);
 int generateRandomCharInRange(int lowInclusive, int highInclusive);
 int generateRandomDirectionalMovement();
 int generateRandomCharWithCenter(int center, int rangeSize);
+bool inputIsDirection(int input);
 
 #endif

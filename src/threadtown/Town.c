@@ -392,6 +392,7 @@ void _confirmMenuSelect(TownContext* context) {
     case ACTOR_MERCHANT:
       if (context->pInfo->working) {
 	      TimeStateIncrement(12);
+        context->pInfo->shiftsWorked++;
         context->pInfo->inventory->money = (MAX_MONEY, context->pInfo->inventory->money + PAY_PER_SHIFT);
         context->pauseOverlay->dirty = true; // Reset gold counter
         playerCheckForEviction(context->pInfo);
@@ -436,7 +437,7 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   } else if (context->confirmMenu->_frame->_visible) {
     COIMenuHandleInput(context->confirmMenu, direction);
     COIBoardQueueDraw(context->board);
-  } else if (!context->textBox->box->_visible) {
+  } else if (!context->textBox->box->_visible && inputIsDirection(direction)) {
     Actor* player = context->pInfo->party[0];
     _queueMovement(context, player, direction, TOWN_MOVE_SPEED);
   }
@@ -634,6 +635,24 @@ void townApplyTimeChanges(TownContext* context) {
   } else {
     // Move merchant off screen.
     COISpriteSetPos(context->npcs[4]->sprite, -50, -50);
+  }
+
+  if (GLOBAL_TIME.day - context->pInfo->lastXPGain.day > 3 &&
+      context->pInfo->level > 1) {
+    int numAbilities = context->pInfo->party[0]->specials.length + context->pInfo->party[0]->techList->count;
+    if (numAbilities > 0) { // We're going to lose an ability when we level down.
+      TextBoxSetStrings(context->textBox,
+        "You have not battled for some time. Your skills are beginning to atrophy.",
+        "You have lost a level.",
+        "You have forgotten one of your abilities.",
+        NULL);
+    } else {
+      TextBoxSetStrings(context->textBox,
+        "You have not battled for some time. Your skills are beginning to atrophy.",
+        "You have lost a level.",
+        NULL);
+    }
+    playerLevelDown(context->pInfo);
   }
 }
 

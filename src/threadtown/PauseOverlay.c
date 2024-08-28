@@ -201,6 +201,13 @@ static void _makeLevelString(PauseOverlay* overlay) {
   COIStringPositionRightOfString(overlay->lv, overlay->lvLabel, 10);
 }
 
+static void _makeClassString(PauseOverlay* overlay) {
+  overlay->class = COIStringCreate(playerGetClass(overlay->pInfo), 0, 0, overlay->textType);
+  COIStringConfineToSprite(overlay->class, overlay->statWindow);
+  COIStringPositionBelowString(overlay->class, overlay->name, false);
+  COIBoardAddString(overlay->board, overlay->class);
+}
+
 static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType* textType, COIBoard* board) {
   Actor* player = pInfo->party[0];
   
@@ -211,12 +218,13 @@ static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
   overlay->statWindow->_autoHandle = false;
   COIBoardAddDynamicSprite(board, overlay->statWindow);
   overlay->name = COIStringCreate(pInfo->name, 0, 0, textType);
-  overlay->class = COIStringCreate(playerClassNameFromID(pInfo->class), 0, 0, textType);
+  // overlay->class = COIStringCreate(playerGetClass(pInfo), 0, 0, textType);
   COIStringConfineToSprite(overlay->name, overlay->statWindow);
   COIBoardAddString(board, overlay->name);
-  COIStringConfineToSprite(overlay->class, overlay->statWindow);
-  COIStringPositionBelowString(overlay->class, overlay->name, false);
-  COIBoardAddString(board, overlay->class);
+  _makeClassString(overlay);
+  // COIStringConfineToSprite(overlay->class, overlay->statWindow);
+  // COIStringPositionBelowString(overlay->class, overlay->name, false);
+  // COIBoardAddString(board, overlay->class);
   overlay->lvLabel = COIStringCreate("Lv:", 0, 0, textType);
   COIBoardAddString(board, overlay->lvLabel);
   COIStringPositionBelowString(overlay->lvLabel, overlay->name, true);
@@ -905,6 +913,11 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
     COIBoardRemoveString(overlay->board, overlay->lv);
     COIStringDestroy(overlay->lv);
     _makeLevelString(overlay);
+
+    // Remake class string
+    COIBoardRemoveString(overlay->board, overlay->class);
+    COIStringDestroy(overlay->class);
+    _makeClassString(overlay);
   }
 
   // Secondary menus always start out invisible
@@ -930,7 +943,7 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
 
 
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
-  if (event == MOVING_LEFT) {
+  if (event == MOVING_DELETE) {
     PauseOverlayBack(overlay);
   } else {
     int valueBefore = COIMenuGetCurrentValue(overlay->topRightMenu);

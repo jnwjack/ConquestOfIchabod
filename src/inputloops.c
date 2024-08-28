@@ -6,12 +6,16 @@
 static int _sdlEventToDirectionalInput(SDL_Event* event) {
   switch (event->key.keysym.sym) {
   case SDLK_UP:
+  case SDLK_w:
     return MOVING_UP;
   case SDLK_DOWN:
+  case SDLK_s:
     return MOVING_DOWN;
   case SDLK_LEFT:
+  case SDLK_a:
     return MOVING_LEFT;
   case SDLK_RIGHT:
+  case SDLK_d:
     return MOVING_RIGHT;
   case SDLK_z:
   case SDLK_SPACE:
@@ -196,27 +200,30 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   COIMenu* focusedMenu = armoryContext->confirmActive ? armoryContext->confirmMenu : armoryContext->currentMenu;
   switch (event->type) {
   case SDL_KEYDOWN:
-    switch (event->key.keysym.sym) {
-    case SDLK_UP:
+  {
+    int move = _sdlEventToDirectionalInput(event);
+    switch (move) {
+    case MOVING_UP:
       // COISoundPlay(COI_SOUND_BLIP);
       COIMenuIncrement(focusedMenu, -1);
       COIMenuSetVisible(focusedMenu);
       break;
-    case SDLK_DOWN:
+    case MOVING_DOWN:
       // COISoundPlay(COI_SOUND_BLIP);
       COIMenuIncrement(focusedMenu, 1);
       COIMenuSetVisible(focusedMenu);
 	    break;
-    case SDLK_SPACE:
+    case MOVING_SELECT:
       COISoundPlay(COI_SOUND_SELECT); // Should move this event processing to the COIMenuHandleInput function.
 	    selection = true;
 	    break;
-    case SDLK_LEFT:
+    case MOVING_DELETE:
       COISoundPlay(COI_SOUND_SELECT);
 	    back = true;
 	    break;
     }
     break;
+  }
   default:
     return;
   }
@@ -225,9 +232,13 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 
   // Return to first menu
   if (back && armoryContext->currentMenu != armoryContext->menu) {
-    COIMenuSetInvisible(armoryContext->currentMenu);
-    COIMenuReset(armoryContext->currentMenu);
-    armoryContext->currentMenu = armoryContext->menu;
+    if (armoryContext->confirmActive) {
+      armoryDisableConfirmMenu(armoryContext);
+    } else {
+      COIMenuSetInvisible(armoryContext->currentMenu);
+      COIMenuReset(armoryContext->currentMenu);
+      armoryContext->currentMenu = armoryContext->menu;
+    }
     return;
   }
 
@@ -348,14 +359,17 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     break;
   }
   case SDL_KEYUP:
-    if ((event->key.keysym.sym == SDLK_LEFT && player->nextMovementDirection == MOVING_LEFT) ||
-	(event->key.keysym.sym == SDLK_RIGHT && player->nextMovementDirection == MOVING_RIGHT) ||
-	(event->key.keysym.sym == SDLK_UP && player->nextMovementDirection == MOVING_UP) ||
-	(event->key.keysym.sym == SDLK_DOWN && player->nextMovementDirection == MOVING_DOWN)) {
+  {
+    int input = _sdlEventToDirectionalInput(event);
+    if ((input == MOVING_LEFT && player->nextMovementDirection == MOVING_LEFT) ||
+      (input == MOVING_RIGHT && player->nextMovementDirection == MOVING_RIGHT) ||
+      (input == MOVING_UP && player->nextMovementDirection == MOVING_UP) ||
+      (input == MOVING_DOWN && player->nextMovementDirection == MOVING_DOWN)) {
       townProcessDirectionalInput(townContext, MOVING_NONE);
       board->_shouldDraw = true;
     }
     break;
+  }
   }
 
   if (townShouldCheckForCollision(context)) {
@@ -405,18 +419,21 @@ void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
   bool shouldExit = false;
   switch (event->type) {
   case SDL_KEYDOWN:
-    switch (event->key.keysym.sym) {
-    case SDLK_SPACE:
+  {
+    int input = _sdlEventToDirectionalInput(event);
+    switch (input) {
+    case MOVING_SELECT:
       shouldExit = RentHouseProcessSelectionInput(rhContext);
       break;
-    case SDLK_LEFT:
-    case SDLK_RIGHT:
-    case SDLK_UP:
-    case SDLK_DOWN:
+    case MOVING_LEFT:
+    case MOVING_RIGHT:
+    case MOVING_UP:
+    case MOVING_DOWN:
       RentHouseProcessDirectionalInput(rhContext,
-				       _sdlEventToDirectionalInput(event));
+				       input);
       break;
     }
+  }
   }
 
   RentHouseTick(rhContext);
