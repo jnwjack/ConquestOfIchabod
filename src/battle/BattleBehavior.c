@@ -16,6 +16,10 @@ static bool _checkForModifier(Actor* actor, ModifierType type, LinkedList* modif
   return false;
 }
 
+static bool _critical() {
+  return generateRandomBoolWeighted(0.1);
+}
+
 static int _randomGaussian(int mean) {
   int randomInt = generateRandomCharInRange(mean - 5, mean + 5);
 
@@ -127,23 +131,14 @@ ActionType battleBehaviorPickActionType(int actorType) {
 
 // Handle behavior that's specific to each special
 void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIndex, Actor** targetActors, int numTargetActors, Actor* actor) {
-  printf("making special..\n");
   action->actor = actor;
-  printf("making special..1\n");
   action->type = SPECIAL;
-  printf("making special.2\n");
-  printf("num target actors:%i target actor index: %i\n", numTargetActors, targetIndex);
   action->target = targetActors[targetIndex];
-  printf("making special.3\n");
   action->index = specialID;
-  printf("making special.4\n");
   action->successfulFlee = false;
-  printf("making special.5\n");
   action->numOtherTargets = 0;
-  printf("phew...\n");
   if (specialID == SPECIAL_ID_AVALANCHE || specialID == SPECIAL_ID_HOWL) {
     // Working with different enemy ordering
-    printf("num target actors: %i\n", numTargetActors);
     for (int i = 0; i < numTargetActors; i++) {
       if (actorIsDead(targetActors[i])) {
         continue;
@@ -357,11 +352,17 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   case ATTACK:
     damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
     damage = _randomDamage(damageBase);
-
-    printf("damage: %i\n", damage);
-    sprintf(atkString, "%s ATTACKS %s", aName, tName);
-    summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
-    if (generateRandomBoolWeighted(hitRate)) {
+    bool successfulHit = generateRandomBoolWeighted(hitRate);
+    if (successfulHit && _critical()) {
+      damage *= 2;
+      sprintf(atkString, "%s ATTACKS %s", aName, tName);
+      summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
+      ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);
+    } else {
+      sprintf(atkString, "%s ATTACKS %s", aName, tName);
+      summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
+    }
+    if (successfulHit) {
       if (_checkForModifier(t, MT_PARRYING, modifiers)) {
         int parryDamage = damage * 2;
         a->hp = MAX(0, a->hp - parryDamage);
@@ -398,13 +399,24 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     a->sp -= (specialCost(action->index) * action->spCostModifier);
     if (spType == SPECIAL_DAMAGING) {
       damage = _randomDamage(specialStrength(action->index));
+
+      if (_critical()) {
+        damage *= 2;
+        snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	        aName, specialVerb(action->index), specialName(action->index), tName);
+        summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+        ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+      } else {
+        snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	        aName, specialVerb(action->index), specialName(action->index), tName);
+        summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+        ActionSummaryAddString(summary, temp, board, box, textType);
+      }
+
       t->hp = MAX(0, t->hp - damage);
-      
-      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	       aName, specialVerb(action->index), specialName(action->index), tName);
-      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
-      ActionSummaryAddString(summary, temp, board, box, textType);
 
       for (int i = 0; i < action->numOtherTargets; i++) {
         Actor* otherT = action->otherTargets[i];
@@ -621,7 +633,7 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
 
 void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString) {
   // Can't skip past last string
-  if (summary->currentString + 1 >= summary->numStrings) {
+  if (summary->currentString == 0 || summary->currentString + 1 >= summary->numStrings) {
     skipToNextString = false;
   }
   

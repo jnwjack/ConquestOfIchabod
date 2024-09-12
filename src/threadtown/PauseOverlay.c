@@ -150,6 +150,27 @@ COITextType* _textTypeForStat(PauseOverlay* overlay, Stat* stat) {
   return textType;
 }
 
+static void _makeGoldLabelAndString(PauseOverlay* overlay) {
+  _removeStringIfExists(overlay, overlay->goldLabel);
+  _removeStringIfExists(overlay, overlay->gold);
+
+  char temp[MAX_STRING_SIZE];
+  if (GLOBAL_TIME.day >= 200) {
+    overlay->goldLabel = COIStringCreate("Days:", 0, 0, overlay->textType);
+    snprintf(temp, MAX_STRING_SIZE, "%lu", 300 - GLOBAL_TIME.day);
+    overlay->gold = COIStringCreate(temp, 0, 0, overlay->textType);
+  } else {
+    overlay->goldLabel = COIStringCreate("Gold:", 0, 0, overlay->textType);
+    snprintf(temp, MAX_STRING_SIZE, "%i", overlay->pInfo->inventory->money);
+    overlay->gold = COIStringCreate(temp, 0, 0, overlay->textType);
+  }
+  COIStringConfineToSprite(overlay->goldLabel, overlay->statWindow);
+  COIStringPositionBelowString(overlay->goldLabel, overlay->agiLabel, false);
+  COIBoardAddString(overlay->board, overlay->goldLabel);
+  COIStringPositionBelowString(overlay->gold, overlay->agi, false);
+  COIBoardAddString(overlay->board, overlay->gold);
+}
+
 static void _makeStatStrings(PauseOverlay* overlay) {
   Actor* player = overlay->pInfo->party[0];
   char temp[MAX_STRING_SIZE];
@@ -185,10 +206,11 @@ static void _makeStatStrings(PauseOverlay* overlay) {
   COIStringPositionBelowString(overlay->agi, overlay->def, false);
   COIBoardAddString(overlay->board, overlay->agi);
 
-  snprintf(temp, MAX_STRING_SIZE, "%i", overlay->pInfo->inventory->money);
-  overlay->gold = COIStringCreate(temp, 0, 0, overlay->textType);
-  COIStringPositionBelowString(overlay->gold, overlay->agi, false);
-  COIBoardAddString(overlay->board, overlay->gold);
+  // snprintf(temp, MAX_STRING_SIZE, "%i", overlay->pInfo->inventory->money);
+  // overlay->gold = COIStringCreate(temp, 0, 0, overlay->textType);
+  // COIStringPositionBelowString(overlay->gold, overlay->agi, false);
+  // COIBoardAddString(overlay->board, overlay->gold);
+  _makeGoldLabelAndString(overlay);
 }
 
 static void _makeLevelString(PauseOverlay* overlay) {
@@ -261,10 +283,10 @@ static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
   COIStringPositionBelowString(overlay->agiLabel, overlay->defLabel, false);
   COIBoardAddString(board, overlay->agiLabel);
 
-  overlay->goldLabel = COIStringCreate("Gold:", 0, 0, textType);
-  COIStringConfineToSprite(overlay->goldLabel, overlay->statWindow);
-  COIStringPositionBelowString(overlay->goldLabel, overlay->agiLabel, false);
-  COIBoardAddString(board, overlay->goldLabel);
+  // overlay->goldLabel = COIStringCreate("Gold:", 0, 0, textType);
+  // COIStringConfineToSprite(overlay->goldLabel, overlay->statWindow);
+  // COIStringPositionBelowString(overlay->goldLabel, overlay->agiLabel, false);
+  // COIBoardAddString(board, overlay->goldLabel);
 
   _makeStatStrings(overlay);
 }
@@ -715,6 +737,8 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
   overlay->hpChange = NULL;
   overlay->spChange = NULL;
   overlay->tpChange = NULL;
+  overlay->goldLabel = NULL;
+  overlay->gold = NULL;
  
 
   // Used to show how an item will affect the player's stats.

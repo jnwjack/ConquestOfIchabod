@@ -94,5 +94,6 @@ int actorModifiedAtk(Actor* actor);
 int actorModifiedDef(Actor* actor);
 int actorModifiedAgi(Actor* actor);
 void actorUseConsumable(Actor* actor, Item* item);
+void actorChangeSprite(Actor* actor, int spriteID);
 
 #endif

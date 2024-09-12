@@ -17,6 +17,12 @@ typedef enum RentStatus {
   RS_EVICTED
 } RentStatus;
 
+typedef enum SpriteAge {
+  SA_YOUNG = 0,
+  SA_OLDER,
+  SA_OLDEST
+} SpriteAge;
+
 typedef struct ClassProgression {
   unsigned int* techs;
   unsigned int* specials;
@@ -38,6 +44,7 @@ typedef struct PlayerInfo {
   int class;
 
   RentStatus renting;
+  SpriteAge spriteAge;
   bool working;
   bool alreadyHealed; // Can only heal once per rest via house.
   unsigned long nextRentDate;
@@ -86,5 +93,8 @@ char* playerGetClass(PlayerInfo* pInfo);
 char* playerClassNameFromID(int id);
 
 void playerCheckForEviction(PlayerInfo* pInfo);
+
+SpriteAge playerSpriteAgeFromGlobalTime();
+int playerSpriteIndexFromSpriteAge(SpriteAge age);
 
 #endif

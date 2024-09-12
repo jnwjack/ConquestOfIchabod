@@ -381,15 +381,17 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     switch (collision) {
     case SHOP_DOOR:
       player->movementDirection = MOVING_NONE;
-      //otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
-      otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo->inventory);
-      COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      if (!townShopIsClosed()) {
+        otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo->inventory);
+        COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      }
       break;      
     case ARMORY_DOOR:
       player->movementDirection = MOVING_NONE;
-      //otherBoard = armoryCreateBoard(townContext->window, board->loader, board, townContext->pInfo->inventory);
-      otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo->inventory);
-      COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      if (!townShopIsClosed()) {
+        otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo->inventory);
+        COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      }
       break;
     case RENTABLE_HOUSE_DOOR:
       player->movementDirection = MOVING_NONE;

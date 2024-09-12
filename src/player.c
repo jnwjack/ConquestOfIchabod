@@ -11,6 +11,26 @@ static unsigned int LEVELUP_SPECIALS_MIN_LEVELS[] = { 1 };
 static unsigned int LEVELUP_SPECIALS_MAGE[] = { SPECIAL_ID_AVALANCHE, SPECIAL_ID_FIREBALL, SPECIAL_ID_CURSE };
 #define LEVELUP_NUM_SPECIALS_MAGE 3
 
+SpriteAge playerSpriteAgeFromGlobalTime() {
+  if (GLOBAL_TIME.day < 150) {
+    return SA_YOUNG;
+  } else if (GLOBAL_TIME.day < 250) {
+    return SA_OLDER;
+  }
+  return SA_OLDEST;
+}
+
+int playerSpriteIndexFromSpriteAge(SpriteAge age) {
+  switch (age) {
+  case SA_YOUNG:
+    return 1;
+  case SA_OLDER:
+    return 63;
+  default:
+    return 64;
+  }
+}
+
 PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventory, int class) {
   PlayerInfo* info = malloc(sizeof(PlayerInfo));
 
@@ -24,6 +44,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->xp = 0;
   info->xpForLevelUp = 50;
   info->renting = RS_NOT_RENTING;
+  info->spriteAge = SA_YOUNG;
   info->working = false;
   info->alreadyHealed = false;
   info->rentHouseBaldUsed = false;
@@ -365,6 +386,8 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   _decodeTimeState(&line, &len, fp, buf, &info->lastXPGain);
 
   fclose(fp);
+
+  // info->spriteAge = playerSpriteAgeFromGlobalTime();
 
   return info;
 }

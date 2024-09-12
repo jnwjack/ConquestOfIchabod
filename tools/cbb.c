@@ -147,10 +147,10 @@ static void removeAssetFromSquare (GtkGestureClick *gesture,
 }
 
 
-static void generateSpritemap(GtkWidget* button, gpointer data) {
-  GtkWidget *grid = GTK_WIDGET(data);
+static void generateSpritemap(char* fileLocation) {
+  // GtkWidget *grid = GTK_WIDGET(data);
   GtkLayoutManager *manager = gtk_widget_get_layout_manager(grid);
-  FILE* fp = fopen("spritemap.dat", "w");
+  FILE* fp = fopen(fileLocation, "w");
   for (GtkWidget *picture = gtk_widget_get_first_child(grid); picture != NULL; picture = gtk_widget_get_next_sibling(picture)) {
     if (gtk_picture_get_file(GTK_PICTURE(picture)) != NULL) {
       GtkGridLayoutChild *loc = GTK_GRID_LAYOUT_CHILD(gtk_layout_manager_get_layout_child(manager, picture));
@@ -167,6 +167,15 @@ static void generateSpritemap(GtkWidget* button, gpointer data) {
   printf("Done!\n");
 
   fclose(fp);
+}
+
+static void saveSpritemapCallback(GObject* dialog, GAsyncResult* res, gpointer data) {
+  GFile* f = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(dialog), res, NULL);
+  generateSpritemap(g_file_get_path(f));
+}
+
+static void saveSpritemap(GtkWidget* button, gpointer dialog) {
+  gtk_file_dialog_save(GTK_FILE_DIALOG(dialog), NULL, NULL, saveSpritemapCallback, NULL);
 }
 
 static void setAssetWidth(GtkSpinButton* widthWidget, gpointer data) {
@@ -262,7 +271,8 @@ static void activate(GtkApplication *app,
   g_signal_connect(fileButton, "clicked", G_CALLBACK(fileButtonPressed), fileDialog);
   
   button = gtk_button_new_with_label("Create Board");
-  g_signal_connect(button, "clicked", G_CALLBACK(generateSpritemap), grid);
+  g_signal_connect(button, "clicked", G_CALLBACK(saveSpritemap), fileDialog);
+  // g_signal_connect(button, "clicked", G_CALLBACK(generateSpritemap), grid);
 
   gtk_box_append(GTK_BOX(rightBox), spriteSelectBox);
   gtk_box_append(GTK_BOX(rightBox), dimensionsBox);

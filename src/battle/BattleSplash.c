@@ -34,6 +34,7 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
   splash->_currentProgress = 0;
   splash->_ticks = 0;
   splash->box = box;
+  COIBoardAddDynamicSprite(board, splash->box);
   splash->box->_autoHandle = false;
   splash->box->_visible = true;
 
@@ -79,6 +80,9 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
 }
 
 void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd) {
+  if (splash->box->_visible) {
+    printf("SHOULD BE VISIBLE!!!\n");
+  }
   if (cutToEnd && splash->stage < BSS_PROGRESS_BAR) {
     COIStringSetVisible(splash->result, true);
     COIStringSetVisible(splash->rewards, true);
@@ -154,7 +158,9 @@ void BattleSplashDestroy(BattleSplash* splash, COIBoard* board) {
     COIBoardRemoveString(board, splash->levelUp);
     COIStringDestroy(splash->levelUp);
   }
-  splash->box->_visible = false;
+  COIBoardRemoveDynamicSprite(board, splash->box);
+  COISpriteDestroy(splash->box);
+  // splash->box->_visible = false;
   free(splash);
 }
 

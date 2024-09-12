@@ -50,5 +50,6 @@ void townTogglePauseOverlay(TownContext* context);
 void townProcessSelectionInput(TownContext* context);
 void townDestroyBoard(TownContext* context);
 void townApplyTimeChanges(TownContext* context);
+bool townShopIsClosed();
 
 #endif

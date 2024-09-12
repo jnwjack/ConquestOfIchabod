@@ -15,7 +15,11 @@ void TimeStateAddVal(TimeState* state, unsigned char val) {
 
     // If our new phase <= our old phase, we're in a new day
     if (state->phase <= oldPhase) {
-      state->day++;
+      if (state->day > 150) {
+        state->day += 2; // After day 150, time moves quicker.
+      } else {
+        state->day++;
+      }
     }
   }
 }

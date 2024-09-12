@@ -654,6 +654,19 @@ void townApplyTimeChanges(TownContext* context) {
     }
     playerLevelDown(context->pInfo);
   }
+
+  // Change player's sprite
+  SpriteAge nextSpriteAge = playerSpriteAgeFromGlobalTime();
+  if (nextSpriteAge != context->pInfo->spriteAge) {
+    context->pInfo->spriteAge = nextSpriteAge;
+    actorChangeSprite(context->pInfo->party[0], playerSpriteIndexFromSpriteAge(context->pInfo->spriteAge));
+    COISprite** perSprites = actorGetSpriteList(context->pInfo->party, context->pInfo->partySize);
+    COIBoardSetPersistentSprites(context->board, perSprites, 1);
+  }
+}
+
+bool townShopIsClosed() {
+  return GLOBAL_TIME.phase > TS_DAY;
 }
 
 void townDestroyBoard(TownContext* context) {

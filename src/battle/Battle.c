@@ -217,10 +217,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   aBox->_autoHandle = false;
   aBox->_visible = false;
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
-  
-  COISprite* splashBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
-  splashBox->_autoHandle = false;
-  splashBox->_visible = false;
 
   COISprite* descBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
   descBox->_autoHandle = false;
@@ -800,13 +796,14 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
 }
 
 static void _showSplash(BattleContext* context, BattleResult result, bool levelUp) {
-  COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_SPLASH_BOX];
+  COISprite* splashBox = COISpriteCreateFromAssetID(205, 115, 240, 240, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+
   if (result == BR_WIN) { 
     COISoundPlay(COI_SOUND_CELEBRATION);
   }
   context->splash = BattleSplashCreate(context->board,
 				       context->textType,
-				       box,
+				       splashBox,
 				       result == BR_WIN,
 				       context->xpYield,
                levelUp,
@@ -944,7 +941,7 @@ void battleHandleActorSelect(BattleContext* context) {
 }
 
 
-// User presses 'LEFT' key, cancels out of current operation
+// User presses 'back' key, cancels out of current operation
 void battleHandleBack(BattleContext* context) {
   switch (context->actionMenu->_current) {
   case BATTLE_ATTACK:
@@ -1087,7 +1084,9 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         if (context->summary->currentString > 0) {
           action.target->sprite->_visible = true;
           for (int i = 0; i < action.numOtherTargets; i++) {
-            action.otherTargets[i]->sprite->_visible = true;
+            if (!actorIsDead(action.otherTargets[i])) {
+              action.otherTargets[i]->sprite->_visible = true;
+            }
           }
         }
         else if (context->summary->ticks % 10 == 0) {

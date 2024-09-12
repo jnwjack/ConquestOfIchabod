@@ -125,6 +125,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   return actor;
 }
 
+
 void actorDestroy(Actor* actor) {
   free(actor);
 }
@@ -316,4 +317,16 @@ void actorUseConsumable(Actor* actor, Item* item) {
   modifier->factor = item->strength / 10.0;
   TimeStateCopyGlobalTime(&modifier->end);
   TimeStateAddVal(&modifier->end, 2);
+}
+
+// Used when changing player sprite
+void actorChangeSprite(Actor* actor, int spriteID) {
+  if (actor->sprite != NULL) {
+    COISprite* newSprite = COISpriteCreateFromAssetID(actor->sprite->_x, actor->sprite->_y, 32, 32, COI_GLOBAL_LOADER, spriteID, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+    int spriteSheetCol = _spriteSheetOrderCols[actor->_spriteSheetColIndex];
+    // COISpriteSetSheetIndex(newSprite, actor->_spriteSheetRow, spriteSheetCol);
+    COISpriteSetSheetIndex(newSprite, 2, 2);
+    COISpriteDestroy(actor->sprite);
+    actor->sprite = newSprite;
+  }
 }

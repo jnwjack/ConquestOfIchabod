@@ -12,7 +12,6 @@
 
 #define TIMESTATE_PHASE_LENGTH 6
 
-
 typedef enum {
   TS_MORNING = 0,
   TS_DAY = 1,
