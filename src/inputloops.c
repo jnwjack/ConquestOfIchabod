@@ -24,6 +24,10 @@ static int _sdlEventToDirectionalInput(SDL_Event* event) {
     return MOVING_DELETE;
   case SDLK_ESCAPE:
     return MOVING_PAUSE;
+#ifdef __COI_DEBUG__
+  case SDLK_r:
+    return MOVING_RELOAD;
+#endif
   default:
     return MOVING_NONE;
   }
@@ -352,6 +356,13 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case MOVING_SELECT:
       townProcessSelectionInput(townContext);
       break;
+    case MOVING_RELOAD: // Reload spritemap for town. Used for testing boards.
+    {
+      COIBoard* newTownBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, townContext->pInfo);
+      _changeBoardToThreadTown(newTownBoard);
+      townDestroyBoard(townContext);
+      return;
+    }
     default:
       townProcessDirectionalInput(townContext, input);
       break;

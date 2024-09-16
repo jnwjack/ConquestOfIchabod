@@ -20,6 +20,7 @@
 #define MOVING_SELECT 5
 #define MOVING_DELETE 6
 #define MOVING_PAUSE 7
+#define MOVING_RELOAD 8 // Debug only
 
 struct LinkedListNode;
 typedef struct LinkedListNode {

@@ -13,7 +13,7 @@ SRCS = $(shell find src -name "*.c")
 OUTPUT = coi
 WEB_OUTPUT = coi.html
 LIBS = -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_mixer
-DEBUGFLAGS = -g3
+DEBUGFLAGS = -g3 -D__COI_DEBUG__=1
 NATIVE_FLAGS = -D__NATIVE__=1
 WINDOWS_CC = gcc
 WINDOWS_INCLUDE_BASE = C:\Users\jnw90\Projects\mingw-dev\include

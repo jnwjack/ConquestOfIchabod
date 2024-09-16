@@ -620,7 +620,7 @@ void townMovePlayer(TownContext* context) {
 
 void townTogglePauseOverlay(TownContext* context) {
   Actor* player = context->pInfo->party[0];
-  if (player->movementDirection == MOVING_NONE && !context->confirmMenu->_frame->_visible) {
+  if (player->movementDirection == MOVING_NONE && !context->confirmMenu->_frame->_visible && !context->textBox->box->_visible) {
     PauseOverlaySetVisible(context->pauseOverlay, !context->pauseOverlay->visible);
     COIBoardQueueDraw(context->board);
   }

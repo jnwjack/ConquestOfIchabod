@@ -10,7 +10,7 @@
 #define KEYBOARD_OFFSET_X 150
 #define KEYBOARD_OFFSET_Y 300
 #define KEYBOARD_GRID_PADDING 16
-#define KEYBOARD_NAME_SIZE 8
+#define KEYBOARD_NAME_SIZE 6
 typedef struct Keyboard {
   char name[KEYBOARD_NAME_SIZE + 1];
   unsigned int currentNameChar;

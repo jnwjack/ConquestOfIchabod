@@ -7,8 +7,11 @@
 
 static const char** assetStrings = NULL;
 static int currentAsset = 0;
-static int currentAssetWidth = 32;
-static int currentAssetHeight = 32;
+static int currentAssetWidth = COIBOARD_GRID_SIZE;
+static int currentAssetHeight = COIBOARD_GRID_SIZE;
+static int anchorsX[2] = { -1, -1 };
+static int anchorsY[2] = { -1, -1 };
+static bool shouldAnchor = false;
 static GtkWidget* grid;
 
 // Returns true if square is occupied by an asset originating in another square.
@@ -34,8 +37,8 @@ static void occupyNearbySquares(int baseX, int baseY, int width, int height) {
   // We also need to account for the case where the size of the asset is greater
   // than the size of the grid square. We want to indicate that nearby squares
   // "belong to" the sprite. So, we add the "occupied" class to the square.
-  int squareCountX = width / 32;
-  int squareCountY = height / 32;
+  int squareCountX = width / COIBOARD_GRID_SIZE;
+  int squareCountY = height / COIBOARD_GRID_SIZE;
   for (int x = 0; x < squareCountX; x++) {
     for (int y = 0; y < squareCountY; y++) {
       if (x == 0 && y == 0) {
@@ -66,8 +69,8 @@ static void loadSpritemap(char* filename) {
     y = atoi(strtok(NULL, " "));
     w = atoi(strtok(NULL, " "));
     h = atoi(strtok(NULL, " "));
-    col = x / 32;
-    row = y / 32;
+    col = x / COIBOARD_GRID_SIZE;
+    row = y / COIBOARD_GRID_SIZE;
     GtkWidget* square = gtk_grid_get_child_at(GTK_GRID(grid), col, row);
     updateSquare(square, assetIndex, w, h);
     occupyNearbySquares(col, row, w, h);
@@ -102,18 +105,90 @@ static void selectAsset(GtkWidget* dropDown, GParamSpec* pspec, gpointer data) {
   currentAsset = assetIndex;
 }
 
+static void addMultipleAssets() {
+  int topLeftX = MIN(anchorsX[0], anchorsX[1]);
+  int topLeftY = MIN(anchorsY[0], anchorsY[1]);
+  int bottomRightX = MAX(anchorsX[0], anchorsX[1]);
+  int bottomRightY = MAX(anchorsY[0], anchorsY[1]);
+
+  for (int x = topLeftX; x <= bottomRightX; x++) {
+    for (int y = topLeftY; y <= bottomRightY; y++) {
+      GtkWidget* square = gtk_grid_get_child_at(GTK_GRID(grid), x, y);
+      updateSquare(square, currentAsset, COIBOARD_GRID_SIZE, COIBOARD_GRID_SIZE);
+      occupyNearbySquares(x, y, COIBOARD_GRID_SIZE, COIBOARD_GRID_SIZE);
+    }
+  }
+}
+
 static void addAssetToSquare (GtkGestureClick *gesture,
 			      int              n_press,
 			      double           mouseX,
 			      double           mouseY,
 			      GtkWidget       *area)
 {
-  if (!squareIsOccupied(area)) {
-    updateSquare(area, currentAsset, currentAssetWidth, currentAssetHeight);
-    // Get position of 'area' in grid
+  if (!shouldAnchor) {
+    if (!squareIsOccupied(area)) {
+      updateSquare(area, currentAsset, currentAssetWidth, currentAssetHeight);
+      // Get position of 'area' in grid
+      int areaX, areaY;
+      gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
+      occupyNearbySquares(areaX, areaY, currentAssetWidth, currentAssetHeight);
+    }
+  } else if (anchorsX[0] == -1 || anchorsY[0] == -1) {
     int areaX, areaY;
     gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
-    occupyNearbySquares(areaX, areaY, currentAssetWidth, currentAssetHeight);
+    anchorsX[0] = areaX;
+    anchorsY[0] = areaY;
+  } else {
+    int areaX, areaY;
+    gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
+    anchorsX[1] = areaX;
+    anchorsY[1] = areaY;
+    addMultipleAssets();
+
+    shouldAnchor = false;
+    anchorsX[0] = -1;
+    anchorsX[1] = -1;
+    anchorsY[0] = -1;
+    anchorsY[1] = -1;
+  }
+}
+
+static void removeAsset(int x, int y) {
+  GtkWidget* square = gtk_grid_get_child_at(GTK_GRID(grid), x, y);
+  if (!squareIsOccupied(square) && squareHasAsset(square)) {
+    gtk_picture_set_filename(GTK_PICTURE(square), NULL);
+    // We might need to mark nearby squares as unoccupied.
+    int areaX, areaY;
+    gtk_grid_query_child(GTK_GRID(grid), square, &areaX, &areaY, NULL, NULL);
+
+    int assetIndex = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(square), "assetIndex"));
+    int width = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(square), "width"));
+    int height = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(square), "height"));
+    int squareCountX = width / COIBOARD_GRID_SIZE;
+    int squareCountY = height / COIBOARD_GRID_SIZE;
+    for (int xNear = 0; xNear < squareCountX; xNear++) {
+      for (int yNear = 0; yNear < squareCountY; yNear++) {
+        if (xNear == 0 && yNear == 0) {
+          continue;
+        }
+      GtkWidget* nearbySquare = gtk_grid_get_child_at(GTK_GRID(grid), areaX + x, areaY + y);
+      gtk_widget_remove_css_class(nearbySquare, "occupied");
+      }
+    }
+  }
+}
+
+static void removeMultipleAssets() {
+  int topLeftX = MIN(anchorsX[0], anchorsX[1]);
+  int topLeftY = MIN(anchorsY[0], anchorsY[1]);
+  int bottomRightX = MAX(anchorsX[0], anchorsX[1]);
+  int bottomRightY = MAX(anchorsY[0], anchorsY[1]);
+
+  for (int x = topLeftX; x <= bottomRightX; x++) {
+    for (int y = topLeftY; y <= bottomRightY; y++) {
+      removeAsset(x, y);
+    }
   }
 }
 
@@ -123,27 +198,29 @@ static void removeAssetFromSquare (GtkGestureClick *gesture,
 				   double           y,
 				   GtkWidget       *area)
 {
-  if (!squareIsOccupied(area) && squareHasAsset(area)) {
-    gtk_picture_set_filename(GTK_PICTURE(area), NULL);
-    // We might need to mark nearby squares as unoccupied.
+  if (!shouldAnchor) {
     int areaX, areaY;
     gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
+    removeAsset(areaX, areaY);
+  } else if (anchorsX[0] == -1 || anchorsY[0] == -1) {
+    int areaX, areaY;
+    gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
+    anchorsX[0] = areaX;
+    anchorsY[0] = areaY;
+  } else {
+    int areaX, areaY;
+    gtk_grid_query_child(GTK_GRID(grid), area, &areaX, &areaY, NULL, NULL);
+    anchorsX[1] = areaX;
+    anchorsY[1] = areaY;
+    removeMultipleAssets();
 
-    int assetIndex = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "assetIndex"));
-    int width = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "width"));
-    int height = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "height"));
-    int squareCountX = width / 32;
-    int squareCountY = height / 32;
-    for (int x = 0; x < squareCountX; x++) {
-      for (int y = 0; y < squareCountY; y++) {
-	if (x == 0 && y == 0) {
-	  continue;
-	}
-	GtkWidget* square = gtk_grid_get_child_at(GTK_GRID(grid), areaX + x, areaY + y);
-	gtk_widget_remove_css_class(square, "occupied");
-      }
-    }
+    shouldAnchor = false;
+    anchorsX[0] = -1;
+    anchorsX[1] = -1;
+    anchorsY[0] = -1;
+    anchorsY[1] = -1;   
   }
+
 }
 
 
@@ -160,7 +237,7 @@ static void generateSpritemap(char* fileLocation) {
       int width = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(picture), "width"));
       int height = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(picture), "height"));
 
-      fprintf(fp, "%i %i %i %i %i\n", assetIndex, x*32, y*32, width, height);
+      fprintf(fp, "%i %i %i %i %i\n", assetIndex, x*COIBOARD_GRID_SIZE, y*COIBOARD_GRID_SIZE, width, height);
     }
   }
 
@@ -198,6 +275,34 @@ static void fileButtonPressed(GtkWidget* button, gpointer dialog) {
   gtk_file_dialog_open(GTK_FILE_DIALOG(dialog), NULL, NULL, fileSelected, NULL);
 }
 
+static gboolean keyPressed(GtkEventControllerKey* self, 
+                           guint keyval,
+                           guint keycode,
+                           GdkModifierType state,
+                           gpointer user_data) {                          
+  // return false;
+  if (keyval == GDK_KEY_Shift_L) {
+    shouldAnchor = true;
+  }
+  return false;
+}
+
+static gboolean keyReleased(GtkEventControllerKey* self, 
+                           guint keyval,
+                           guint keycode,
+                           GdkModifierType state,
+                           gpointer user_data) {                          
+  // return false;
+  if (keyval == GDK_KEY_Shift_L) {
+    shouldAnchor = false;
+    anchorsX[0] = -1;
+    anchorsX[1] = -1;
+    anchorsY[0] = -1;
+    anchorsY[1] = -1;
+  }
+  return false;
+}
+
 static void activate(GtkApplication *app,
 		     gpointer userData) {
   GtkWidget* window;
@@ -217,7 +322,10 @@ static void activate(GtkApplication *app,
   GtkWidget* heightLabel;
   GtkWidget* fileButton;
   GtkFileDialog* fileDialog;
-  
+  GtkEventController* eventController;
+
+  // gtk_widget_add_events(window, GDK_KEY_PRESS);
+
 
   window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "COI Board Builder");
@@ -249,7 +357,7 @@ static void activate(GtkApplication *app,
   dimensionsBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 50);
   widthBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   widthLabel = gtk_label_new("Width");
-  assetWidth = gtk_spin_button_new_with_range(32, 3200, 32);
+  assetWidth = gtk_spin_button_new_with_range(COIBOARD_GRID_SIZE, COIBOARD_GRID_SIZE * 100, COIBOARD_GRID_SIZE);
   gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(assetWidth), TRUE);
   g_signal_connect(GTK_SPIN_BUTTON(assetWidth), "value-changed", G_CALLBACK(setAssetWidth), NULL);
   gtk_box_append(GTK_BOX(widthBox), widthLabel);
@@ -257,7 +365,7 @@ static void activate(GtkApplication *app,
   
   heightBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   heightLabel = gtk_label_new("Height");
-  assetHeight = gtk_spin_button_new_with_range(32, 3200, 32);
+  assetHeight = gtk_spin_button_new_with_range(COIBOARD_GRID_SIZE, COIBOARD_GRID_SIZE * 100, COIBOARD_GRID_SIZE);
   gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(assetHeight), TRUE);
   g_signal_connect(GTK_SPIN_BUTTON(assetHeight), "value-changed", G_CALLBACK(setAssetHeight), NULL);
   gtk_box_append(GTK_BOX(heightBox), heightLabel);
@@ -317,6 +425,19 @@ static void activate(GtkApplication *app,
       gtk_grid_attach(GTK_GRID(grid), image, x, y, 1, 1);
     }
   }
+
+  eventController = gtk_event_controller_key_new ();
+  g_signal_connect(eventController, "key-pressed", G_CALLBACK(keyPressed), NULL);
+  g_signal_connect(eventController, "key-released", G_CALLBACK(keyReleased), NULL);
+
+  // g_signal_connect_object (eventController, "key-pressed",
+  //                          G_CALLBACK (key_pressed),
+  //                          child, G_CONNECT_SWAPPED);
+  // g_signal_connect_object (eventController, "key-released",
+  //                          G_CALLBACK (event_key_released_cb),
+  //                          child, G_CONNECT_SWAPPED);
+  // g_signal_connect(eventController, "key-pressed", G_CALLBACK())
+  gtk_widget_add_controller (GTK_WIDGET (window), eventController);
 
   gtk_window_set_child(GTK_WINDOW(window), box);
   gtk_window_present(GTK_WINDOW(window));

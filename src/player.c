@@ -452,6 +452,9 @@ void playerLevelDown(PlayerInfo* pInfo) {
         techRemoveFromList(player->techList, player->techList->techs[index - player->specials.length]);
       }
     }
+
+    // Reset timer
+    TimeStateCopyGlobalTime(&pInfo->lastXPGain);
   }
 }
 

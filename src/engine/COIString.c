@@ -170,6 +170,10 @@ bool _confineToSpriteHelper(COIChar* coiChar, int x, int y, int xMax, COIString*
   return true;
 }
 
+void COIStringSetPosWithWrapping(COIString* obj, int x, int y, int width) {
+  _confineToSpriteHelper(obj->_head, x, y, x + width, obj);
+}
+
 void COIStringConfineToSprite(COIString* obj, COISprite* sprite) {
   // Start at y of sprite, increase y (line breaks) in order to stay
   // inside of sprite

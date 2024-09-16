@@ -220,7 +220,7 @@ static void _makeLevelString(PauseOverlay* overlay) {
   overlay->lv = COIStringCreate(temp, 0, 0, overlay->textType);
   COIBoardAddString(overlay->board, overlay->lv);
   COIStringPositionBelowString(overlay->lv, overlay->name, true);
-  COIStringPositionRightOfString(overlay->lv, overlay->lvLabel, 10);
+  COIStringPositionRightOfString(overlay->lv, overlay->lvLabel, PAUSE_OVERLAY_LABEL_STAT_PADDING);
 }
 
 static void _makeClassString(PauseOverlay* overlay) {
@@ -250,7 +250,7 @@ static void _makeStatWindow(PauseOverlay* overlay, PlayerInfo* pInfo, COITextTyp
   overlay->lvLabel = COIStringCreate("Lv:", 0, 0, textType);
   COIBoardAddString(board, overlay->lvLabel);
   COIStringPositionBelowString(overlay->lvLabel, overlay->name, true);
-  COIStringSetPos(overlay->lvLabel, overlay->statWindow->_x + 150, overlay->lvLabel->y);
+  COIStringSetPos(overlay->lvLabel, overlay->statWindow->_x + 130, overlay->lvLabel->y);
   _makeLevelString(overlay);
   
   overlay->hpLabel = COIStringCreate("HP:", 0, 0, textType);

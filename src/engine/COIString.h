@@ -51,6 +51,7 @@ void COIStringDestroy(COIString* obj);
 void COIStringDraw(COIString* obj, SDL_Renderer* renderer);
 void COIStringSetPos(COIString* obj, int x, int y);
 void COIStringSetVisible(COIString* obj, bool visible);
+void COIStringSetPosWithWrapping(COIString* obj, int x, int y, int width);
 void COIStringConfineToSprite(COIString* obj, COISprite* sprite);
 void COIStringPositionBelowString(COIString* below, COIString* above, bool onlySetY);
 void COIStringPositionRightOfString(COIString* right, COIString* left, int space);

@@ -16,6 +16,8 @@
 #define PAUSE_OVERLAY_BODY -4
 #define PAUSE_OVERLAY_LEGS -5
 
+#define PAUSE_OVERLAY_LABEL_STAT_PADDING 10
+
 typedef struct PauseOverlay {
   COISprite* box;
   // Top left
