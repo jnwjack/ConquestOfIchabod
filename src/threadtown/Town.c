@@ -642,13 +642,13 @@ void townApplyTimeChanges(TownContext* context) {
     int numAbilities = context->pInfo->party[0]->specials.length + context->pInfo->party[0]->techList->count;
     if (numAbilities > 0) { // We're going to lose an ability when we level down.
       TextBoxSetStrings(context->textBox,
-        "You have not battled for some time. Your skills are beginning to atrophy.",
+        "You have not gained experience in some time. Your skills are beginning to atrophy.",
         "You have lost a level.",
         "You have forgotten one of your abilities.",
         NULL);
     } else {
       TextBoxSetStrings(context->textBox,
-        "You have not battled for some time. Your skills are beginning to atrophy.",
+        "You have not gained experience for some time. Your skills are beginning to atrophy.",
         "You have lost a level.",
         NULL);
     }

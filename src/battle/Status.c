@@ -27,8 +27,8 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
   int fs = status->textType->fontSize;
   
   if (!status->frame) {
-    const int sideLength = status->textType->fontSize * 5;
-    status->frame = COISpriteCreateFromAssetID(sprite->_x + sprite->_width + 40,
+    const int sideLength = 65;
+    status->frame = COISpriteCreateFromAssetID(sprite->_x + sprite->_width + 20,
 					       sprite->_y - 10,
 					       sideLength + 20,
 					       sideLength + 20,
@@ -47,7 +47,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
     sprintf(hpRaw, "%i/%i", actor->hp, actor->hpMax);
     COITextTypeSetColor(status->textType, 180, 0, 0);
     status->hp = COIStringCreate(hpRaw,
-				 sprite->_x + sprite->_width + 50,
+				 sprite->_x + sprite->_width + 30,
 				 sprite->_y,
 				 status->textType);
     COIStringSetVisible(status->hp, true);
@@ -62,7 +62,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
     sprintf(tpRaw, "%i/%i", actor->tp, actor->tpMax);
     COITextTypeSetColor(status->textType, 0, 180, 0);
     status->tp = COIStringCreate(tpRaw,
-				 sprite->_x + sprite->_width + 50,
+				 sprite->_x + sprite->_width + 30,
 				 sprite->_y + fs + COI_PADDING,
 				 status->textType);
     COIStringSetVisible(status->tp, true);
@@ -77,7 +77,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
     sprintf(spRaw, "%i/%i", actor->sp, actor->spMax);
     COITextTypeSetColor(status->textType, 5, 246, 250);
     status->sp = COIStringCreate(spRaw,
-          sprite->_x + sprite->_width + 50,
+          sprite->_x + sprite->_width + 30,
           sprite->_y + ((fs + COI_PADDING) * 2),
           status->textType);
     COIStringSetVisible(status->sp, true);
