@@ -53,6 +53,7 @@ typedef struct PlayerInfo {
   bool rentHouseBaldUsed;
   unsigned int shiftsWorked;
   TimeState lastXPGain;
+  bool foundMythicalSword;
   
   Actor** party;
   int partySize;
@@ -96,5 +97,6 @@ void playerCheckForEviction(PlayerInfo* pInfo);
 
 SpriteAge playerSpriteAgeFromGlobalTime();
 int playerSpriteIndexFromSpriteAge(SpriteAge age);
+void playerUpdateClassProgressionFromTime(PlayerInfo* pInfo);
 
 #endif

@@ -1,4 +1,5 @@
 #include "PauseOverlay.h"
+#include "../special.h"
 
 static void _removeStringIfExists(PauseOverlay* overlay, COIString* string) {
   if (string != NULL) {
@@ -647,6 +648,10 @@ static void _returnToEquipableMenu(PauseOverlay* overlay) {
 static void _equipMenuSelect(PauseOverlay* overlay) {
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     Inventory* inventory = overlay->pInfo->inventory;
+    // Add associated SPECIAL if we're removing Tagnesse
+    if (overlay->selectedItem->id == ITEM_ID_TAGNESSE) {
+      IntListAdd(&overlay->pInfo->party[0]->specials, SPECIAL_ID_TIME_SKIP);
+    }
     inventoryRemoveBackpackItemFirstInstance(inventory, overlay->selectedItem);
     Item* oldItem = inventoryEquipItem(inventory, overlay->selectedItem);
     inventoryAddItem(inventory, oldItem->id);
@@ -669,6 +674,18 @@ static void _equipMenuSelect(PauseOverlay* overlay) {
 static void _unequipMenuSelect(PauseOverlay* overlay) {
   if (COIMenuGetCurrentValue(overlay->topRightMenu) == 0) {
     Inventory* inventory = overlay->pInfo->inventory;
+    // Remove associated SPECIAL if we're removing Tagnesse
+    if (overlay->selectedItem->id == ITEM_ID_TAGNESSE) {
+      IntList* specialsPtr = &overlay->pInfo->party[0]->specials;
+      int timeSkipIndex = -1;
+      for (int i = 0; i < specialsPtr->length; i++) {
+        if (specialsPtr->values[i] == SPECIAL_ID_TIME_SKIP) {
+          timeSkipIndex = i;
+          break;
+        }
+      }
+      IntListDelete(&overlay->pInfo->party[0]->specials, timeSkipIndex);
+    }
     inventoryRemoveEquippedItem(inventory, overlay->selectedItem->slot);
     inventoryAddItem(inventory, overlay->selectedItem->id);
 

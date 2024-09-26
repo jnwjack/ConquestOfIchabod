@@ -990,6 +990,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         playerAddXP(context->pInfo, context->xpYield);
         context->pInfo->inventory->money = MIN(MAX_MONEY, context->pInfo->inventory->money + (int)context->gold);
         if (context->pInfo->level > oldLevel) {
+          playerUpdateClassProgressionFromTime(context->pInfo);
           context->levelUpSplash = LevelUpSplashCreate(context->board, context->pInfo);
           context->menuFocus = LEVEL_UP;
           context->controlEnabled = true;

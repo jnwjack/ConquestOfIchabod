@@ -29,6 +29,7 @@
 #define ITEM_ID_UNARMORED_LEGS 11
 #define ITEM_ID_UNARMED_OFF 12
 #define ITEM_ID_GEM_OF_PERMANENCE 13
+#define ITEM_ID_TAGNESSE 14
 // ----------------------------
 
 typedef enum {

@@ -17,6 +17,8 @@
 #define ACTOR_FEARWOLF 7
 #define ACTOR_WIRE_MOTHER 8
 #define ACTOR_VOLCANETTE 9
+#define ACTOR_CHEST 10
+#define ACTOR_CHEST_OPEN 11
 
 // Buff values
 #define ACTOR_BUFF_PARRYING 1

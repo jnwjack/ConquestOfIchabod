@@ -3,13 +3,28 @@
 
 static unsigned int LEVELUP_TECHS_FIGHTER[] = { TECH_ID_FOCUS, TECH_ID_COUNTER, TECH_ID_BRACE, TECH_ID_RAGE };
 static unsigned int LEVELUP_SPECIALS_FIGHTER[] = { SPECIAL_ID_PARRY };
-static unsigned int LEVELUP_TECHS_MIN_LEVELS[] = { 1, 5, 7, 11 };
-static unsigned int LEVELUP_SPECIALS_MIN_LEVELS[] = { 1 };
+static unsigned int LEVELUP_TECHS_MIN_LEVELS_FIGHTER[] = { 1, 5, 7, 11 };
+static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_FIGHTER[] = { 1 };
 #define LEVELUP_NUM_TECHS_FIGHTER 4
 #define LEVELUP_NUM_SPECIALS_FIGHTER 1
 
-static unsigned int LEVELUP_SPECIALS_MAGE[] = { SPECIAL_ID_AVALANCHE, SPECIAL_ID_FIREBALL, SPECIAL_ID_CURSE };
-#define LEVELUP_NUM_SPECIALS_MAGE 3
+static unsigned int LEVELUP_TECHS_MAGE[] = { TECH_ID_FOCUS, TECH_ID_QUICKSTRIKE };
+static unsigned int LEVELUP_SPECIALS_MAGE[] = { SPECIAL_ID_ICE_SPEAR, SPECIAL_ID_HEAL, SPECIAL_ID_AVALANCHE, SPECIAL_ID_NEUTRALIZE, SPECIAL_ID_FIREBALL, SPECIAL_ID_CURSE, SPECIAL_ID_SILENCE };
+static unsigned int LEVELUP_TECHS_MIN_LEVELS_MAGE[] = { 1, 7 };
+static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_MAGE[] = { 1, 3, 5, 5, 7, 9, 9 };
+#define LEVELUP_NUM_TECHS_MAGE 2
+#define LEVELUP_NUM_SPECIALS_MAGE 7
+
+static unsigned int LEVELUP_TECHS_ROGUE[] = { TECH_ID_FOCUS, TECH_ID_EAGLEEYE, TECH_ID_QUICKSTRIKE };
+static unsigned int LEVELUP_SPECIALS_ROGUE[] = { SPECIAL_ID_BACKSTAB, SPECIAL_ID_HASTE, SPECIAL_ID_PARRY, SPECIAL_ID_NEUTRALIZE };
+static unsigned int LEVELUP_TECHS_MIN_LEVELS_ROGUE[] = { 1, 5, 7 };
+static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_ROGUE[] = { 1, 3, 5, 8 };
+#define LEVELUP_NUM_TECHS_ROGUE 3
+#define LEVELUP_NUM_SPECIALS_ROGUE 4
+
+static unsigned int LEVELUP_SPECIALS_CLERK[] = { SPECIAL_ID_BAG_GROCERIES, SPECIAL_ID_CLEAN, SPECIAL_ID_STOCK_SHELVES, SPECIAL_ID_SLACK_OFF, SPECIAL_ID_DAYDREAM, SPECIAL_ID_WATCH_CLOCK };
+static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_CLERK[] = { 1, 1, 1, 6, 6, 10 };
+#define LEVELUP_NUM_SPECIALS_CLERK 6
 
 SpriteAge playerSpriteAgeFromGlobalTime() {
   if (GLOBAL_TIME.day < 150) {
@@ -48,24 +63,35 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->working = false;
   info->alreadyHealed = false;
   info->rentHouseBaldUsed = false;
+  info->foundMythicalSword = false;
   info->nextRentDate = 3;
   info->shiftsWorked = 0;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
+
   // Should change based on class type
   if (info->class == PLAYER_CLASS_WIZARD) {
     info->classProgression.specials = LEVELUP_SPECIALS_MAGE;
-    info->classProgression.techs = LEVELUP_TECHS_FIGHTER;
-    info->classProgression.numTechs = LEVELUP_NUM_TECHS_FIGHTER;
+    info->classProgression.techs = LEVELUP_TECHS_MAGE;
+    info->classProgression.numTechs = LEVELUP_NUM_TECHS_MAGE;
     info->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_MAGE;
-  } else {
+    info->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_MAGE;
+    info->classProgression.techsLevels = LEVELUP_TECHS_MIN_LEVELS_MAGE;
+  } else if (info->class == PLAYER_CLASS_FIGHTER) {
     info->classProgression.specials = LEVELUP_SPECIALS_FIGHTER;
     info->classProgression.techs = LEVELUP_TECHS_FIGHTER;
     info->classProgression.numTechs = LEVELUP_NUM_TECHS_FIGHTER;
     info->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_FIGHTER;
+    info->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_FIGHTER;
+    info->classProgression.techsLevels = LEVELUP_TECHS_MIN_LEVELS_FIGHTER;
+  } else {
+    info->classProgression.specials = LEVELUP_SPECIALS_ROGUE;
+    info->classProgression.techs = LEVELUP_TECHS_ROGUE;
+    info->classProgression.numTechs = LEVELUP_NUM_TECHS_ROGUE;
+    info->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_ROGUE;
+    info->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_ROGUE;
+    info->classProgression.techsLevels = LEVELUP_TECHS_MIN_LEVELS_ROGUE;
   }
-  info->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS;
-  info->classProgression.techsLevels = LEVELUP_TECHS_MIN_LEVELS;
 
   // Copy name from argument
   int nameIndex = 0;
@@ -309,6 +335,8 @@ void playerEncode(PlayerInfo* info) {
 
   _encodeTimeState(&info->lastXPGain, temp, fp);
 
+  _encodeInt((int)info->foundMythicalSword, temp, fp);
+
 
   fclose(fp);
 }
@@ -385,6 +413,10 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 
   _decodeTimeState(&line, &len, fp, buf, &info->lastXPGain);
 
+  info->foundMythicalSword = (bool)_decodeInt(&line, &len, fp, buf);
+
+  playerUpdateClassProgressionFromTime(info);
+
   fclose(fp);
 
   // info->spriteAge = playerSpriteAgeFromGlobalTime();
@@ -402,7 +434,6 @@ char* playerGetClass(PlayerInfo* pInfo) {
 }
  
 char* playerClassNameFromID(int id) {
-
   switch (id) {
   case PLAYER_CLASS_FIGHTER:
     return "Fighter";
@@ -455,6 +486,14 @@ void playerLevelDown(PlayerInfo* pInfo) {
 
     // Reset timer
     TimeStateCopyGlobalTime(&pInfo->lastXPGain);
+  }
+}
+
+void playerUpdateClassProgressionFromTime(PlayerInfo* pInfo) {
+  if (pInfo->shiftsWorked >= 20) {
+    pInfo->classProgression.specials = LEVELUP_SPECIALS_CLERK;
+    pInfo->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_CLERK;
+    pInfo->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_CLERK;
   }
 }
 

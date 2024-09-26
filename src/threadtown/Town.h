@@ -9,7 +9,7 @@
 // After how many ticks should we check for battle?
 #define TOWN_BATTLE_TICKS 50
 #define TOWN_MOVE_SPEED 4
-#define TOWN_NUM_NPCS 5
+#define TOWN_NUM_NPC_CITIZENS 5
 
 // After this many ticks, chance for each NPC to move
 #define TOWN_NPC_MOVEMENT_TICKS 40
@@ -27,7 +27,13 @@ typedef struct TownContext {
   PauseOverlay* pauseOverlay;
   TextBox* textBox;
   COIBoard* board;
-  Actor* npcs[TOWN_NUM_NPCS];
+
+  // Dynamic sprites
+  Actor* npcs[TOWN_NUM_NPC_CITIZENS];
+  Actor* swordChest;
+  LinkedList* allActors;
+
+
   int talkingActorType; // Who are we talking to?
   LinkedList* topTentacles;
   COIMenu* confirmMenu;

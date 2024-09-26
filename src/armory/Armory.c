@@ -345,6 +345,8 @@ int _priceFromItemID(int item) {
   case ITEM_ID_GEM_OF_PERMANENCE:
     return 120;
     break;
+  case ITEM_ID_TAGNESSE:
+    return 700;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;

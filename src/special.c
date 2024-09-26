@@ -26,6 +26,22 @@ char* specialName(int id) {
     return "Haste";
   case SPECIAL_ID_SILENCE:
     return "Silence";
+  case SPECIAL_ID_DAYDREAM:
+    return "Daydream";
+  case SPECIAL_ID_BAG_GROCERIES:
+    return "Bag Items";
+  case SPECIAL_ID_SLACK_OFF:
+    return "Slack Off";
+  case SPECIAL_ID_STOCK_SHELVES:
+    return "Stock Goods";
+  case SPECIAL_ID_CLEAN:
+    return "Clean";
+  case SPECIAL_ID_WATCH_CLOCK:
+    return "Watch Clock";
+  case SPECIAL_ID_BACKSTAB:
+    return "Backstab";
+  case SPECIAL_ID_TIME_SKIP:
+    return "Time Skip";
   }
 
   return "ERROR";
@@ -36,7 +52,15 @@ char* specialVerb(int id) {
   case SPECIAL_ID_PARRY:
     return "READIES";
   case SPECIAL_ID_HOWL:
+  case SPECIAL_ID_BACKSTAB:
     return "USES";
+  case SPECIAL_ID_DAYDREAM:
+  case SPECIAL_ID_BAG_GROCERIES:
+  case SPECIAL_ID_SLACK_OFF:
+  case SPECIAL_ID_STOCK_SHELVES:
+  case SPECIAL_ID_CLEAN:
+  case SPECIAL_ID_WATCH_CLOCK:
+    return "WASTES TIME WITH";
   default:
     return "CASTS";
   }
@@ -55,7 +79,7 @@ int specialStrength(int id) {
   case SPECIAL_ID_DRAIN_SPIRIT:
     return 5;
   default:
-    return -1;
+    return 0;
   }
 }
 
@@ -65,6 +89,7 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_ICE_SPEAR:
   case SPECIAL_ID_FIREBALL:
   case SPECIAL_ID_AVALANCHE:
+  case SPECIAL_ID_BACKSTAB:
     return SPECIAL_DAMAGING;
   case SPECIAL_ID_HEAL:
     return SPECIAL_HEALING;
@@ -77,7 +102,15 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_REINFORCE:
   case SPECIAL_ID_HOWL:
   case SPECIAL_ID_HASTE:
+  case SPECIAL_ID_TIME_SKIP:
     return SPECIAL_BUFF;
+  case SPECIAL_ID_DAYDREAM:
+  case SPECIAL_ID_BAG_GROCERIES:
+  case SPECIAL_ID_SLACK_OFF:
+  case SPECIAL_ID_STOCK_SHELVES:
+  case SPECIAL_ID_CLEAN:
+  case SPECIAL_ID_WATCH_CLOCK:
+    return SPECIAL_GAG;
   default:
     printf("Invalid id for special type lookup.\n");
     return SPECIAL_DAMAGING;
@@ -106,9 +139,22 @@ int specialCost(int id) {
     return 7;
   case SPECIAL_ID_PARRY:
     return 10;
+  case SPECIAL_ID_BACKSTAB:
+    return 6;
+  case SPECIAL_ID_HASTE:
+    return 5;
+  case SPECIAL_ID_DAYDREAM:
+  case SPECIAL_ID_BAG_GROCERIES:
+  case SPECIAL_ID_SLACK_OFF:
+  case SPECIAL_ID_STOCK_SHELVES:
+  case SPECIAL_ID_CLEAN:
+  case SPECIAL_ID_WATCH_CLOCK:
+    return 1;
+  case SPECIAL_ID_TIME_SKIP:
+    return 0;
   default:
     printf("Invalid special id for cost.\n");
-    return -1;
+    return 0;
   }
 }
 
@@ -130,6 +176,24 @@ char* specialDescription(int id) {
     return "Reduce the target's SP";
   case SPECIAL_ID_SILENCE:
     return "Prevent the target from using SPECIAL for five turns";
+  case SPECIAL_ID_DAYDREAM:
+    return "Is this how you thought things would be going?";
+  case SPECIAL_ID_BAG_GROCERIES:
+    return "Pack up the customer's purchases. Bread on the top.";
+  case SPECIAL_ID_SLACK_OFF:
+    return "Fritter and waste the hours in an offhand way.";
+  case SPECIAL_ID_STOCK_SHELVES:
+    return "Lift cans and boxes onto display shelves. This is your main source of excercise.";
+  case SPECIAL_ID_CLEAN:
+    return "Wipe down the counter and any other messes.";
+  case SPECIAL_ID_WATCH_CLOCK:
+    return "What's a little more wasted time at this point?";
+  case SPECIAL_ID_BACKSTAB:
+    return "Deal damage to enemy. The higher the user's AGI is compared to the target's, the more damage is dealt.";
+  case SPECIAL_ID_HASTE:
+    return "Increase AGI";
+  case SPECIAL_ID_TIME_SKIP:
+    return "Escape battle by moving forward in time.";
   default:
     return "Error: Not implemented";
   }

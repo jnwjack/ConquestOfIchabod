@@ -17,7 +17,6 @@ Actor* actorCreate(int actorType, COISprite* sprite,
   Actor* actor = malloc(sizeof(Actor));
   actor->actorType = actorType;
   actor->sprite = sprite;
-  COISpriteSetSheetIndex(actor->sprite, 2, 2);
 
   actor->atk.base = atk;
   actor->atk.factor = 1.0;
@@ -63,9 +62,11 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   switch(actorType) {
   case ACTOR_SKELETON:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 29, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_TENTACLE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 10, 8, 25, 10, 30);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
@@ -75,15 +76,20 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     }
   case ACTOR_CHAGGAI:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_LANDLORD:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_MERCHANT:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_BOOWOW:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 31, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 7, 12, 0, 5);
       IntListAdd(&actor->specials, SPECIAL_ID_HOWL);
@@ -91,9 +97,11 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     }
   case ACTOR_FEARWOLF:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 28, 15, 12, 22, 0, 5);
   case ACTOR_WIRE_MOTHER:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 28, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 2, 12, 0, 75);
       IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
@@ -103,6 +111,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     }
   case ACTOR_VOLCANETTE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 27, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 9, 10, 12, 0, 75);
       IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
@@ -110,6 +119,12 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       return actor;
     }
+  case ACTOR_CHEST:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 68, COIWindowGetRenderer(window));
+    return actorCreate(actorType, sprite, 0, 0, 0, 0, 0, 0);
+  case ACTOR_CHEST_OPEN:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 69, COIWindowGetRenderer(window));
+    return actorCreate(actorType, sprite, 0, 0, 0, 0, 0, 0);
   default:
     printf("Invalid actor type when creating actor\n");
     return NULL;
@@ -231,21 +246,23 @@ void actorFaceDown(Actor* actor) {
 // If 'a' and 'b' are adjacent, this makes 'a' and 'b' look like they're
 // talking.
 void actorMeetGaze(Actor* a, Actor* b) {
-  switch (b->_spriteSheetRow) {
-  case 0:
-    actorFaceLeft(a);
-    break;
-  case 1:
-    actorFaceRight(a);
-    break;
-  case 2:
-    actorFaceDown(a);
-    break;
-  case 3:
-    actorFaceUp(a);
-    break;
-  default:
-    printf("Error. Invalid sprite sheet index.\n");
+  if (COISpriteHasMultipleFrames(a->sprite)) {
+    switch (b->_spriteSheetRow) {
+    case 0:
+      actorFaceLeft(a);
+      break;
+    case 1:
+      actorFaceRight(a);
+      break;
+    case 2:
+      actorFaceDown(a);
+      break;
+    case 3:
+      actorFaceUp(a);
+      break;
+    default:
+      printf("Error. Invalid sprite sheet index.\n");
+    }
   }
 }
 

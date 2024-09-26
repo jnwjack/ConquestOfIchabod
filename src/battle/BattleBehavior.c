@@ -398,7 +398,12 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     spType = specialType(action->index);
     a->sp -= (specialCost(action->index) * action->spCostModifier);
     if (spType == SPECIAL_DAMAGING) {
-      damage = _randomDamage(specialStrength(action->index));
+      if (action->index == SPECIAL_ID_BACKSTAB) {
+        int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
+        damage = _randomDamage(specialStrength(base));
+      } else {
+        damage = _randomDamage(specialStrength(action->index));
+      }
 
       if (_critical()) {
         damage *= 2;
@@ -446,6 +451,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
       snprintf(temp, MAX_STRING_SIZE, "%i HP RESTORED", amountHealed);
       ActionSummaryAddString(summary, temp, board, box, textType);
+    } else if (spType == SPECIAL_GAG) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s", aName, specialVerb(action->index), specialName(action->index));
+      summary = ActionSummaryCreate(board, box, textType, temp, "NOTHING HAPPENS!", NULL);
     } else if (action->index == SPECIAL_ID_PARRY) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
 	       aName, specialVerb(action->index), specialName(action->index));
@@ -512,6 +520,13 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       modifier->turnsLeft = 5;
       modifier->type = MT_SILENCED;
       ActionSummaryAddString(summary, "SPECIAL ABILITIES CAN NO LONGER BE USED", board, box, textType);
+    } else if (action->index == SPECIAL_ID_TIME_SKIP) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
+	       aName, specialVerb(action->index), specialName(action->index));
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      ActionSummaryAddString(summary, "YOUR PARTY TRAVELS FORWARD IN TIME AND ESCAPES!", board, box, textType);
+      TimeStateIncrement(6);
+      action->successfulFlee = true;
     } else {
       summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
     }

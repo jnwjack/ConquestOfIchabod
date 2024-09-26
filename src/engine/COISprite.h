@@ -44,5 +44,6 @@ int COISpriteCollision(COISprite* sprite, int x, int y, int width, int height);
 void COISpriteSetExtraCollision(COISprite* sprite, COIExtraCollision* collision);
 void COISpriteSetPos(COISprite* sprite, int x, int y);
 void COISpriteAnimateInPlace(COISprite* sprite);
+bool COISpriteHasMultipleFrames(COISprite* sprite);
 
 #endif

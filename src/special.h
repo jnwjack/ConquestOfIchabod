@@ -43,12 +43,23 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_NEUTRALIZE 11 // Return all stat changes on target to 1.0.
 #define SPECIAL_ID_HASTE 12
 #define SPECIAL_ID_SILENCE 13 // Target can't use specials for a bit
+#define SPECIAL_ID_BACKSTAB 14 // Deal damage based on AGI
+#define SPECIAL_ID_TIME_SKIP 21
+
+// These are for a gag and don't do anything
+#define SPECIAL_ID_DAYDREAM 15
+#define SPECIAL_ID_BAG_GROCERIES 16
+#define SPECIAL_ID_SLACK_OFF 17
+#define SPECIAL_ID_STOCK_SHELVES 18
+#define SPECIAL_ID_CLEAN 19
+#define SPECIAL_ID_WATCH_CLOCK 20
 
 typedef enum {
   SPECIAL_DAMAGING,
   SPECIAL_HEALING,
   SPECIAL_BUFF,
   SPECIAL_DEBUFF,
+  SPECIAL_GAG,
 } SpecialType;
 
 char* specialName(int id);

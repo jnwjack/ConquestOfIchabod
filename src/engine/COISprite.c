@@ -103,6 +103,10 @@ void COISpriteSetSheetIndex(COISprite* sprite, int row, int col) {
   sprite->_sheetCount = 1;
 }
 
+bool COISpriteHasMultipleFrames(COISprite* sprite) {
+  return sprite->_srcRect != NULL;
+}
+
 /*void COISpriteSheetIncrementIndex(COISprite* sprite) {
   if (sprite->_srcRect == NULL) {
     return;

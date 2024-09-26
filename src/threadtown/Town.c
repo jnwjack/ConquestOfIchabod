@@ -1,8 +1,9 @@
 #include "Town.h"
+#include "../special.h"
 
 #define PAY_PER_SHIFT 100
 
-int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
+static int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
   // Probably want this to only look at visible sprites
   COIBoard* board = context->board;
   int maxSpriteIndex = board->_spriteCount;
@@ -21,22 +22,24 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
     }
   }
 
-  // Check for collision against NPCs
-  for (i = 0; i < TOWN_NUM_NPCS; i++) {
-    currentSprite = context->npcs[i]->sprite;
-    // Don't check for collision against self
-    if (currentSprite == actorSprite) {
-      continue;
-    }
-    collisionResult = COISpriteCollision(currentSprite,
+  LinkedListResetCursor(context->allActors);
+  Actor* currentActor = (Actor*)LinkedListNext(context->allActors);
+  while (currentActor) {
+    COISprite* theSprite = currentActor->sprite;
+    if (theSprite != actorSprite) {
+      collisionResult = COISpriteCollision(theSprite,
 					 actorSprite->_x + changeX,
 					 actorSprite->_y + changeY,
 					 actorSprite->_width,
 					 actorSprite->_height);
-    if (collisionResult != COI_NO_COLLISION) {
-      return collisionResult;
+      if (collisionResult != COI_NO_COLLISION) {
+        return collisionResult;
+      }
     }
+
+    currentActor = (Actor*)LinkedListNext(context->allActors);
   }
+
 
   // Check for collision against player
   currentSprite = context->pInfo->party[0]->sprite;
@@ -54,7 +57,7 @@ int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX,
 // Need to make only run when tentacles in viewframe.
 // Move to COISprite. Add "isAnimated" field in COISprite
 // CBB can flag sprites as animated
-void _animateTentacles(TownContext* context) {
+static void _animateTentacles(TownContext* context) {
   LinkedListResetCursor(context->topTentacles);
   COISprite* tentacle = (COISprite*)LinkedListNext(context->topTentacles);
   while (tentacle) {
@@ -74,7 +77,7 @@ void _animateTentacles(TownContext* context) {
   }
 }
 
-Actor* _facingNPC(Actor* player, Actor** npcs) {
+static Actor* _facingNPC(Actor* player, LinkedList* actors) {
   int facingX = player->sprite->_x;
   int facingY = player->sprite->_y;
   switch (player->_spriteSheetRow) {
@@ -94,18 +97,49 @@ Actor* _facingNPC(Actor* player, Actor** npcs) {
     printf("Problem when checking player direction.\n");
     break;
   }
-  
-  for (int i = 0; i < TOWN_NUM_NPCS; i++) {
-    if (npcs[i]->sprite->_x == facingX &&
-	      npcs[i]->sprite->_y == facingY) {
-      return npcs[i];
-    }
+  LinkedListResetCursor(actors);
+  Actor* currentActor = LinkedListNext(actors);
+  while (currentActor) {
+    if (currentActor->sprite->_x == facingX &&
+        currentActor->sprite->_y == facingY) {
+        return currentActor;
+    } 
+
+    currentActor = LinkedListNext(actors);
   }
 
   return NULL;
 }
 
-void _createNPCs(TownContext* context) {
+static void _createSwordChest(TownContext* context) {
+  if (context->swordChest) {
+    LinkedListRemove(context->allActors, (void*)context->swordChest);
+    COIBoardRemoveDynamicSprite(context->board, context->swordChest->sprite);
+    COISpriteDestroy(context->swordChest->sprite);
+    actorDestroy(context->swordChest);
+  }
+
+  if (context->pInfo->foundMythicalSword) {
+    context->swordChest = actorCreateOfType(ACTOR_CHEST_OPEN,
+              3008,
+              480,
+              COI_GLOBAL_LOADER,
+              COI_GLOBAL_WINDOW);
+  } else {
+    context->swordChest = actorCreateOfType(ACTOR_CHEST,
+              3008,
+              480,
+              COI_GLOBAL_LOADER,
+              COI_GLOBAL_WINDOW);
+  }
+  COIBoardAddDynamicSprite(context->board, context->swordChest->sprite);
+  LinkedListResetCursor(context->allActors);
+  LinkedListAdd(context->allActors, (void*)context->swordChest);
+}
+
+static void _createNPCs(TownContext* context) {
+  context->allActors = LinkedListCreate();
+
   context->npcs[0] = actorCreateOfType(ACTOR_CHAGGAI,
 				       1408,
 				       1856,
@@ -145,6 +179,12 @@ void _createNPCs(TownContext* context) {
 				       COI_GLOBAL_WINDOW);
   COIBoardAddDynamicSprite(context->board, context->npcs[4]->sprite);
   actorFaceDown(context->npcs[4]);
+
+  _createSwordChest(context);
+
+  for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
+    LinkedListAdd(context->allActors, (void*)context->npcs[i]);
+  }
 }
 
 
@@ -161,6 +201,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->board = board;
   context->willEnterBattle = false;
   context->_npcTicks = 0;
+  context->swordChest = NULL;
   context->textType = COITextTypeCreate(15, 255, 255, 255, COIWindowGetRenderer(window));
   
   
@@ -200,7 +241,6 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   COIMenuAddString(context->confirmMenu, no, 1);
   COIMenuSetInvisible(context->confirmMenu);
 
-  
   context->pauseOverlay = PauseOverlayCreate(pInfo, context->textType, context->board);
 
   context->textBox = TextBoxCreate(context->board, context->textType);
@@ -217,8 +257,6 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
     }
     
   }
-
-  
   COIBoardSetContext(board, (void*)context);
 
   return board;
@@ -316,7 +354,7 @@ void townUpdateTerrain(TownContext* context, int collisionResult) {
 }
 
 // If we move to the next grid, what kind of collision do we get?
-int _getNextCollision(TownContext* context, Actor* actor, int direction) {
+static int _getNextCollision(TownContext* context, Actor* actor, int direction) {
   int changeX = 0;
   int changeY = 0;
   switch (direction) {
@@ -338,7 +376,7 @@ int _getNextCollision(TownContext* context, Actor* actor, int direction) {
   return  _testForCollision(context, actor->sprite, changeX, changeY);
 }
 
-void _talkToLandlord(TownContext* context) {
+static void _talkToLandlord(TownContext* context) {
   if (context->pInfo->renting == RS_RENTING) {
     unsigned long daysLeft = context->pInfo->nextRentDate - GLOBAL_TIME.day;
     if (daysLeft == 1) {
@@ -367,7 +405,7 @@ void _talkToLandlord(TownContext* context) {
   }
 }
 
-void _talkToMerchant(TownContext* context) {
+static void _talkToMerchant(TownContext* context) {
   if (context->pInfo->working) {
     TextBoxSetStrings(context->textBox,
 		      "Ready to work?",
@@ -379,7 +417,25 @@ void _talkToMerchant(TownContext* context) {
   }
 }
 
-void _confirmMenuSelect(TownContext* context) {
+static void _talkToChest(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "Unbelievable!",
+      "You found Tagnesse, the mythical shield of Thread Town!",
+      NULL);
+  context->pInfo->foundMythicalSword = true;
+  _createSwordChest(context); // Change to 'opened' sprite
+
+  // We need to delete and recreate the overlay because we're need it to be on top of everything 
+  // (and so its sprites must be the last ones in the list).
+  // It'd be better if our sprites just had a notion of Z-index.
+  PauseOverlayDestroy(context->pauseOverlay, context->board);
+  context->pauseOverlay = PauseOverlayCreate(context->pInfo, context->textType, context->board);
+
+  inventoryAddItem(context->pInfo->inventory, ITEM_ID_TAGNESSE);
+  context->pauseOverlay->dirty = true;
+}
+
+static void _confirmMenuSelect(TownContext* context) {
   COISoundPlay(COI_SOUND_SELECT);
   TextBoxNextString(context->textBox);
   bool choseYes = COIMenuGetCurrentValue(context->confirmMenu) == 0;
@@ -460,7 +516,7 @@ void townProcessSelectionInput(TownContext* context) {
     }
     COIBoardQueueDraw(context->board);
   } else {
-    Actor* talkingNPC = _facingNPC(player, context->npcs);
+    Actor* talkingNPC = _facingNPC(player, context->allActors);
     if (talkingNPC != NULL) {
       actorMeetGaze(talkingNPC, player);
       context->talkingActorType = talkingNPC->actorType;
@@ -472,6 +528,15 @@ void townProcessSelectionInput(TownContext* context) {
 	      _talkToMerchant(context);
         // printf("talked to merchant 1\n");
 	      break;
+      case ACTOR_CHEST_OPEN:
+        TextBoxSetStrings(context->textBox,
+            "Unbelievable!",
+            "It's empty.",
+            NULL);
+        break;
+      case ACTOR_CHEST:
+        _talkToChest(context);
+        break;
       default:
 	      TextBoxSetStrings(context->textBox,
 			      "I saw something scary in the northeast.",
@@ -528,7 +593,7 @@ void townTick(TownContext* context) {
   // NPCs
   if (!context->textBox->box->_visible) {
     if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
-      for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+      for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
 	// 30% chance they move
 	if (context->npcs[i]->actorType == ACTOR_CHAGGAI && generateRandomBoolWeighted(0.3)) {
 	  // If we do move, pick 1 of the 4 directions
@@ -553,7 +618,7 @@ void townTick(TownContext* context) {
 }
 
 void townMoveNPCs(TownContext* context) {
-  for (int i = 0; i < TOWN_NUM_NPCS; i++) {
+  for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
     Actor* npc = context->npcs[i];
     bool inNextGridCell = townContinueMovement(npc, context->board);
     if (inNextGridCell) {
@@ -673,12 +738,22 @@ void townDestroyBoard(TownContext* context) {
   PauseOverlayDestroy(context->pauseOverlay, context->board);
   TextBoxDestroy(context->textBox);
   LinkedListDestroy(context->topTentacles);
-  for (int i = 0; i < TOWN_NUM_NPCS; i++) {
-    COISprite* sprite = context->npcs[i]->sprite;
-    COIBoardRemoveDynamicSprite(context->board, sprite);
-    COISpriteDestroy(sprite);
-    actorDestroy(context->npcs[i]);
+
+  LinkedListResetCursor(context->allActors);
+  Actor* currentActor = LinkedListNext(context->allActors);
+  while (currentActor) {
+    COIBoardRemoveDynamicSprite(context->board, currentActor->sprite);
+    COISpriteDestroy(currentActor->sprite);
+    actorDestroy(currentActor);
+    currentActor = LinkedListNext(context->allActors);
   }
+  LinkedListDestroy(context->allActors);
+  // for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
+  //   COISprite* sprite = context->npcs[i]->sprite;
+  //   COIBoardRemoveDynamicSprite(context->board, sprite);
+  //   COISpriteDestroy(sprite);
+  //   actorDestroy(context->npcs[i]);
+  // }
   COIMenuDestroyAndFreeComponents(context->confirmMenu, context->board);
   COIBoardDestroy(context->board);
   free(context);
