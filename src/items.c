@@ -144,6 +144,8 @@ char* ItemListStringFromItemID(int item) {
     return "Gem of Time";
   case ITEM_ID_TAGNESSE:
     return "Tagnesse";
+  case ITEM_ID_KNIFE:
+    return "Knife";
   default:
     return "-";
   }

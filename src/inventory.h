@@ -31,5 +31,6 @@ bool inventoryRemoveEquippedItem(Inventory* inventory, int slot);
 Item** inventoryGetEquippedItems(Inventory* inventory);
 Item* inventoryEquipItem(Inventory* inventory, Item* item);
 int inventoryDEFItemTotalStrength(Inventory* inventory);
+bool inventoryHasItem(Inventory* inventory, int itemID, int slot);
 
 #endif

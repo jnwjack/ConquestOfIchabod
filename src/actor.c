@@ -77,13 +77,20 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_CHAGGAI:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
-    COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_LANDLORD:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_MERCHANT:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
+  case ACTOR_TAGNESSE_GUY:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
+  case ACTOR_TREE_GUY:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
@@ -135,7 +142,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   // Process for random stat generation, maybe specific for each class?
   Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 15, 10, 50, 99, 10, 30);
   
-  COISpriteSetSheetIndex(actor->sprite, 3, 0);
+  COISpriteSetSheetIndex(actor->sprite, 2, 2);
     
   return actor;
 }

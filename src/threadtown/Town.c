@@ -140,45 +140,19 @@ static void _createSwordChest(TownContext* context) {
 static void _createNPCs(TownContext* context) {
   context->allActors = LinkedListCreate();
 
-  context->npcs[0] = actorCreateOfType(ACTOR_CHAGGAI,
-				       1408,
-				       1856,
-				       COI_GLOBAL_LOADER,
-				       COI_GLOBAL_WINDOW);
-  COIBoardAddDynamicSprite(context->board, context->npcs[0]->sprite);
-  actorFaceRight(context->npcs[0]);
+  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 2176, 2080, 2176, 2976 };
+  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 2528, 2144, 2656, 3232 };
+  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY };
 
-  context->npcs[1] = actorCreateOfType(ACTOR_CHAGGAI,
-				       1664,
-				       2176,
+  for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
+  context->npcs[i] = actorCreateOfType(actorIDs[i],
+				       xPositions[i],
+				       yPositions[i],
 				       COI_GLOBAL_LOADER,
 				       COI_GLOBAL_WINDOW);
-  COIBoardAddDynamicSprite(context->board, context->npcs[1]->sprite);
-  actorFaceRight(context->npcs[1]);
-
-  context->npcs[2] = actorCreateOfType(ACTOR_CHAGGAI,
-				       2240,
-				       2048,
-				       COI_GLOBAL_LOADER,
-				       COI_GLOBAL_WINDOW);
-  COIBoardAddDynamicSprite(context->board, context->npcs[2]->sprite);
-  actorFaceRight(context->npcs[2]);
-
-  context->npcs[3] = actorCreateOfType(ACTOR_LANDLORD,
-				       2176,
-				       2528,
-				       COI_GLOBAL_LOADER,
-				       COI_GLOBAL_WINDOW);
-  COIBoardAddDynamicSprite(context->board, context->npcs[3]->sprite);
-  actorFaceDown(context->npcs[3]);
-
-  context->npcs[4] = actorCreateOfType(ACTOR_MERCHANT,
-				       2080,
-				       2144,
-				       COI_GLOBAL_LOADER,
-				       COI_GLOBAL_WINDOW);
-  COIBoardAddDynamicSprite(context->board, context->npcs[4]->sprite);
-  actorFaceDown(context->npcs[4]);
+  COIBoardAddDynamicSprite(context->board, context->npcs[i]->sprite);
+  actorFaceRight(context->npcs[i]);
+  }
 
   _createSwordChest(context);
 
@@ -417,6 +391,42 @@ static void _talkToMerchant(TownContext* context) {
   }
 }
 
+static void _talkToTagnesseGuy(TownContext* context) {
+  if (!context->pInfo->foundMythicalSword) {
+    TextBoxSetStrings(context->textBox,
+        "Want to hear a local legend?",
+        "There's supposedly a magical shield that lies deep in the forest.",
+        "Anyone who wields it can travel through time!",
+        NULL);
+  } else if (!inventoryHasItem(context->pInfo->inventory, ITEM_ID_TAGNESSE, ITEM_SLOT_OFFHAND)) {
+    TextBoxSetStrings(context->textBox,
+        "Oh...you sold it?",
+        "I guess if you need to.",
+        NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+        "No way! I can't believe it's real.",
+        "You should head to Havonvale in the east. There's an adventurer like you seeking other strong warriors.",
+        "Maybe he could join your party!",
+        NULL);
+  }
+}
+
+static void _talkToTreeGuy(TownContext* context) {
+  if (GLOBAL_TIME.day > 50) {
+    TextBoxSetStrings(context->textBox,
+        "There's an interesting quirk about this tree.",
+        "Every fruit tastes different!",
+        "When I was a kid, I'd try to guess what each fruit would taste like before picking which branch to climb.",
+        "I was never be able to choose. I'd end up just sitting at the trunk all afternoon. Ha!",
+        NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+        "You're a new face! Welcome to Thread Town.",
+        NULL);
+  }
+}
+
 static void _talkToChest(TownContext* context) {
   TextBoxSetStrings(context->textBox,
       "Unbelievable!",
@@ -427,7 +437,7 @@ static void _talkToChest(TownContext* context) {
 
   // We need to delete and recreate the overlay because we're need it to be on top of everything 
   // (and so its sprites must be the last ones in the list).
-  // It'd be better if our sprites just had a notion of Z-index.
+  // It'd be better if our sprites just had a notion of a Z-index.
   PauseOverlayDestroy(context->pauseOverlay, context->board);
   context->pauseOverlay = PauseOverlayCreate(context->pInfo, context->textType, context->board);
 
@@ -471,9 +481,6 @@ static void _confirmMenuSelect(TownContext* context) {
 }
 
 bool _shouldPromptForAnswer(TownContext* context) {
-  if (context->talkingActorType == ACTOR_MERCHANT) {
-    printf("SPEAKING TO MERCHANT\n");
-  }
   if (context->talkingActorType == ACTOR_LANDLORD &&
       context->pInfo->renting == RS_NOT_RENTING &&
       context->textBox->currentStringDone) {
@@ -537,6 +544,12 @@ void townProcessSelectionInput(TownContext* context) {
       case ACTOR_CHEST:
         _talkToChest(context);
         break;
+      case ACTOR_TAGNESSE_GUY:
+        _talkToTagnesseGuy(context);
+        break;
+      case ACTOR_TREE_GUY:
+        _talkToTreeGuy(context);
+        break;
       default:
 	      TextBoxSetStrings(context->textBox,
 			      "I saw something scary in the northeast.",
@@ -595,7 +608,7 @@ void townTick(TownContext* context) {
     if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
       for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
 	// 30% chance they move
-	if (context->npcs[i]->actorType == ACTOR_CHAGGAI && generateRandomBoolWeighted(0.3)) {
+	if (context->npcs[i]->actorType != ACTOR_MERCHANT && context->npcs[i]->actorType != ACTOR_LANDLORD && generateRandomBoolWeighted(0.3)) {
 	  // If we do move, pick 1 of the 4 directions
 	  _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
 	  // Cancel movement if there's a collision

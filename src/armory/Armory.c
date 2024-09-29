@@ -209,6 +209,7 @@ COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* in
   IntListAdd(&itemIDs, ITEM_ID_RUSTY_SWORD);
   IntListAdd(&itemIDs, ITEM_ID_RUSTY_BATTLEAXE);
   IntListAdd(&itemIDs, ITEM_ID_SHABBY_BOW);
+  IntListAdd(&itemIDs, ITEM_ID_KNIFE);
   IntListAdd(&itemIDs, ITEM_ID_CRACKED_SHIELD);
   IntListAdd(&itemIDs, ITEM_ID_BRONZE_HELM);
   IntListAdd(&itemIDs, ITEM_ID_BRONZE_CHEST);
@@ -347,34 +348,10 @@ int _priceFromItemID(int item) {
     break;
   case ITEM_ID_TAGNESSE:
     return 700;
+  case ITEM_ID_KNIFE:
+    return 13;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;
-  }
-}
-
-char* _stringFromItemID(int item) {
-  switch (item) {
-  case ITEM_ID_RUSTY_SWORD:
-    return "Rusty Sword";
-    break;
-  case ITEM_ID_RUSTY_BATTLEAXE:
-    return "Rusty Battleaxe";
-    break;
-  case ITEM_ID_SHABBY_BOW:
-    return "Shabby Bow";
-    break;
-  case ITEM_ID_CRACKED_SHIELD:
-    return "Cracked Shield";
-    break;
-  case ITEM_ID_STRENGTH_POTION:
-    return "Strength Potion";
-    break;
-  case ITEM_ID_GEM_OF_PERMANENCE:
-    return "Gem of Time";
-    break;
-  default:
-    printf("Error: No valid text ID\n");
-    return "Error";
   }
 }

@@ -40,6 +40,7 @@ COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int cap
 // Remove and destroy all strings in menu
 // Better to call this than repeatedly calling "COIMenuRemoveString"
 void COIMenuFreeComponents(COIMenu* menu, COIBoard* board) {
+  printf("string count in menu: %i\n", menu->_stringCount);
   for (int i = 0; i < menu->_stringCount; i++) {
     COIString* str = menu->_strings[i];
     COIBoardRemoveString(board, str);

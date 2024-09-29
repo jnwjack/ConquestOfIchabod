@@ -19,6 +19,8 @@
 #define ACTOR_VOLCANETTE 9
 #define ACTOR_CHEST 10
 #define ACTOR_CHEST_OPEN 11
+#define ACTOR_TAGNESSE_GUY 12
+#define ACTOR_TREE_GUY 13
 
 // Buff values
 #define ACTOR_BUFF_PARRYING 1

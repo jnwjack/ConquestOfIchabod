@@ -176,3 +176,39 @@ int inventoryDEFItemTotalStrength(Inventory* inventory) {
   return total;
 }
 
+bool inventoryHasItem(Inventory* inventory, int itemID, int slot) {
+  Item* equippedItem;
+  switch (slot) {
+  case ITEM_SLOT_WEAPON:
+    equippedItem = inventory->weapon;
+    break;
+  case ITEM_SLOT_BODY:
+    equippedItem = inventory->body;
+    break;
+  case ITEM_SLOT_HEAD:
+    equippedItem = inventory->head;
+    break;
+  case ITEM_SLOT_LEGS:
+    equippedItem = inventory->legs;
+    break;
+  case ITEM_SLOT_OFFHAND:
+    equippedItem = inventory->offHand;
+    break;
+  default:
+    printf("Error: invalid item ID\n");
+    return false;
+  }
+
+  if (equippedItem->id == itemID) {
+    return true;
+  }
+
+  for (int i = 0; i < inventory->numBackpackItems; i++) {
+    if (inventory->backpack[i]->id == itemID) {
+      return true;
+    }
+  }
+
+  return false;
+}
+

@@ -30,32 +30,9 @@ static void _init() {
   // Initialize global window and asset loader
   COIWindowInit();
   COIAssetLoaderInit();
-  
-  // Global item data
-  /*
-  ItemList* itemList = loadItems();
-
-  // Test inventory
-  Inventory* inventory = createTestInventory(itemList);
-
-  // Initialize player data
-  COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, loader, 1, COIWindowGetRenderer(window));
-  PlayerInfo* pInfo = playerInfoCreate("Wique", playerSprite, inventory);
-  actorFaceDown(pInfo->party[0]);
-  */
 
   COIBoard* titleBoard = titleCreateBoard();
   COIWindowSetBoard(COI_GLOBAL_WINDOW, titleBoard, title);
-  
-  //COIBoard* townBoard = townCreateBoard(window, loader, pInfo);
-  //COILoop threadTownLoop = &threadTown;
-  //COIWindowSetBoard(window, townBoard, threadTownLoop);
-  /*#ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop_arg(COIWindowLoop, (void*)window, 0, 0);
-  #else
-  COIWindowLoop(window);
-  #endif
-  */
 }
 
 void _cleanup() {

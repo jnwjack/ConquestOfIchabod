@@ -543,6 +543,7 @@ bool _special(BattleContext* context) {
     COIBoardAddString(context->board, string);
     COIMenuAddString(context->subMenu, string, specials->values[i]);
   }
+  printf("specials: %i\n", specials->length);
   
   COIMenuReset(context->subMenu);
   COIMenuSetVisible(context->subMenu);
@@ -557,34 +558,21 @@ bool _tech(BattleContext* context) {
     return false;
   }
 
-  context->pointingAtEnemies = false;
-  context->targetedActorIndex = 0;
-  _adjustPointer(context);
-  _toggleTargetNameVisibility(context, true);
-  context->pointer->_visible = true;
-
-  // Clean up previous COIStrings
-  for (int i = 0; i < context->subMenu->_stringCount; i++) {
-    COIBoardRemoveString(context->board, context->subMenu->_strings[i]);
-    COIStringDestroy(context->subMenu->_strings[i]);
-  }
+  COIMenuFreeComponents(context->subMenu, context->board);
 
   TechList* tList = context->allies[context->turnIndex]->techList;
-  COIString** tNames = malloc(sizeof(COIString*) * tList->count);
-  for (int i = 0; i <tList->count; i++) {
-    tNames[i] = techNameAsCOIString(tList->techs[i], 0, 0, context->textType, tList->techs[i]->active);
-    COIBoardAddString(context->board, tNames[i]);
+  for (int i = 0; i < tList->count; i++) {
+    COIString* string = techNameAsCOIString(tList->techs[i], 0, 0, context->textType, tList->techs[i]->active);
+    COIStringSetVisible(string, true);
+    COIBoardAddString(context->board, string);
+    COIMenuAddString(context->subMenu, string, tList->techs[i]->id);
   }
-  COIMenuSetTexts(context->subMenu, tNames, tList->count);
-  
+
   COIMenuReset(context->subMenu);
   COIMenuSetVisible(context->subMenu);
 
-  free(tNames);
-
   context->menuFocus = SUB_MENU;
   context->subMenuType = SM_TECH;
-
   return true;
 }
 
