@@ -79,7 +79,6 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
 }
 
 void battle(COIBoard* board, SDL_Event* event, void* context) {
-  // printf("before tick\n");
   BattleContext* battleContext = (BattleContext*)context;
   battleTick(battleContext);
 
@@ -88,10 +87,8 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   if (!battleContext->controlEnabled) {
     // Can speed up animations by inputting a selection
     bool selection = _sdlEventToDirectionalInput(event) == MOVING_SELECT;
-    // printf("before advance scene\n");
     result = battleAdvanceScene(battleContext, selection);
     _processBattleResult(board, battleContext, result);
-    // printf("after advance scene\n");
     return;
   }
 

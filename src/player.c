@@ -113,7 +113,6 @@ unsigned long _getXPForLevel(unsigned long oldXP) {
 void playerAddXP(PlayerInfo* info, unsigned long xp) {
   info->xp += xp;
   if (info->xp >= info->xpForLevelUp) {
-    printf("CURRENT XP: %lu\n", info->xp);
     info->level++;
     info->xp -= info->xpForLevelUp;
     info->xpForLevelUp = _getXPForLevel(info->xpForLevelUp);
@@ -130,8 +129,6 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
     int tpIncrease = generateRandomCharInRange(1, 5);
     info->party[0]->tpMax += tpIncrease;
     info->party[0]->tp += tpIncrease;
-    printf("CURRENT XP AFTER SUBTRACTION: %lu\n", info->xp);
-    printf("XP REQUIRED FOR LEVEL UP: %lu\n", info->xpForLevelUp);
   }
   TimeStateCopyGlobalTime(&info->lastXPGain);
 }
@@ -259,7 +256,6 @@ void _decodeTimeState(char** line, size_t* len, FILE* fp, char* buf, TimeState* 
 void _encodeStat(Stat* val, char* buf, FILE* fp) {
   _encodeInt(val->base, buf, fp);
   snprintf(buf, MAX_STRING_SIZE, "%f", val->factor);
-  printf("FACTOR: %f\n", val->factor);
   _encodeString(buf, fp);
   _encodeTimeState(&val->end, buf, fp);
 }

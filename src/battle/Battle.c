@@ -55,7 +55,7 @@ static void _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
 
 static void _updateStatuses(BattleContext* context) {
   for (int i = 0; i < context->numAllies; i++) {
-    AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
+    AllyStatusUpdate(context->allyStatuses[i], context->allies[i], context->modifiers);
   }
 }
 
@@ -120,7 +120,7 @@ static int _numEnemiesFromTerrain(Terrain terrain) {
     return generateRandomCharInRange(1, 5);
     //return (generateRandomChar() % 5) + 1;
   case TT_TENTACLE:
-    return 4;
+    return 5;
   default:
     printf("Invalid terrain type for battle enemy count\n");
     return 0;
@@ -203,7 +203,12 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->outside = outsideBoard;
   context->outsideLoop = outsideLoop;
   context->window = window;
-  context->playerOutsideX = pInfo->party[0]->sprite->_x;
+
+  if (terrain == TT_TENTACLE) {
+    context->playerOutsideX = pInfo->party[0]->sprite->_x - 32;
+  } else {
+    context->playerOutsideX = pInfo->party[0]->sprite->_x;
+  }
   context->playerOutsideY = pInfo->party[0]->sprite->_y;
 
   // Allies
@@ -279,11 +284,13 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COIMenuSetVisible(context->actionMenu);
   context->menuFocus = ACTION_MENU;
 
+  context->modifiers = LinkedListCreate();
+
   // Things next to each ally. Status strings and tech particles
   context->techParticles = malloc(sizeof(COISprite*) * context->numAllies);
   for (int i = 0; i < context->numAllies; i++) {
     context->allyStatuses[i] = AllyStatusCreate(context->board, window, 10);
-    AllyStatusUpdate(context->allyStatuses[i], context->allies[i]);
+    AllyStatusUpdate(context->allyStatuses[i], context->allies[i], context->modifiers);
     context->techParticles[i] = COISpriteCreateFromAssetID(context->allies[i]->sprite->_x - 9,
 							   context->allies[i]->sprite->_y - 9,
 							   50,
@@ -299,8 +306,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     COISpriteSetSheetIndex(context->techParticles[i], 0, 0);
     COIBoardAddDynamicSprite(board, context->techParticles[i]);
   }
-
-  context->modifiers = LinkedListCreate();
 
   context->levelUpSplash = NULL;
 
@@ -428,9 +433,7 @@ void battleMovePointer(BattleContext* context, int direction) {
   // Make name of the previous actor invisible
   _toggleTargetNameVisibility(context, false);
   
-  // int newTargetIndex = _getIndexAfterOffset(context->targetedActorIndex, offset, numActors);
   int newTargetIndex = _getPointerIndexFromMove(context->targetedActorIndex, direction, numActors);
-  printf("index: %i\n", newTargetIndex);
 
   // Can't point over dead actor
   Actor* target = actors[newTargetIndex];
@@ -448,7 +451,6 @@ void battleMovePointer(BattleContext* context, int direction) {
       newTargetIndex = context->targetedActorIndex;
     }
 
-    printf("index on retry: %i\n", newTargetIndex);
     // newTargetIndex = _getIndexAfterOffset(newTargetIndex, direction, numActors);
     target = actors[newTargetIndex];
   }
@@ -517,6 +519,7 @@ bool _item(BattleContext* context) {
     }
   }
 
+  COIMenuReset(context->subMenu);
   COIMenuSetVisible(context->subMenu);
 
   context->menuFocus = SUB_MENU;
@@ -543,7 +546,6 @@ bool _special(BattleContext* context) {
     COIBoardAddString(context->board, string);
     COIMenuAddString(context->subMenu, string, specials->values[i]);
   }
-  printf("specials: %i\n", specials->length);
   
   COIMenuReset(context->subMenu);
   COIMenuSetVisible(context->subMenu);
@@ -702,7 +704,6 @@ void _selectFlee(BattleContext* context) {
   action->target = context->enemies[targetIndex];
   while (actorIsDead(action->target)) {
     targetIndex = (targetIndex + 1) % context->numEnemies;
-    printf("uh oh: %i\n", targetIndex);
     action->target = context->enemies[targetIndex];
   }
   action->type = FLEE;
@@ -729,7 +730,6 @@ void _selectSpecialTarget(BattleContext* context) {
   Actor** actors = context->pointingAtEnemies ? context->enemies : context->allies;
 
   Actor* actor = context->allies[context->turnIndex];
-  printf("player making special...\n");
   battleBehaviorMakeSpecial(action, COIMenuGetCurrentValue(context->subMenu), context->targetedActorIndex, actors, numActors, actor);
 }
 
@@ -966,10 +966,8 @@ void battleHandleSubMenuSelection(BattleContext* context) {
 // Returns true if battle is finished
 BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
   int numActions = context->numAllies + context->numEnemies;
-  // printf("0");
   
   if(context->sceneStage == SS_SPLASH) {
-    // printf("1");
     // If the splash screen has finished animating
     if (BattleSplashFinished(context->splash)) {
       BattleResult battleResult = battleFinished(context);
@@ -998,7 +996,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       return BR_CONTINUE;
     }
   } else if (context->currentActionIndex >= numActions) {
-    // printf("2");
     // We're done processing actions, user can control again
 
     // Disable TECHs that we will not be able to afford next turn
@@ -1017,7 +1014,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     context->pointer->_visible = true;
     _focusActionMenu(context);
   } else {
-    // printf("3");
     BattleAction action = context->actions[context->currentActionIndex];
     switch (context->sceneStage) {
     case SS_MOVE_FORWARD:
@@ -1032,7 +1028,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       }
       break;
     case SS_TEXT:
-      // printf("4");
       if (!context->summary) {
         // We're working with the target's sprite in this section
         action.target->sprite->_autoHandle = false;
@@ -1042,12 +1037,11 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         box->_visible = true;
         context->summary = battleBehaviorDoAction(&context->actions[context->currentActionIndex], context->textType, context->board, box, context->pInfo, context->modifiers);
         // If it's a item, remove it from backpack on use
-        if (action.type == ITEM) {
-          inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
-          ItemListGetItem(context->pInfo->inventory->items, action.index));
-        }
+        // if (action.type == ITEM) {
+        //   inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
+        //   ItemListGetItem(context->pInfo->inventory->items, action.index));
+        // }
       } else if (context->summary->finished) {
-        // printf("5");
         ActionSummaryDestroy(context->summary, context->board);
         context->summary = NULL;
         context->sceneStage = SS_MOVE_BACKWARDS;
@@ -1067,7 +1061,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
           }
         }
       } else {
-        // printf("6");
         ActionSummaryAdvance(context->summary, selection);
         // Flicker effect on target actor and other targets
         if (context->summary->currentString > 0) {
@@ -1088,7 +1081,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       }
       break;
     case SS_MOVE_BACKWARDS:
-      // printf("7");
       if (_moveActorBackwards(context, action.actor)) {
         actorStandStill(action.actor);
         context->sceneStage = SS_MOVE_FORWARD;
@@ -1106,9 +1098,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         // We're done with the battle, display the splash screen
         if (res != BR_CONTINUE) {
           _disableAllTechs(context->allies[0]);
-          printf("context->pInfo->xp: %lu\n", context->pInfo->xp);
-          printf("context->xpYield: %lu\n", context->xpYield);
-          printf("context->pInfo->xpForLevelUp: %lu\n", context->pInfo->xpForLevelUp);
           _showSplash(context, res, context->pInfo->xp + context->xpYield >= context->pInfo->xpForLevelUp);
           context->sceneStage = SS_SPLASH;
         }
@@ -1118,7 +1107,6 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
       printf("Invalid scene stage.\n");
     }
   }
-  // printf("8\n");
   return BR_CONTINUE;
 }
 

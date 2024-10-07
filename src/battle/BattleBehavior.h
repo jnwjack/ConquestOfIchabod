@@ -70,6 +70,7 @@ void battleBehaviorSortActions(BattleAction* actions, int numActions);
 
 ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textType, COIBoard* board, COISprite* box, PlayerInfo* pInfo, LinkedList* modifiers);
 void battleBehaviorUpdateModifiersTimeLeft(LinkedList* modifiers);
+bool battleBehaviorCheckForModifiers(Actor* actor, ModifierType type, LinkedList* modifiers);
 void battleBehaviorsDestroyModifiers(LinkedList* modifiers);
 
 ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType* textType, char* string, ...);

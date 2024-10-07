@@ -94,6 +94,10 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
+  case ACTOR_HAVONVALE_GUY:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_BOOWOW:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 31, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
@@ -332,15 +336,18 @@ void actorUseConsumable(Actor* actor, Item* item) {
   switch (item->id) {
   case ITEM_ID_STRENGTH_POTION:
     modifier = &actor->atk;
+    modifier->factor = item->strength / 10.0;
+    TimeStateCopyGlobalTime(&modifier->end);
+    TimeStateAddVal(&modifier->end, 2);
+    break;
+  case ITEM_ID_HEALING_POTION:
+    actor->hp = MIN(actor->hpMax, actor->hp + item->strength);
     break;
   default:
     printf("Invalid consumable item.\n");
     modifier = NULL;
   }
 
-  modifier->factor = item->strength / 10.0;
-  TimeStateCopyGlobalTime(&modifier->end);
-  TimeStateAddVal(&modifier->end, 2);
 }
 
 // Used when changing player sprite

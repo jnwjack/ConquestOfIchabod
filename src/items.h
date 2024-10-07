@@ -31,6 +31,7 @@
 #define ITEM_ID_GEM_OF_PERMANENCE 13
 #define ITEM_ID_TAGNESSE 14
 #define ITEM_ID_KNIFE 15
+#define ITEM_ID_HEALING_POTION 16
 // ----------------------------
 
 typedef enum {

@@ -1,4 +1,5 @@
 #include "Status.h"
+#include "BattleBehavior.h"
 
 void _cleanupString(COIBoard* board, COIString* string) {
   if (string) {
@@ -15,6 +16,14 @@ AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize) {
   status->hp = NULL;
   status->tp = NULL;
   status->sp = NULL;
+  status->cursedIcon = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 78, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  status->cursedIcon->_visible = false;
+  status->cursedIcon->_autoHandle = false;
+  COIBoardAddDynamicSprite(status->board, status->cursedIcon);
+  status->silencedIcon = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 77, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  status->silencedIcon->_visible = false;
+  status->silencedIcon->_autoHandle = false;
+  COIBoardAddDynamicSprite(status->board, status->silencedIcon);
   status->_hpVal = -1;
   status->_tpVal = -1;
   status->_spVal = -1;
@@ -22,7 +31,7 @@ AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize) {
 }
 
 // Create COIStrings based off of actor's current stats
-void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
+void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
   COISprite* sprite = actor->sprite;
   int fs = status->textType->fontSize;
   
@@ -84,6 +93,21 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor) {
     COIBoardAddString(status->board, status->sp);
 
     status->_spVal = actor->sp;
+  }
+
+  if (battleBehaviorCheckForModifiers(actor, MT_CURSED, modifiers)) {
+    printf("found modifier\n");
+    status->cursedIcon->_visible = true;
+    COISpriteSetPos(status->cursedIcon, status->frame->_x, status->frame->_y + status->frame->_height + 10);
+  } else {
+    status->cursedIcon->_visible = false;
+  }
+  if (battleBehaviorCheckForModifiers(actor, MT_SILENCED, modifiers)) {
+    printf("found modifier\n");
+    status->silencedIcon->_visible = true;
+    COISpriteSetPos(status->cursedIcon, status->frame->_x + 64, status->frame->_y + status->frame->_height + 10);
+  } else {
+    status->silencedIcon->_visible = false;
   }
 }
 

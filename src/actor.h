@@ -21,6 +21,7 @@
 #define ACTOR_CHEST_OPEN 11
 #define ACTOR_TAGNESSE_GUY 12
 #define ACTOR_TREE_GUY 13
+#define ACTOR_HAVONVALE_GUY 14
 
 // Buff values
 #define ACTOR_BUFF_PARRYING 1

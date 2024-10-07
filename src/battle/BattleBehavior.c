@@ -3,7 +3,7 @@
 #include "../items.h"
 #include <assert.h>
 
-static bool _checkForModifier(Actor* actor, ModifierType type, LinkedList* modifiers) {
+bool battleBehaviorCheckForModifiers(Actor* actor, ModifierType type, LinkedList* modifiers) {
   LinkedListResetCursor(modifiers);
   ActorBattleModifier* currentModifier = (ActorBattleModifier*)LinkedListNext(modifiers);
   while (currentModifier) {
@@ -26,13 +26,11 @@ static int _randomGaussian(int mean) {
   const double variance = 1.0;
   const double e = 2.71828;
   const double pi = 3.14159;
-
-  printf("randomint: %i\n", randomInt);
   
   double exponent = -1.0 * pow((double)randomInt - mean, 2.0) / (2.0 * variance);
-  printf("exponent: %f\n", exponent);
+
   double result = exp(exponent) / sqrt(2.0 * pi * variance);
-  printf("result: %f\n", result);
+
   return (int)result;
 }
 
@@ -120,8 +118,11 @@ ActionType battleBehaviorPickActionType(int actorType) {
   // In future, can have different behavior for different actors.
   switch (actorType) {
   case ACTOR_TENTACLE:
+    return (generateRandomBoolWeighted(0.5) ? SPECIAL : ATTACK);
   case ACTOR_WIRE_MOTHER:
+    return (generateRandomBoolWeighted(0.85) ? SPECIAL : ATTACK);
   case ACTOR_VOLCANETTE:
+    return (generateRandomBoolWeighted(0.75) ? SPECIAL : ATTACK);
   case ACTOR_BOOWOW:
     return (generateRandomBoolWeighted(0.25) ? SPECIAL : ATTACK);
   default:
@@ -363,7 +364,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
     }
     if (successfulHit) {
-      if (_checkForModifier(t, MT_PARRYING, modifiers)) {
+      if (battleBehaviorCheckForModifiers(t, MT_PARRYING, modifiers)) {
         int parryDamage = damage * 2;
         a->hp = MAX(0, a->hp - parryDamage);
         snprintf(temp, MAX_STRING_SIZE, "%s PARRIES!", tName);
@@ -391,7 +392,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     }
     break;
   case SPECIAL:
-    if (_checkForModifier(a, MT_SILENCED, modifiers)) {
+    if (battleBehaviorCheckForModifiers(a, MT_SILENCED, modifiers)) {
       summary = ActionSummaryCreate(board, box, textType, "SILENCED!", NULL);
       break;
     }
@@ -434,7 +435,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       }
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
-      if (_checkForModifier(t, MT_CURSED, modifiers)) {
+      if (battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
         t->hp = MAX(0, a->hp - amountHealed);
         snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
         ActionSummaryAddString(summary, temp, board, box, textType);
@@ -468,7 +469,6 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
 	       aName, specialVerb(action->index), specialName(action->index), tName);
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      // Only handling curse right now
       ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
       modifier->actor = t;
       modifier->turnsLeft = 3;
@@ -519,23 +519,38 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       modifier->actor = t;
       modifier->turnsLeft = 5;
       modifier->type = MT_SILENCED;
+      LinkedListAdd(modifiers, (void*)modifier);
+      printf("adding silenced\n");
       ActionSummaryAddString(summary, "SPECIAL ABILITIES CAN NO LONGER BE USED", board, box, textType);
     } else if (action->index == SPECIAL_ID_TIME_SKIP) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
 	       aName, specialVerb(action->index), specialName(action->index));
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      ActionSummaryAddString(summary, "YOUR PARTY TRAVELS FORWARD IN TIME AND ESCAPES!", board, box, textType);
+      ActionSummaryAddString(summary, "YOU ESCAPE!", board, box, textType);
       TimeStateIncrement(6);
       action->successfulFlee = true;
     } else {
       summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
     }
     break;
-  case ITEM:
-    actorUseConsumable(t, &pInfo->inventory->items->items[action->index]);
+  case ITEM: 
+  {
+    Item* item = &pInfo->inventory->items->items[action->index];
     snprintf(temp, MAX_STRING_SIZE, "%s USES %s ON %s", aName, ItemListStringFromItemID(action->index), tName);
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+    inventoryRemoveBackpackItemFirstInstance(pInfo->inventory,
+        ItemListGetItem(pInfo->inventory->items, action->index));
+    if (item->id == ITEM_ID_HEALING_POTION && battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
+      t->hp = MAX(0, t->hp - item->strength);
+      snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+      snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", item->strength, aName);
+      ActionSummaryAddString(summary, temp, board, box, textType);
+    } else {
+      actorUseConsumable(t, &pInfo->inventory->items->items[action->index]);
+    }
     break;
+  }
   case FLEE:
     snprintf(temp, MAX_STRING_SIZE, "%s TRIES TO FLEE", aName);
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);

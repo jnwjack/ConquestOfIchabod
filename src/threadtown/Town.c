@@ -140,20 +140,19 @@ static void _createSwordChest(TownContext* context) {
 static void _createNPCs(TownContext* context) {
   context->allActors = LinkedListCreate();
 
-  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 2176, 2080, 2176, 2976 };
-  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 2528, 2144, 2656, 3232 };
-  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY };
+  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 2176, 2080, 2176, 2976, 3872 };
+  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 2528, 2144, 2656, 3232, 928 };
+  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY };
 
   for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
-  context->npcs[i] = actorCreateOfType(actorIDs[i],
-				       xPositions[i],
-				       yPositions[i],
-				       COI_GLOBAL_LOADER,
-				       COI_GLOBAL_WINDOW);
-  COIBoardAddDynamicSprite(context->board, context->npcs[i]->sprite);
-  actorFaceRight(context->npcs[i]);
+    context->npcs[i] = actorCreateOfType(actorIDs[i],
+                xPositions[i],
+                yPositions[i],
+                COI_GLOBAL_LOADER,
+                COI_GLOBAL_WINDOW);
+    COIBoardAddDynamicSprite(context->board, context->npcs[i]->sprite);
+    actorFaceRight(context->npcs[i]);
   }
-
   _createSwordChest(context);
 
   for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
@@ -427,6 +426,13 @@ static void _talkToTreeGuy(TownContext* context) {
   }
 }
 
+static void _talkToHavonvaleGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "Havonvale lies past here.",
+      "There's a group of monsters blocking the way, though. I'd be careful.",
+      NULL);
+}
+
 static void _talkToChest(TownContext* context) {
   TextBoxSetStrings(context->textBox,
       "Unbelievable!",
@@ -469,7 +475,6 @@ static void _confirmMenuSelect(TownContext* context) {
       } else {
 	      context->pInfo->working = true;
 	      _talkToMerchant(context);
-        // printf("talked to merchant 2\n");
       }
       break;
     default:
@@ -549,6 +554,9 @@ void townProcessSelectionInput(TownContext* context) {
         break;
       case ACTOR_TREE_GUY:
         _talkToTreeGuy(context);
+        break;
+      case ACTOR_HAVONVALE_GUY:
+        _talkToHavonvaleGuy(context);
         break;
       default:
 	      TextBoxSetStrings(context->textBox,
@@ -679,6 +687,10 @@ void townMovePlayer(TownContext* context) {
   default:
     break;
   }
+
+#ifdef __COI_DEBUG__
+  printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
+#endif
 
   
   if (inNextGridCell) {

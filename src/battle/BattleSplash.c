@@ -393,7 +393,7 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
 
   // Yes/No menu
   COITextTypeSetColor(tt, 255, 255, 255);
-  COISprite* confirmFrame = COISpriteCreateFromAssetID(250, 250, 150, 80,
+  COISprite* confirmFrame = COISpriteCreateFromAssetID(25, 250, 150, 80,
                                                       COI_GLOBAL_LOADER,
                                                       5,
                                                       COIWindowGetRenderer(COI_GLOBAL_WINDOW));

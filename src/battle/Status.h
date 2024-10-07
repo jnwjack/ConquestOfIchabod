@@ -13,6 +13,9 @@ typedef struct AllyStatus {
   COIString* tp;
   COIString* sp;
 
+  COISprite* cursedIcon;
+  COISprite* silencedIcon;
+
   // Used for checking if we actually need to update
   int _hpVal;
   int _tpVal;
@@ -20,7 +23,7 @@ typedef struct AllyStatus {
 } AllyStatus;
 
 AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize);
-void AllyStatusUpdate(AllyStatus* status, Actor* actor);
+void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers);
 void AllyStatusDestroy(AllyStatus* status);
 void AllyStatusSetVisible(AllyStatus* status, bool visible);
 

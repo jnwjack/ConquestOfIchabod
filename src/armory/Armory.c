@@ -224,8 +224,9 @@ COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* in
 
 COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory) {
   IntList itemIDs;
-  IntListInitialize(&itemIDs, 2);
+  IntListInitialize(&itemIDs, 3);
   IntListAdd(&itemIDs, ITEM_ID_STRENGTH_POTION);
+  IntListAdd(&itemIDs, ITEM_ID_HEALING_POTION);
   IntListAdd(&itemIDs, ITEM_ID_GEM_OF_PERMANENCE);
 
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
@@ -350,6 +351,8 @@ int _priceFromItemID(int item) {
     return 700;
   case ITEM_ID_KNIFE:
     return 13;
+  case ITEM_ID_HEALING_POTION:
+    return 25;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;
