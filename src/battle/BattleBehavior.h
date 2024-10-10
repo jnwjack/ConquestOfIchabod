@@ -4,6 +4,7 @@
 #include "../player.h"
 
 #define BB_DEFAULT_HIT_RATE 0.9f
+#define BB_FADE_HIT_RATE 0.65f
 
 #define BB_MAX_ENEMY_COUNT 5
 

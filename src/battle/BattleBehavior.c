@@ -20,20 +20,6 @@ static bool _critical() {
   return generateRandomBoolWeighted(0.1);
 }
 
-static int _randomGaussian(int mean) {
-  int randomInt = generateRandomCharInRange(mean - 5, mean + 5);
-
-  const double variance = 1.0;
-  const double e = 2.71828;
-  const double pi = 3.14159;
-  
-  double exponent = -1.0 * pow((double)randomInt - mean, 2.0) / (2.0 * variance);
-
-  double result = exp(exponent) / sqrt(2.0 * pi * variance);
-
-  return (int)result;
-}
-
 static int _randomDamage(int damage) {
   return MAX(1, generateRandomCharWithCenter(damage, MAX(1, damage / 10)));
 }
@@ -49,7 +35,7 @@ static void _buffStat(Stat* stat) {
 }
 
 // Action with actor having higher AGI is smaller
-int _compareActions(BattleAction a, BattleAction b) {
+static int _compareActions(BattleAction a, BattleAction b) {
   int aAgi = actorModifiedAgi(a.actor);
   int bAgi = actorModifiedAgi(b.actor);
 
@@ -63,7 +49,7 @@ int _compareActions(BattleAction a, BattleAction b) {
 }
 
 // QuickSort
-void _sortHelper(BattleAction* actions, int lo, int hi) {
+static void _sortHelper(BattleAction* actions, int lo, int hi) {
   // BattleAction* actions = *actionsPtr;
 
   int size = (hi+1) - lo;
@@ -94,14 +80,14 @@ void _sortHelper(BattleAction* actions, int lo, int hi) {
   _sortHelper(actions, store + 1, hi);
 }
 
-void _initializeAction(BattleAction* action) {
+static void _initializeAction(BattleAction* action) {
   action->attackModifier = 1.0;
   action->spCostModifier = 1.0;
   action->damageAttacker = false;
 }
 
 // Breaks if you call this and there are no alive actors provided
-Actor* _pickRandomAliveActor(Actor** actors, int numActors) {
+static Actor* _pickRandomAliveActor(Actor** actors, int numActors) {
   Actor* aliveActors[numActors];
   int numAliveActors = 0;
   for (int i = 0; i < numActors; i++) {
@@ -112,6 +98,46 @@ Actor* _pickRandomAliveActor(Actor** actors, int numActors) {
 
   int selectedActor = generateRandomCharInRange(0, numAliveActors - 1);
   return aliveActors[selectedActor];
+}
+
+static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBoard* board, COISprite* box, COITextType* textType) {
+  Actor* t = action->target;
+  int damage;
+  char temp[MAX_STRING_SIZE];
+  if (action->index == SPECIAL_ID_BACKSTAB) {
+    int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
+    damage = _randomDamage(specialStrength(base));
+  } else {
+    damage = _randomDamage(specialStrength(action->index));
+  }
+
+  if (_critical()) {
+    damage *= 2;
+    // snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+    //   aName, specialVerb(action->index), specialName(action->index), tName);
+    // summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+    ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);
+    snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+    ActionSummaryAddString(summary, temp, board, box, textType);
+  } else {
+    // snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+    //   aName, specialVerb(action->index), specialName(action->index), tName);
+    // summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+    snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+    ActionSummaryAddString(summary, temp, board, box, textType);
+  }
+
+  t->hp = MAX(0, t->hp - damage);
+
+  for (int i = 0; i < action->numOtherTargets; i++) {
+    Actor* otherT = action->otherTargets[i];
+    damage = _randomDamage(specialSecondaryStrength(action->index));
+    otherT->hp = MAX(0, otherT->hp - damage);
+
+    snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
+      actorGetNameFromType(otherT->actorType), damage);
+    ActionSummaryAddString(summary, temp, board, box, textType);
+  }
 }
 
 ActionType battleBehaviorPickActionType(int actorType) {
@@ -290,6 +316,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   ActionSummary* summary;
   _initializeAction(action);
   double hitRate = BB_DEFAULT_HIT_RATE;
+  bool damSpecialHitsTwice = false;
 
   // Apply actor TECH
   for (int i = 0; i < a->techList->count; i++) {
@@ -302,6 +329,12 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
         break;
       case TECH_ID_RAGE:
         action->attackModifier *= tech->strength;
+        break;
+      case TECH_ID_EAGLEEYE:
+        hitRate = 1.0;
+        break;
+      case TECH_ID_QUICKSTRIKE:
+        damSpecialHitsTwice = true;
         break;
       }
     }
@@ -320,6 +353,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
         break;
       case TECH_ID_RAGE:
         action->attackModifier *= tech->strength;
+        break;
+      case TECH_ID_FADE:
+        hitRate = BB_FADE_HIT_RATE;
         break;
       }
     }
@@ -399,40 +435,48 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     spType = specialType(action->index);
     a->sp -= (specialCost(action->index) * action->spCostModifier);
     if (spType == SPECIAL_DAMAGING) {
-      if (action->index == SPECIAL_ID_BACKSTAB) {
-        int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
-        damage = _randomDamage(specialStrength(base));
-      } else {
-        damage = _randomDamage(specialStrength(action->index));
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+        aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      if (damSpecialHitsTwice) {
+        _damagingSpecial(action, summary, board, box, textType);
+        ActionSummaryAddString(summary, "THE ATTACK REPEATS!", board, box, textType);
       }
+      _damagingSpecial(action, summary, board, box, textType);
+      // if (action->index == SPECIAL_ID_BACKSTAB) {
+      //   int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
+      //   damage = _randomDamage(specialStrength(base));
+      // } else {
+      //   damage = _randomDamage(specialStrength(action->index));
+      // }
 
-      if (_critical()) {
-        damage *= 2;
-        snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	        aName, specialVerb(action->index), specialName(action->index), tName);
-        summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-        ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);
-        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
-        ActionSummaryAddString(summary, temp, board, box, textType);
-      } else {
-        snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	        aName, specialVerb(action->index), specialName(action->index), tName);
-        summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
-        ActionSummaryAddString(summary, temp, board, box, textType);
-      }
+      // if (_critical()) {
+      //   damage *= 2;
+      //   snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	    //     aName, specialVerb(action->index), specialName(action->index), tName);
+      //   summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      //   ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);
+      //   snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+      //   ActionSummaryAddString(summary, temp, board, box, textType);
+      // } else {
+      //   snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	    //     aName, specialVerb(action->index), specialName(action->index), tName);
+      //   summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      //   snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
+      //   ActionSummaryAddString(summary, temp, board, box, textType);
+      // }
 
-      t->hp = MAX(0, t->hp - damage);
+      // t->hp = MAX(0, t->hp - damage);
 
-      for (int i = 0; i < action->numOtherTargets; i++) {
-        Actor* otherT = action->otherTargets[i];
-        damage = _randomDamage(specialSecondaryStrength(action->index));
-        otherT->hp = MAX(0, otherT->hp - damage);
+      // for (int i = 0; i < action->numOtherTargets; i++) {
+      //   Actor* otherT = action->otherTargets[i];
+      //   damage = _randomDamage(specialSecondaryStrength(action->index));
+      //   otherT->hp = MAX(0, otherT->hp - damage);
 
-        snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
-	        actorGetNameFromType(otherT->actorType), damage);
-        ActionSummaryAddString(summary, temp, board, box, textType);
-      }
+      //   snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
+	    //     actorGetNameFromType(otherT->actorType), damage);
+      //   ActionSummaryAddString(summary, temp, board, box, textType);
+      // }
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
       if (battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {

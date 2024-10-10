@@ -401,6 +401,13 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
         COIWindowSetBoard(townContext->window, otherBoard, &armory);
       }
       break;
+    case POTION_SHOP_DOOR:
+      player->movementDirection = MOVING_NONE;
+      if (!townShopIsClosed()) {
+        otherBoard = armoryCreateBoardForPotionStore(board, townContext->pInfo->inventory);
+        COIWindowSetBoard(townContext->window, otherBoard, &armory);
+      }
+      break; 
     case RENTABLE_HOUSE_DOOR:
       player->movementDirection = MOVING_NONE;
       if (townContext->pInfo->renting == RS_RENTING) {

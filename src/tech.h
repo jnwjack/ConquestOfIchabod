@@ -18,6 +18,7 @@
 #define TECH_ID_RAGE 3 // Take more damage, deal more damage
 #define TECH_ID_EAGLEEYE 4 // Can't miss
 #define TECH_ID_QUICKSTRIKE 5 // Damaging specials activate twice.
+#define TECH_ID_FADE 6 // Increased dodge chance
 // --------------------------------------
 
 #define MAX_TECH_COUNT_ALLY 50

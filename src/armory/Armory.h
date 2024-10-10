@@ -48,6 +48,7 @@ COIBoard* armoryCreateBoard(COIWindow* window,
 			    IntList* itemIDs);
 COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* inventory);
 COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory);
+COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inventory);
 
 void armoryDestroy(ArmoryContext* context);
 

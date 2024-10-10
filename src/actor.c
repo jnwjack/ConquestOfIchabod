@@ -343,6 +343,17 @@ void actorUseConsumable(Actor* actor, Item* item) {
   case ITEM_ID_HEALING_POTION:
     actor->hp = MIN(actor->hpMax, actor->hp + item->strength);
     break;
+  case ITEM_ID_TP_POTION:
+    actor->tp = MIN(actor->tpMax, actor->tp + item->strength);
+    break;
+  case ITEM_ID_SP_POTION:
+    actor->sp = MIN(actor->spMax, actor->sp + item->strength);
+    break;
+  case ITEM_ID_MOUNTAIN_JUICE:
+    actor->hp = MIN(actor->hpMax, actor->hp + item->strength);
+    actor->tp = MIN(actor->tpMax, actor->tp + item->strength);
+    actor->sp = MIN(actor->spMax, actor->sp + item->strength);
+    break;
   default:
     printf("Invalid consumable item.\n");
     modifier = NULL;

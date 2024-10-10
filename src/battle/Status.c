@@ -105,7 +105,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
   if (battleBehaviorCheckForModifiers(actor, MT_SILENCED, modifiers)) {
     printf("found modifier\n");
     status->silencedIcon->_visible = true;
-    COISpriteSetPos(status->cursedIcon, status->frame->_x + 64, status->frame->_y + status->frame->_height + 10);
+    COISpriteSetPos(status->silencedIcon, status->frame->_x + 64, status->frame->_y + status->frame->_height + 10);
   } else {
     status->silencedIcon->_visible = false;
   }

@@ -222,6 +222,21 @@ COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* in
 			   &itemIDs);
 }
 
+COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inventory) {
+  IntList itemIDs;
+  IntListInitialize(&itemIDs, 4);
+  IntListAdd(&itemIDs, ITEM_ID_HEALING_POTION);
+  IntListAdd(&itemIDs, ITEM_ID_TP_POTION);
+  IntListAdd(&itemIDs, ITEM_ID_SP_POTION);
+  IntListAdd(&itemIDs, ITEM_ID_MOUNTAIN_JUICE);
+
+  return armoryCreateBoard(COI_GLOBAL_WINDOW,
+			   COI_GLOBAL_LOADER,
+			   outsideBoard,
+			   inventory,
+			   &itemIDs);
+}
+
 COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory) {
   IntList itemIDs;
   IntListInitialize(&itemIDs, 3);
@@ -353,6 +368,12 @@ int _priceFromItemID(int item) {
     return 13;
   case ITEM_ID_HEALING_POTION:
     return 25;
+  case ITEM_ID_TP_POTION:
+    return 15;
+  case ITEM_ID_SP_POTION:
+    return 20;
+  case ITEM_ID_MOUNTAIN_JUICE:
+    return 60;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;

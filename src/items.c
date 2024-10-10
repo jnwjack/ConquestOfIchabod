@@ -148,6 +148,12 @@ char* ItemListStringFromItemID(int item) {
     return "Knife";
   case ITEM_ID_HEALING_POTION:
     return "HP Potion";
+  case ITEM_ID_SP_POTION:
+    return "SP Potion";
+  case ITEM_ID_TP_POTION:
+    return "TP Potion";
+  case ITEM_ID_MOUNTAIN_JUICE:
+    return "MNTN Juice";
   default:
     return "-";
   }
@@ -157,6 +163,9 @@ bool ItemCanUseInBattle(Item* item) {
   switch (item->id) {
   case ITEM_ID_STRENGTH_POTION:
   case ITEM_ID_HEALING_POTION:
+  case ITEM_ID_TP_POTION:
+  case ITEM_ID_SP_POTION:
+  case ITEM_ID_MOUNTAIN_JUICE:
     return true;
   default:
     return false;

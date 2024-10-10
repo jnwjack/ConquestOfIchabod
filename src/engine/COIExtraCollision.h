@@ -13,6 +13,7 @@
 #define RENTABLE_HOUSE_DOOR 5
 #define TENTACLE 6
 #define SHOP_DOOR 7
+#define POTION_SHOP_DOOR 8
 
 typedef struct COIExtraCollision {
   int tlX;

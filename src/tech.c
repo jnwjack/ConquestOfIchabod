@@ -25,6 +25,18 @@ Tech* techCreate(int id) {
     tech->cost = 5;
     tech->strength = 1.5;
     return tech;
+  case TECH_ID_EAGLEEYE:
+    tech->cost = 8;
+    tech->strength = 1.0;
+    return tech;
+  case TECH_ID_QUICKSTRIKE:
+    tech->cost = 10;
+    tech->strength = 1.0;
+    return tech;
+  case TECH_ID_FADE:
+    tech->cost = 6;
+    tech->strength = 1.0;
+    return tech;
   }
 
   return tech;
@@ -84,6 +96,12 @@ char* techNameFromID(int id) {
     return "Brace";
   case TECH_ID_RAGE:
     return "Rage";
+  case TECH_ID_EAGLEEYE:
+    return "Eagle Eye";
+  case TECH_ID_QUICKSTRIKE:
+    return "Faststrike";
+  case TECH_ID_FADE:
+    return "Fade";
   }
 
   return "ERROR";
@@ -99,6 +117,12 @@ switch (id) {
     return "Reduce damage taken.";
   case TECH_ID_RAGE:
     return "Take more damage, deal more damage.";
+  case TECH_ID_EAGLEEYE:
+    return "Attacks won't miss.";
+  case TECH_ID_QUICKSTRIKE:
+    return "Damaging SPECIAL abilities activate twice.";
+  case TECH_ID_FADE:
+    return "Higher chance to dodge attacks.";
   }
 
   return "ERROR";
