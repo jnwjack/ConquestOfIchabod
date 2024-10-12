@@ -7,5 +7,6 @@
 
 
 Inventory* createTestInventory(ItemList* items);
+Inventory* createEmptyInventory(ItemList* items);
 
 #endif

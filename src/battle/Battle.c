@@ -117,7 +117,10 @@ static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {\
 static int _numEnemiesFromTerrain(Terrain terrain) {
   switch (terrain) {
   case TT_THICK_GRASS:
-    return generateRandomCharInRange(1, 5);
+    if (GLOBAL_TIME.phase >= TS_EVENING) {
+      return generateRandomCharInRange(1, 5);
+    }
+    return generateRandomCharInRange(1, 2);
     //return (generateRandomChar() % 5) + 1;
   case TT_TENTACLE:
     return 5;

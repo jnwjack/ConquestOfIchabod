@@ -35,6 +35,8 @@
 #define ITEM_ID_SP_POTION 17
 #define ITEM_ID_TP_POTION 18
 #define ITEM_ID_MOUNTAIN_JUICE 19
+#define ITEM_ID_DEF_SCROLL 20
+#define ITEM_ID_AGI_SCROLL 21
 // ----------------------------
 
 typedef enum {

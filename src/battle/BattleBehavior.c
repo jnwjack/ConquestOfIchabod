@@ -381,6 +381,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     tDef = actorModifiedDef(t);
   }
 
+  printf("TARGET DEF BASE: %i\n", t->def.base);
+
   // JNW: cleanup. Pull each action type out into its own function
   char temp[MAX_STRING_SIZE];
   SpecialType spType; 
@@ -388,6 +390,12 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   switch (action->type) {
   case ATTACK:
     damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
+    // Trying new damage calculation
+    if (aAtk >= tDef) {
+      damageBase = aAtk * 2 - tDef;
+    } else {
+      damageBase = (aAtk * aAtk) / tDef;
+    }
     damage = _randomDamage(damageBase);
     bool successfulHit = generateRandomBoolWeighted(hitRate);
     if (successfulHit && _critical()) {

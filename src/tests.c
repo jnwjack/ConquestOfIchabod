@@ -21,3 +21,20 @@ Inventory* createTestInventory(ItemList* items) {
 
   return inventory;
 }
+
+Inventory* createEmptyInventory(ItemList* items) {
+  Inventory* inventory = inventoryCreate(items);
+
+  inventory->weapon = ItemListGetItem(items, ITEM_ID_UNARMED);
+  inventory->offHand = ItemListGetItem(items, ITEM_ID_UNARMED_OFF);
+  inventory->head = ItemListGetItem(items, ITEM_ID_UNARMORED_HEAD);
+  inventory->body = ItemListGetItem(items, ITEM_ID_UNARMORED_BODY);
+  inventory->legs = ItemListGetItem(items, ITEM_ID_UNARMORED_LEGS);
+
+  inventory->numBackpackItems = 0;
+  inventory->numEquippedItems = 0;
+
+  inventory->money = 1000;
+
+  return inventory;
+}

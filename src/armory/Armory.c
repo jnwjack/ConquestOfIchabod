@@ -239,9 +239,10 @@ COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inv
 
 COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory) {
   IntList itemIDs;
-  IntListInitialize(&itemIDs, 3);
+  IntListInitialize(&itemIDs, 4);
   IntListAdd(&itemIDs, ITEM_ID_STRENGTH_POTION);
-  IntListAdd(&itemIDs, ITEM_ID_HEALING_POTION);
+  IntListAdd(&itemIDs, ITEM_ID_DEF_SCROLL);
+  IntListAdd(&itemIDs, ITEM_ID_AGI_SCROLL);
   IntListAdd(&itemIDs, ITEM_ID_GEM_OF_PERMANENCE);
 
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
@@ -337,31 +338,22 @@ int _priceFromItemID(int item) {
   switch (item) {
   case ITEM_ID_RUSTY_SWORD:
     return 20;
-    break;
   case ITEM_ID_RUSTY_BATTLEAXE:
     return 28;
-    break;
   case ITEM_ID_SHABBY_BOW:
     return 20;
-    break;
   case ITEM_ID_CRACKED_SHIELD:
     return 10;
-    break;
   case ITEM_ID_STRENGTH_POTION:
     return 10;
-    break;
   case ITEM_ID_BRONZE_HELM:
     return 30;
-    break;
   case ITEM_ID_BRONZE_CHEST:
     return 50;
-    break;
   case ITEM_ID_BRONZE_LEGS:
     return 30;
-    break;
   case ITEM_ID_GEM_OF_PERMANENCE:
     return 120;
-    break;
   case ITEM_ID_TAGNESSE:
     return 700;
   case ITEM_ID_KNIFE:

@@ -97,9 +97,9 @@ char* techNameFromID(int id) {
   case TECH_ID_RAGE:
     return "Rage";
   case TECH_ID_EAGLEEYE:
-    return "Eagle Eye";
+    return "EagleEye";
   case TECH_ID_QUICKSTRIKE:
-    return "Faststrike";
+    return "Amplify";
   case TECH_ID_FADE:
     return "Fade";
   }

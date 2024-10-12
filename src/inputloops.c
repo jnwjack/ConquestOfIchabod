@@ -169,7 +169,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
    ItemList* itemList = loadItems();
 
    // Test inventory
-   Inventory* inventory = createTestInventory(itemList);
+   Inventory* inventory = createEmptyInventory(itemList);
 
     // Initialize player data
     COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
@@ -182,7 +182,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
     ItemList* itemList = loadItems();
 
     // Test inventory
-    Inventory* inventory = createTestInventory(itemList);
+    Inventory* inventory = createEmptyInventory(itemList);
 
     // Initialize player data
     COISprite* playerSprite = COISpriteCreateFromAssetID(2240, 1984, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));

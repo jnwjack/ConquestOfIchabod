@@ -119,7 +119,9 @@ Item* ItemListGetItem(ItemList* list, int index) {
 }
 
 int ItemAdjustStat(int baseStat, int itemStrength) {
-  return baseStat * (float)(itemStrength / 10.0);
+  float modifier = (float)(itemStrength / 10.0);
+  printf("MODIFIER: %f\n", MAX(1.0, modifier));
+  return baseStat * MAX(1.0, modifier);
 }
 
 char* ItemListStringFromItemID(int item) {
@@ -133,11 +135,16 @@ char* ItemListStringFromItemID(int item) {
   case ITEM_ID_CRACKED_SHIELD:
     return "Shield";
   case ITEM_ID_STRENGTH_POTION:
-    return "STR Potion";
+    return "STR Scroll";
+  case ITEM_ID_DEF_SCROLL:
+    return "DEF Scroll";
+  case ITEM_ID_AGI_SCROLL:
+    return "AGI Scroll";
   case ITEM_ID_BRONZE_HELM:
     return "Helm";
   case ITEM_ID_BRONZE_CHEST:
-    return "Chestplate";
+    // return "Chestplate";
+    return "Chainmail";
   case ITEM_ID_BRONZE_LEGS:
     return "Greaves";
   case ITEM_ID_GEM_OF_PERMANENCE:
@@ -162,6 +169,8 @@ char* ItemListStringFromItemID(int item) {
 bool ItemCanUseInBattle(Item* item) {
   switch (item->id) {
   case ITEM_ID_STRENGTH_POTION:
+  case ITEM_ID_DEF_SCROLL:
+  case ITEM_ID_AGI_SCROLL:
   case ITEM_ID_HEALING_POTION:
   case ITEM_ID_TP_POTION:
   case ITEM_ID_SP_POTION:

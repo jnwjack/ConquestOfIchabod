@@ -269,7 +269,8 @@ void _select(TitleContext* context) {
     case TITLE_STRING_NEW_GAME:
       COISoundPlay(COI_SOUND_SELECT);
       _closeTitle(context);
-      context->currentSlide++;
+      context->currentSlide = TITLE_NUM_INTRO_SLIDES - 1; // Testing
+      // context->currentSlide++;
       break;
     case TITLE_STRING_QUIT_GAME:
       COISoundPlay(COI_SOUND_SELECT);
