@@ -2,8 +2,8 @@
 #include "../actor.h"
 #include "../special.h"
 
-#define THICK_GRASS_ENEMY_COUNT 5
-static int THICK_GRASS_ENEMY_TYPES[THICK_GRASS_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_TENTACLE, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE };
+#define THICK_GRASS_ENEMY_COUNT 4
+static int THICK_GRASS_ENEMY_TYPES[THICK_GRASS_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE };
 
 static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
@@ -104,7 +104,7 @@ static void _positionEnemies(Actor** enemies, int numEnemies) {
   }
 }
 
-static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {\
+static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
   int boxCenterX = box->_x + box->_width / 2;
   for (int i = 0; i < numAllies; i++) {
     COISprite* actor = allies[i]->sprite;
@@ -121,7 +121,6 @@ static int _numEnemiesFromTerrain(Terrain terrain) {
       return generateRandomCharInRange(1, 5);
     }
     return generateRandomCharInRange(1, 2);
-    //return (generateRandomChar() % 5) + 1;
   case TT_TENTACLE:
     return 5;
   default:
@@ -1077,8 +1076,10 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         else if (context->summary->ticks % 10 == 0) {
           action.target->sprite->_visible = !action.target->sprite->_visible;
           for (int i = 0; i < action.numOtherTargets; i++) {
-            action.otherTargets[i]->sprite->_autoHandle = false;
-            action.otherTargets[i]->sprite->_visible = !action.otherTargets[i]->sprite->_visible;
+            if (!actorIsDead(action.otherTargets[i])) {
+              action.otherTargets[i]->sprite->_autoHandle = false;
+              action.otherTargets[i]->sprite->_visible = !action.otherTargets[i]->sprite->_visible;
+            }
           }
         }
       }

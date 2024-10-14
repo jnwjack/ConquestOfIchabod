@@ -118,16 +118,16 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
     info->xp -= info->xpForLevelUp;
     info->xpForLevelUp = _getXPForLevel(info->xpForLevelUp);
     // Increase stats
-    info->party[0]->atk.base += generateRandomCharInRange(1, 5);
-    info->party[0]->def.base += generateRandomCharInRange(1, 5);
-    info->party[0]->agi.base += generateRandomCharInRange(1, 5);
-    int hpIncrease = generateRandomCharInRange(1, 5);
+    info->party[0]->atk.base += generateRandomCharInRange(1, 3);
+    info->party[0]->def.base += generateRandomCharInRange(1, 3);
+    info->party[0]->agi.base += generateRandomCharInRange(1, 3);
+    int hpIncrease = generateRandomCharInRange(5, 15);
     info->party[0]->hpMax += hpIncrease;
     info->party[0]->hp += hpIncrease;
-    int spIncrease = generateRandomCharInRange(1, 5);
+    int spIncrease = generateRandomCharInRange(3, 6);
     info->party[0]->spMax += spIncrease;
     info->party[0]->sp += spIncrease;
-    int tpIncrease = generateRandomCharInRange(1, 5);
+    int tpIncrease = generateRandomCharInRange(3, 6);
     info->party[0]->tpMax += tpIncrease;
     info->party[0]->tp += tpIncrease;
   }
@@ -462,14 +462,14 @@ void playerLevelDown(PlayerInfo* pInfo) {
     Actor* player = pInfo->party[0];
 
     // Reduce ability scores
-    player->atk.base = MAX(1, player->atk.base - generateRandomCharInRange(1, 5));
-    player->def.base = MAX(1, player->def.base - generateRandomCharInRange(1, 5));
-    player->agi.base = MAX(1, player->agi.base - generateRandomCharInRange(1, 5));
-    player->hpMax = MAX(1, player->hpMax - generateRandomCharInRange(1, 5));
+    player->atk.base = MAX(1, player->atk.base - generateRandomCharInRange(1, 3));
+    player->def.base = MAX(1, player->def.base - generateRandomCharInRange(1, 3));
+    player->agi.base = MAX(1, player->agi.base - generateRandomCharInRange(1, 3));
+    player->hpMax = MAX(1, player->hpMax - generateRandomCharInRange(5, 15));
     player->hp = MIN(player->hp, player->hpMax);
-    player->spMax = MAX(1, player->spMax - generateRandomCharInRange(1, 5));
+    player->spMax = MAX(1, player->spMax - generateRandomCharInRange(3, 6));
     player->sp = MIN(player->sp, player->spMax);
-    player->tpMax = MAX(1, player->tpMax - generateRandomCharInRange(1, 5));
+    player->tpMax = MAX(1, player->tpMax - generateRandomCharInRange(3, 6));
     player->tp = MIN(player->tp, player->tpMax);
 
     // Remove an ability if we can

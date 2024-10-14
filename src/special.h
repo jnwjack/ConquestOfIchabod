@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include "engine/COI.h"
 
 /*
 JNW: Maybe do something like this in the future

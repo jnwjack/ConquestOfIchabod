@@ -41,6 +41,8 @@ typedef struct BattleAction {
   bool successfulFlee;
   int numOtherTargets;
   Actor* otherTargets[BB_MAX_ENEMY_COUNT];
+  int numOtherTargetsKilled;
+  Actor* otherTargetsKilled[BB_MAX_ENEMY_COUNT];
 } BattleAction;
 
 // Data structure that contains text that describes an

@@ -72,6 +72,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       IntListAdd(&actor->specials, SPECIAL_ID_REINFORCE);
+      IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
       return actor;
     }
   case ACTOR_CHAGGAI:
@@ -127,7 +128,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       Actor* actor = actorCreate(actorType, sprite, 5, 5, 10, 17, 0, 75);
       IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
       IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
-      IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
+      IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
       return actor;
     }
   case ACTOR_CHEST:
@@ -144,7 +145,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
 
 Actor* actorCreatePlayer(COISprite* sprite) {
   // Process for random stat generation, maybe specific for each class?
-  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 5, 10, 50, 35, 10, 30);
+  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 5, 10, 50, 50, 30, 30);
   
   COISpriteSetSheetIndex(actor->sprite, 2, 2);
     

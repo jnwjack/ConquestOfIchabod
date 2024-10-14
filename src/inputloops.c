@@ -303,15 +303,18 @@ void gameOver(COIBoard* board, SDL_Event* event, void* context) {
   GameOverContext* gameOverContext = (GameOverContext*)context;
   switch (event->type) {
   case SDL_KEYDOWN:
-    switch(event->key.keysym.sym) {
-    case SDLK_SPACE:
-    case SDLK_ESCAPE:
+  {
+    int input = _sdlEventToDirectionalInput(event);
+    switch(input) {
+    case MOVING_PAUSE:
+    case MOVING_DELETE:
       COIWindowSetBoard(COI_GLOBAL_WINDOW, titleCreateBoard(), title);
       gameOverDestroyBoard(gameOverContext);
       break;
     }
     default:
       return;
+  }
   }
 }
 

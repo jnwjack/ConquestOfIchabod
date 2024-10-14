@@ -345,7 +345,11 @@ int _priceFromItemID(int item) {
   case ITEM_ID_CRACKED_SHIELD:
     return 10;
   case ITEM_ID_STRENGTH_POTION:
-    return 10;
+    return 25;
+  case ITEM_ID_DEF_SCROLL:
+    return 20;
+  case ITEM_ID_AGI_SCROLL:
+    return 15;
   case ITEM_ID_BRONZE_HELM:
     return 30;
   case ITEM_ID_BRONZE_CHEST:

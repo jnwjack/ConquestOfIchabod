@@ -32,6 +32,7 @@ static void _buffStat(Stat* stat) {
   } else {
     stat->factor *= 1.5;
   }
+  printf("FACTOR: %f\n", stat->factor);
 }
 
 // Action with actor having higher AGI is smaller
@@ -137,6 +138,52 @@ static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBo
     snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
       actorGetNameFromType(otherT->actorType), damage);
     ActionSummaryAddString(summary, temp, board, box, textType);
+
+    if (actorIsDead(otherT)) {
+      action->otherTargetsKilled[action->numOtherTargetsKilled] = otherT;
+      action->numOtherTargetsKilled++;
+    }
+  }
+}
+
+static void _debuffSpecial(BattleAction* action, ActionSummary* summary, COIBoard* board, COISprite* box, COITextType* textType, LinkedList* modifiers, Actor* target) {
+  char temp[MAX_STRING_SIZE];
+  switch (action->index) {
+  case SPECIAL_ID_CURSE: 
+  {
+    ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
+    modifier->actor = target;
+    modifier->turnsLeft = 3;
+    modifier->type = MT_CURSED;
+    LinkedListAdd(modifiers, (void*)modifier);
+    break;
+  }
+  case SPECIAL_ID_DRAIN_SPIRIT:
+  {
+    int spLost = specialStrength(action->index);
+    target->sp = MAX(0, target->sp - spLost);
+    snprintf(temp, MAX_STRING_SIZE, "SP REDUCED BY %i", spLost);
+    ActionSummaryAddString(summary, temp, board, box, textType);
+    break;
+  }
+  case SPECIAL_ID_NEUTRALIZE:
+    target->def.factor = 1.0;
+    target->agi.factor = 1.0;
+    target->atk.factor = 1.0;
+    ActionSummaryAddString(summary, "STATS RETURNED TO NORMAL", board, box, textType);
+    break;
+  case SPECIAL_ID_SILENCE:
+  {
+    ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
+    modifier->actor = target;
+    modifier->turnsLeft = 5;
+    modifier->type = MT_SILENCED;
+    LinkedListAdd(modifiers, (void*)modifier);
+    ActionSummaryAddString(summary, "SPECIAL ABILITIES CAN NO LONGER BE USED", board, box, textType);
+    break;
+  }
+  default:
+    printf("Error: Tried to process a debuff special we don't support.\n");
   }
 }
 
@@ -164,6 +211,7 @@ void battleBehaviorMakeSpecial(BattleAction* action, int specialID, int targetIn
   action->index = specialID;
   action->successfulFlee = false;
   action->numOtherTargets = 0;
+  action->numOtherTargetsKilled = 0;
   if (specialID == SPECIAL_ID_AVALANCHE || specialID == SPECIAL_ID_HOWL) {
     // Working with different enemy ordering
     for (int i = 0; i < numTargetActors; i++) {
@@ -245,6 +293,7 @@ void battleBehaviorGenerateAction(BattleAction* action, Actor* actor, Actor** ac
   action->index = battleBehaviorPickIndex(action->type, actor);
   action->target = battleBehaviorPickTarget(actor->actorType, action, actorEnemies, numEnemies, actorAllies, numAllies);
   action->numOtherTargets = 0;
+  action->numOtherTargetsKilled = 0;
   if (action->type == SPECIAL) {
     int targetIndex = 0; // This will break if we ever have more than one character in parties.
     // Will stay at 0 if we're targeting the player's party.
@@ -446,58 +495,27 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
         aName, specialVerb(action->index), specialName(action->index), tName);
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      if (!generateRandomBoolWeighted(hitRate)) {
+        ActionSummaryAddString(summary, "THE ATTACK MISSES!", board, box, textType);
+        break;
+      }
       if (damSpecialHitsTwice) {
         _damagingSpecial(action, summary, board, box, textType);
         ActionSummaryAddString(summary, "THE ATTACK REPEATS!", board, box, textType);
       }
       _damagingSpecial(action, summary, board, box, textType);
-      // if (action->index == SPECIAL_ID_BACKSTAB) {
-      //   int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
-      //   damage = _randomDamage(specialStrength(base));
-      // } else {
-      //   damage = _randomDamage(specialStrength(action->index));
-      // }
-
-      // if (_critical()) {
-      //   damage *= 2;
-      //   snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	    //     aName, specialVerb(action->index), specialName(action->index), tName);
-      //   summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      //   ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);
-      //   snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
-      //   ActionSummaryAddString(summary, temp, board, box, textType);
-      // } else {
-      //   snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	    //     aName, specialVerb(action->index), specialName(action->index), tName);
-      //   summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      //   snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT", damage);
-      //   ActionSummaryAddString(summary, temp, board, box, textType);
-      // }
-
-      // t->hp = MAX(0, t->hp - damage);
-
-      // for (int i = 0; i < action->numOtherTargets; i++) {
-      //   Actor* otherT = action->otherTargets[i];
-      //   damage = _randomDamage(specialSecondaryStrength(action->index));
-      //   otherT->hp = MAX(0, otherT->hp - damage);
-
-      //   snprintf(temp, MAX_STRING_SIZE, "%s ALSO TAKES %i DAMAGE",
-	    //     actorGetNameFromType(otherT->actorType), damage);
-      //   ActionSummaryAddString(summary, temp, board, box, textType);
-      // }
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
       if (battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
         t->hp = MAX(0, a->hp - amountHealed);
         snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
-        ActionSummaryAddString(summary, temp, board, box, textType);
+        summary = ActionSummaryCreate(board, box, textType, temp, NULL);
         snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", amountHealed, aName);
         ActionSummaryAddString(summary, temp, board, box, textType);
         
         // Action fails
         break;
       }
-
       t->hp = MIN(t->hp + specialStrength(action->index), t->hpMax);
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
 	       aName, specialVerb(action->index), specialName(action->index), tName);
@@ -507,6 +525,16 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     } else if (spType == SPECIAL_GAG) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s", aName, specialVerb(action->index), specialName(action->index));
       summary = ActionSummaryCreate(board, box, textType, temp, "NOTHING HAPPENS!", NULL);
+    } else if (spType == SPECIAL_DEBUFF) {
+      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
+	       aName, specialVerb(action->index), specialName(action->index), tName);
+      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
+      if (generateRandomBoolWeighted(hitRate)) {
+        _debuffSpecial(action, summary, board, box, textType, modifiers, t);
+      } else {
+        ActionSummaryAddString(summary, "THE ATTACK MISSES!", board, box, textType);
+      }
+      break;
     } else if (action->index == SPECIAL_ID_PARRY) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
 	       aName, specialVerb(action->index), specialName(action->index));
@@ -517,23 +545,6 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       modifier->turnsLeft = 0;
       modifier->type = MT_PARRYING;
       LinkedListAdd(modifiers, (void*)modifier);
-    } else if (action->index == SPECIAL_ID_CURSE) {
-      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	       aName, specialVerb(action->index), specialName(action->index), tName);
-      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
-      modifier->actor = t;
-      modifier->turnsLeft = 3;
-      modifier->type = MT_CURSED;
-      LinkedListAdd(modifiers, (void*)modifier);
-    } else if (action->index == SPECIAL_ID_DRAIN_SPIRIT) {
-      int spLost = specialStrength(action->index);
-      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	       aName, specialVerb(action->index), specialName(action->index), tName);
-      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      t->sp = MAX(0, t->sp - spLost);
-      snprintf(temp, MAX_STRING_SIZE, "SP REDUCED BY %i", spLost);
-      ActionSummaryAddString(summary, temp, board, box, textType);
     } else if (action->index == SPECIAL_ID_REINFORCE) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
 	       aName, specialVerb(action->index), specialName(action->index), tName);
@@ -554,26 +565,6 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
         snprintf(temp, MAX_STRING_SIZE, "%s ALSO BECOMES FASTER", actorGetNameFromType(action->otherTargets[i]->actorType));
         ActionSummaryAddString(summary, temp, board, box, textType);
       }
-    } else if (action->index == SPECIAL_ID_NEUTRALIZE) {
-      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	       aName, specialVerb(action->index), specialName(action->index), tName);
-      ActionSummaryAddString(summary, temp, board, box, textType);
-      t->def.factor = 1.0;
-      t->agi.factor = 1.0;
-      t->atk.factor = 1.0;
-      ActionSummaryAddString(summary, "STATS RETURNED TO NORMAL", board, box, textType);
-    } else if (action->index == SPECIAL_ID_SILENCE) {
-      snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
-	       aName, specialVerb(action->index), specialName(action->index), tName);
-      summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      // Only handling curse right now
-      ActorBattleModifier* modifier = malloc(sizeof(ActorBattleModifier));
-      modifier->actor = t;
-      modifier->turnsLeft = 5;
-      modifier->type = MT_SILENCED;
-      LinkedListAdd(modifiers, (void*)modifier);
-      printf("adding silenced\n");
-      ActionSummaryAddString(summary, "SPECIAL ABILITIES CAN NO LONGER BE USED", board, box, textType);
     } else if (action->index == SPECIAL_ID_TIME_SKIP) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
 	       aName, specialVerb(action->index), specialName(action->index));
@@ -608,9 +599,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
     // Higher chance to succeed if we're faster than the target.
     if (actorModifiedAgi(action->target) <= actorModifiedAgi(action->actor)) {
-      action->successfulFlee = generateRandomBoolWeighted(0.75);
+      action->successfulFlee = generateRandomBoolWeighted(0.85);
     } else {
-      action->successfulFlee = generateRandomBoolWeighted(0.25);
+      action->successfulFlee = generateRandomBoolWeighted(0.5);
     }
     if (action->successfulFlee) {
       ActionSummaryAddString(summary, "YOU ESCAPE!", board, box, textType);
@@ -638,8 +629,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     snprintf(temp, MAX_STRING_SIZE, "%s DIES", tName);
     ActionSummaryAddString(summary, temp, board, box, textType);
   }
-  for (int i = 0; i < action->numOtherTargets; i++) {
-    Actor* otherT = action->otherTargets[i];
+  for (int i = 0; i < action->numOtherTargetsKilled; i++) {
+    Actor* otherT = action->otherTargetsKilled[i];
     if (actorIsDead(otherT)) {
       otherT->sprite->_autoHandle = false;
       otherT->sprite->_visible = false;

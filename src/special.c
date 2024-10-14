@@ -69,13 +69,13 @@ char* specialVerb(int id) {
 int specialStrength(int id) {
   switch (id) {
   case SPECIAL_ID_FIREBALL:
-    return 10;
+    return 25;
   case SPECIAL_ID_AVALANCHE:
-    return 7;
+    return 15;
   case SPECIAL_ID_ICE_SPEAR:
-    return 5;
-  case SPECIAL_ID_HEAL:
     return 12;
+  case SPECIAL_ID_HEAL:
+    return 20;
   case SPECIAL_ID_DRAIN_SPIRIT:
     return 5;
   default:
@@ -203,4 +203,3 @@ char* specialDescription(int id) {
 int specialSecondaryStrength(int id) {
   return specialStrength(id) * 0.25;
 }
-

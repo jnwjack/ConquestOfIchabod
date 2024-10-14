@@ -97,7 +97,7 @@ bool KeyboardSelect(Keyboard* kb, COIBoard* board) {
       char c = kb->characters[index];
       snprintf(buf, 2, "%c", c);
       kb->name[kb->currentNameChar] = c;
-      kb->nameStrings[kb->currentNameChar] = COIStringCreate(buf, newCharX, underscoreY, kb->textType);
+      kb->nameStrings[kb->currentNameChar] = COIStringCreate(buf, newCharX, underscoreY - 5, kb->textType);
       COIBoardAddString(board, kb->nameStrings[kb->currentNameChar]);
       kb->currentNameChar++;
     }
@@ -175,7 +175,7 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
 
   COITextType* textType = COITextTypeCreate(24, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
-  cs->currentClass = PLAYER_CLASS_FIGHTER;
+  cs->currentClass = PLAYER_CLASS_WIZARD;
   cs->classIcons[PLAYER_CLASS_FIGHTER] = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 120, CLASSSELECTOR_OFFSET_Y, 64, 64,
                                                                     COI_GLOBAL_LOADER, 48,
                                                                     COIWindowGetRenderer(COI_GLOBAL_WINDOW));
