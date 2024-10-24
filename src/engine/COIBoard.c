@@ -2,6 +2,7 @@
 
 COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoader* loader) {
   COIBoard* board = malloc(sizeof(COIBoard));
+  board->spriteGrid = NULL;
   board->_bgColor[INDEX_RED] = r;
   board->_bgColor[INDEX_GREEN] = g;
   board->_bgColor[INDEX_BLUE] = b;
@@ -42,10 +43,14 @@ void COIBoardDestroy(COIBoard* board) {
     int i;
     for (i = 0; i < board->_spriteCount; i++) {
       if (board->_sprites[i] != NULL) {
-	free(board->_sprites[i]);
+	      free(board->_sprites[i]);
       }
     }
     free(board->_sprites);
+  }
+  if (board->spriteGrid) {
+    free(board->spriteGrid);
+    printf("freed spritegrid\n");
   }
   if (board->persistentSprites != NULL) {
     for (int i = 0; i < board->perSpriteCount; i++) {
@@ -87,7 +92,14 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
   int w;
   int h;
   int i = 0;
+  // left off here: track max x and y to get width and height of board
+  // then, malloc an entire grid equal to the width / grid_cell_width x height / grid_cell_height
+  // Load sprites from spritemap into relevant position in grid
+  // During runtime, keep track of the relevant grid position that corresponds to top left of viewport.
+  // Only have to iterate through (640 / 32) x (480 / 32) sprites per frame now
   COISprite* sprite = NULL;
+  int maxGridX = -1;
+  int maxGridY = -1;
   while (getline(&line, &len, fp) != -1) {
     line[strcspn(line, "\n")] = '\0';
 
@@ -96,12 +108,46 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
     y = atoi(strtok(NULL, " "));
     w = atoi(strtok(NULL, " "));
     h = atoi(strtok(NULL, " "));
+    int gridX = x / COIBOARD_GRID_SIZE;
+    int gridY = y / COIBOARD_GRID_SIZE;
+    if (gridX > maxGridX) {
+      maxGridX = gridX;
+    }
+    if (gridY > maxGridY) {
+      maxGridY = gridY;
+    }
     SDL_Surface* asset = COIAssetLoaderGetAsset(board->loader, assetID);
     SDL_Texture* texture  = SDL_CreateTextureFromSurface(renderer, asset);
     sprite = COISpriteCreate(x, y, w, h, texture, assetID);
     COISpriteSetExtraCollision(sprite, COIAssetLoaderGetCollision(board->loader, assetID));
     board->_sprites[i] = sprite;
     i++;
+  }
+
+  board->spriteGridWidth = maxGridX + 1;
+  board->spriteGridHeight = maxGridY + 1;
+  int totalGridSquares = board->spriteGridWidth * board->spriteGridHeight;
+  board->spriteGrid = malloc(totalGridSquares * sizeof(COISprite*));
+
+  printf("grid size: %i\n", totalGridSquares);
+  for (int i = 0; i < totalGridSquares; i++) {
+    board->spriteGrid[i] = NULL;
+  }
+
+  for (int i = 0; i < spriteCount; i++) {
+    COISprite* sprite = board->_sprites[i];
+    int xOrigin = (sprite->_x / COIBOARD_GRID_SIZE);
+    int yOrigin = (sprite->_y / COIBOARD_GRID_SIZE);
+
+    // Insert sprite into it's position in the grid.
+    // Also place it in nearby cells if it's bigger than 1x1.
+    for (int yDelta = 0; yDelta < sprite->_height / COIBOARD_GRID_SIZE; yDelta++) {
+      for (int xDelta = 0; xDelta < sprite->_width / COIBOARD_GRID_SIZE; xDelta++) {
+        int index = (yOrigin + yDelta) * board->spriteGridWidth + (xOrigin + xDelta);
+        board->spriteGrid[index] = sprite;
+        sprite->_visible = false;
+      }
+    }
   }
 
   if (line) {
@@ -134,9 +180,9 @@ void _adjustSprite(COIBoard* board, COISprite* sprite, int farEdgeX, int farEdge
   if (sprite->_autoHandle) {
     if (((sprite->_x + sprite->_width) >= board->_frameX && sprite->_x <= farEdgeX)
 	  && ((sprite->_y + sprite->_height) >= board->_frameY && sprite->_y <= farEdgeY)) {
-	sprite->_drawRect->x = sprite->_x - board->_frameX;
-	sprite->_drawRect->y = sprite->_y - board->_frameY;
-	sprite->_visible = true;
+      sprite->_drawRect->x = sprite->_x - board->_frameX;
+      sprite->_drawRect->y = sprite->_y - board->_frameY;
+      sprite->_visible = true;
     } else {
       sprite->_visible = false;
     }

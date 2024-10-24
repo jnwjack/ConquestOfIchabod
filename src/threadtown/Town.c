@@ -688,9 +688,9 @@ void townMovePlayer(TownContext* context) {
     break;
   }
 
-#ifdef __COI_DEBUG__
-  printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
-#endif
+// #ifdef __COI_DEBUG__
+//   printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
+// #endif
 
   
   if (inNextGridCell) {

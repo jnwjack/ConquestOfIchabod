@@ -29,6 +29,10 @@ typedef struct COIBoard {
 
   // Sprites loaded in via spritemap
   COISprite** _sprites;
+  // New structure for static sprites
+  COISprite** spriteGrid;
+  int spriteGridHeight;
+  int spriteGridWidth;
   int _spriteCount;
 
   // Loaded in "on-the-fly"

@@ -124,8 +124,8 @@ void AllyStatusDestroy(AllyStatus* status) {
   _cleanupString(status->board, status->tp);
   _cleanupString(status->board, status->sp);
   if (status->frame != NULL) {
-    COIBoardRemoveDynamicSprite(status->board, status->frame);
-    COISpriteDestroy(status->frame);
+    // COIBoardRemoveDynamicSprite(status->board, status->frame);
+    // COISpriteDestroy(status->frame);
   }
   
   free(status);

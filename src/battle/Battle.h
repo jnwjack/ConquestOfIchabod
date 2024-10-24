@@ -88,6 +88,9 @@ typedef struct BattleContext {
   COITextType* textType;
   int numStrings; // Count of COIStrings in context
 
+  COISprite* nameBox;
+  COISprite* descBox;
+
   Actor** enemies;
   COIString** enemyNames;
   int numEnemies;

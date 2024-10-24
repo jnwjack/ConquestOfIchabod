@@ -219,15 +219,17 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   for (int i = 0; i < context->numAllies; i++) {
     actorFaceLeft(context->allies[i]);
   }
-  COISprite* aBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_A_BOX];
+  COISprite* aBox = COISpriteCreateFromAssetID(450, 80, 100, 300, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, aBox);
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   aBox->_autoHandle = false;
   aBox->_visible = false;
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
 
-  COISprite* descBox = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
-  descBox->_autoHandle = false;
-  descBox->_visible = false;
+  context->descBox = COISpriteCreateFromAssetID(320, 350, 300, 100, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, context->descBox);
+  context->descBox->_autoHandle = false;
+  context->descBox->_visible = false;
 
 
   // Enemies, can later randomize number
@@ -242,11 +244,10 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   COIString** allStrings = malloc(sizeof(COIString*) * (BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies));
 
   context->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
-  
-  COISprite** sprites = COIBoardGetSprites(board);
 
   // Pointer for enemies and allies
-  context->pointer = sprites[BATTLE_SPRITEMAP_POINTER];
+  context->pointer = COISpriteCreateFromAssetID(320, 350, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, context->pointer);
   context->pointer->_autoHandle = false;
   context->pointer->_visible = false;
 
@@ -258,10 +259,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     context->gold += _goldFromEnemyType(enemyType);
     actorFaceRight(context->enemies[i]);
   }
-  COISprite* eBox = COIBoardGetSprites(board)[BATTLE_SPRITEMAP_E_BOX];
-  eBox->_autoHandle = false;
-  eBox->_visible = false;
-  // _centerActorsInBox(context->enemies, context->numEnemies, eBox);
   _positionEnemies(context->enemies, context->numEnemies);
   
   COIBoardSetPersistentSprites(board, _getPersistentSprites(context), context->numEnemies + context->numAllies);
@@ -269,18 +266,30 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   _makeStrings(context, pInfo, board);
 
   // Name box
-  sprites[BATTLE_SPRITEMAP_NAME_BOX]->_autoHandle = false;
-  sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = true;
+  context->nameBox = COISpriteCreateFromAssetID(210, 20, 200, 75, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, context->nameBox);
+  context->nameBox->_autoHandle = false;
+  context->nameBox->_visible = true;
 
   // Top-level menu
-  sprites[BATTLE_SPRITEMAP_MENU_FRAME]->_autoHandle = false;
-  sprites[BATTLE_SPRITEMAP_MENU_FRAME]->_visible = true;
-  context->actionMenu = COIMenuCreate(sprites[BATTLE_SPRITEMAP_MENU_FRAME], sprites[BATTLE_SPRITEMAP_MENU_POINTER]);
+  COISprite* topLevelMenuFrame = COISpriteCreateFromAssetID(400, 320, 200, 150, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, topLevelMenuFrame);
+  COISprite* topLevelPointer = COISpriteCreateFromAssetID(100, 200, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, topLevelPointer);
+  topLevelMenuFrame->_autoHandle = false;
+  topLevelMenuFrame->_visible = true;
+  topLevelPointer->_autoHandle = false;
+  topLevelPointer->_visible = true;
+  context->actionMenu = COIMenuCreate(topLevelMenuFrame, topLevelPointer);
   COIMenuSetTexts(context->actionMenu, context->actionStrings, BATTLE_NUM_ACTIONS);
 
   // Submenu
   //context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
-  context->subMenu = COIMenuCreateWithCapacity(sprites[BATTLE_SPRITEMAP_SUBMENU_FRAME], sprites[BATTLE_SPRITEMAP_SUBMENU_POINTER], MAX_TECH_COUNT_ALLY);
+  COISprite* subMenuFrame = COISpriteCreateFromAssetID(170, 320, 220, 150, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, subMenuFrame);
+  COISprite* subMenuPointer = COISpriteCreateFromAssetID(100, 200, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, subMenuPointer);
+  context->subMenu = COIMenuCreateWithCapacity(subMenuFrame, subMenuPointer, MAX_TECH_COUNT_ALLY);
   COIMenuSetInvisible(context->subMenu);
 
   COIMenuSetVisible(context->actionMenu);
@@ -674,8 +683,7 @@ void _changeTurn(BattleContext* context, int step) {
     context->controlEnabled = false;
     // Make action menu invisible
     COIMenuSetInvisible(context->actionMenu);
-    COISprite** sprites = COIBoardGetSprites(context->board);
-    sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = false;
+    context->nameBox->_visible = false;
     _toggleTargetNameVisibility(context, false);
     context->pointer->_visible = false;
   } else if (context->turnIndex + step < 0) {
@@ -985,7 +993,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
           for (int i = 0; i < context->numAllies; i++) {
             AllyStatusSetVisible(context->allyStatuses[i], false);
           }
-          context->board->_sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = false;
+          context->nameBox->_visible = false;
           BattleSplashDestroy(context->splash, context->board);
           return BR_CONTINUE;
         }
@@ -1010,8 +1018,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
     context->currentActionIndex = 0;
     context->controlEnabled = true;
     COIMenuSetVisible(context->actionMenu);
-    COISprite** sprites = COIBoardGetSprites(context->board);
-    sprites[BATTLE_SPRITEMAP_NAME_BOX]->_visible = true;
+    context->nameBox->_visible = true;
     context->movementOffset = 0;
     context->pointer->_visible = true;
     _focusActionMenu(context);
@@ -1035,9 +1042,8 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         action.target->sprite->_autoHandle = false;
         // Create ActionSummary. This holds the COIStrings
         // that describe the current action.
-        COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
-        box->_visible = true;
-        context->summary = battleBehaviorDoAction(&context->actions[context->currentActionIndex], context->textType, context->board, box, context->pInfo, context->modifiers);
+        context->descBox->_visible = true;
+        context->summary = battleBehaviorDoAction(&context->actions[context->currentActionIndex], context->textType, context->board, context->descBox, context->pInfo, context->modifiers);
         // If it's a item, remove it from backpack on use
         // if (action.type == ITEM) {
         //   inventoryRemoveBackpackItemFirstInstance(context->pInfo->inventory,
@@ -1047,8 +1053,7 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
         ActionSummaryDestroy(context->summary, context->board);
         context->summary = NULL;
         context->sceneStage = SS_MOVE_BACKWARDS;
-        COISprite* box = COIBoardGetSprites(context->board)[BATTLE_SPRITEMAP_DESC_BOX];
-        box->_visible = false;
+        context->descBox->_visible = false;
         // We're done with the target's sprite
         if (actorIsDead(action.target)) {
           action.target->sprite->_visible = false;
@@ -1127,9 +1132,16 @@ void battleDestroyBoard(COIBoard* board) {
     actorDestroy(context->enemies[i]);
     COIStringDestroy(context->enemyNames[i]);
   }
+  // LinkedListResetCursor(board->dynamicSprites);
+  // COISprite* sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
+  // while (sprite) {
+  //   COIBoardRemoveDynamicSprite(board, sprite);
+  //   COISpriteDestroy(sprite);
+  //   sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
+  // }
   for (int i = 0; i < context->numAllies; i++) {
-    COIBoardRemoveDynamicSprite(board, context->techParticles[i]);
-    COISpriteDestroy(context->techParticles[i]);
+    // COIBoardRemoveDynamicSprite(board, context->techParticles[i]);
+    // COISpriteDestroy(context->techParticles[i]);
     AllyStatusDestroy(context->allyStatuses[i]);
   }
   if (context->levelUpSplash) {

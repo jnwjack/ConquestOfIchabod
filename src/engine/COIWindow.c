@@ -64,44 +64,61 @@ void COIWindowLoop(void* window_v, bool repeat) {
       COIBoardUpdateSpriteVisibility(window->_currentBoard);
       COISprite** sprites = COIBoardGetSprites(window->_currentBoard);
       COISprite* sprite;
-      for (int i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
-	sprite = sprites[i];
-	if (sprite->_visible) {
-	  SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
-	}
+      // for (int i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
+      //   sprite = sprites[i];
+      //   if (sprite->_visible) {
+      //     SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+      //   }
+      // }
+
+      int extentY = MIN((window->_currentBoard->_frameY + window->_currentBoard->_frameHeight) / COIBOARD_GRID_SIZE + 1, 
+                        window->_currentBoard->spriteGridHeight);
+      int extentX = MIN((window->_currentBoard->_frameX + window->_currentBoard->_frameWidth) / COIBOARD_GRID_SIZE + 1,
+                        window->_currentBoard->spriteGridWidth);
+      printf("grid extents: %i %i\n", extentX, extentY);
+      for (int y = window->_currentBoard->_frameY / COIBOARD_GRID_SIZE; y < extentY; y++) {
+        for (int x = window->_currentBoard->_frameX / COIBOARD_GRID_SIZE; x < extentX; x++) {
+          int index = y * window->_currentBoard->spriteGridWidth + x;
+          if (window->_currentBoard->spriteGrid[index]) {
+            sprite = window->_currentBoard->spriteGrid[index];
+            if (sprite->_autoHandle) {
+              SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+            }
+          }
+        }
       }
 
       // Draw persistent sprites
       for (int i = 0; i < window->_currentBoard->perSpriteCount; i++) {
-	sprite = window->_currentBoard->persistentSprites[i];
-	if (sprite->_visible) {
-	  SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
-	}
+	      sprite = window->_currentBoard->persistentSprites[i];
+        if (sprite->_visible) {
+          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+        }
       }
 
       // Draw dynamic sprites
       LinkedListResetCursor(window->_currentBoard->dynamicSprites);
       sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
       while (sprite != NULL) {
-	if (sprite->_visible) {
-	  SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
-	}
-	sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
+        if (sprite->_visible) {
+          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+        }
+	      sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
       }
 
       // New method of handling strings
       COIString** strings = window->_currentBoard->strings;
       for (int i = 0; i < window->_currentBoard->stringCount; i++) {
-	if (strings[i]->visible) {
-	  COIStringDraw(strings[i], window->_renderer);
-	}
+        if (strings[i]->visible) {
+          COIStringDraw(strings[i], window->_renderer);
+        }
       }
 
       if (!window->transition.complete) {
-	window->transition.update(&window->transition, window);
+	      window->transition.update(&window->transition, window);
       } else {
-	// We'll want to keep drawing as long as transition is active
-	window->_currentBoard->_shouldDraw = false;
+        // We'll want to keep drawing as long as transition is active
+        window->_currentBoard->_shouldDraw = false;
       }
       
       SDL_RenderPresent(window->_renderer);
