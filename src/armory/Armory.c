@@ -259,7 +259,6 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
 				    IntList* itemIDs) {
 
   ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
-  COISprite** armorySprites = COIBoardGetSprites(board);
 
   armoryContext->sellItems = NULL;
   armoryContext->buyItems = NULL;

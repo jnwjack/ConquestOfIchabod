@@ -3,25 +3,44 @@
 
 #define PAY_PER_SHIFT 100
 
+// When moving NPCs
+// static void _queueDrawIfSpriteVisible(TownContext* context, COISprite* sprite) {
+//   if (sprite->_x > context->board->_fra)
+// }
+
 static int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
-  // Probably want this to only look at visible sprites
-  COIBoard* board = context->board;
-  int maxSpriteIndex = board->_spriteCount;
-  COISprite* currentSprite = NULL;
-  int i;
-  int collisionResult = COI_NO_COLLISION;;
-  for (i = 0; i < maxSpriteIndex; i++) {
-    currentSprite = board->_sprites[i];
-    collisionResult = COISpriteCollision(currentSprite,
-					 actorSprite->_x + changeX,
-					 actorSprite->_y + changeY,
-					 actorSprite->_width,
-					 actorSprite->_height);
-    if (collisionResult != COI_NO_COLLISION) {
-      return collisionResult;
+  int newX = actorSprite->_x + changeX;
+  int newY = actorSprite->_y + changeY;
+  int xGridPos = newX / COIBOARD_GRID_SIZE;
+  int yGridPos = newY / COIBOARD_GRID_SIZE;
+  int index = yGridPos * context->board->spriteGridWidth + xGridPos;
+  COISprite* collidingSprite = context->board->spriteGrid[index];
+  if (collidingSprite) { // NULL if no sprite is there
+    if (collidingSprite->_extraCollision) {
+      return collidingSprite->_extraCollision->returnValue;
     }
+    return COI_COLLISION;
   }
 
+  // Probably want this to only look at visible sprites
+  // COIBoard* board = context->board;
+  // int maxSpriteIndex = board->_spriteCount;
+  // COISprite* currentSprite = NULL;
+  // int i;
+  // int collisionResult = COI_NO_COLLISION;
+  // for (i = 0; i < maxSpriteIndex; i++) {
+  //   currentSprite = board->_sprites[i];
+  //   collisionResult = COISpriteCollision(currentSprite,
+	// 				 actorSprite->_x + changeX,
+	// 				 actorSprite->_y + changeY,
+	// 				 actorSprite->_width,
+	// 				 actorSprite->_height);
+  //   if (collisionResult != COI_NO_COLLISION) {
+  //     return collisionResult;
+  //   }
+  // }
+
+  int collisionResult = COI_NO_COLLISION;;
   LinkedListResetCursor(context->allActors);
   Actor* currentActor = (Actor*)LinkedListNext(context->allActors);
   while (currentActor) {
@@ -42,7 +61,7 @@ static int _testForCollision(TownContext* context, COISprite* actorSprite, int c
 
 
   // Check for collision against player
-  currentSprite = context->pInfo->party[0]->sprite;
+  COISprite* currentSprite = context->pInfo->party[0]->sprite;
   if (currentSprite != actorSprite) {
     collisionResult = COISpriteCollision(currentSprite,
 					 actorSprite->_x + changeX,
@@ -68,8 +87,9 @@ static void _animateTentacles(TownContext* context) {
       int oldCol = tentacle->_srcRect->x / tentacle->_srcRect->w;
       COISpriteSetSheetIndex(tentacle, 0, (oldCol + 1) % 3);
       tentacle->_animationTicks = 0;
+      COIBoardAdjustSprite(context->board, tentacle);
       if (tentacle->_visible) {
-	COIBoardQueueDraw(context->board);
+	      COIBoardQueueDraw(context->board);
       }
     }
 
@@ -221,15 +241,23 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   // Gather animated tentacle sprites
   context->topTentacles = LinkedListCreate();
   int startingCol = 0;
-  for (int i = 0; i < board->_spriteCount; i++) {
-    if (board->_sprites[i]->_assetID == 21) {
-      COISpriteSetSheetIndex(board->_sprites[i], 0, startingCol);
-      LinkedListAdd(context->topTentacles,
-		    (void*)board->_sprites[i]);
+  int numSprites = board->spriteGridHeight * board->spriteGridWidth;
+  for (int i = 0; i < numSprites; i++) {
+    if (board->spriteGrid[i] && board->spriteGrid[i]->_assetID == 21) {
+      COISpriteSetSheetIndex(board->spriteGrid[i], 0, startingCol);
+      LinkedListAdd(context->topTentacles, (void*)board->spriteGrid[i]);
       startingCol = (startingCol + 1) % 3;
     }
-    
   }
+  // for (int i = 0; i < board->_spriteCount; i++) {
+  //   if (board->_sprites[i]->_assetID == 21) {
+  //     COISpriteSetSheetIndex(board->_sprites[i], 0, startingCol);
+  //     LinkedListAdd(context->topTentacles,
+	// 	    (void*)board->_sprites[i]);
+  //     startingCol = (startingCol + 1) % 3;
+  //   }
+    
+  // }
   COIBoardSetContext(board, (void*)context);
 
   return board;
@@ -244,7 +272,9 @@ void _queueMovement(TownContext* context, Actor* actor, int direction, int speed
     actor->nextMovementDirection = direction;
     actor->_speed = speed;
     actorFaceDirection(actor, direction);
-    COIBoardQueueDraw(context->board);
+    if (actor->sprite->_visible) {
+      COIBoardQueueDraw(context->board);
+    }
   } else {
     actor->nextMovementDirection = direction;
   }

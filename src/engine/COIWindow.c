@@ -59,28 +59,24 @@ void COIWindowLoop(void* window_v, bool repeat) {
     }
     
     if (window->_currentBoard->_shouldDraw) {
+      printf("should draw\n");
       SDL_RenderClear(window->_renderer);
 
       COIBoardUpdateSpriteVisibility(window->_currentBoard);
-      COISprite** sprites = COIBoardGetSprites(window->_currentBoard);
       COISprite* sprite;
-      // for (int i = 0; i < COIBoardGetSpriteCount(window->_currentBoard); i++) {
-      //   sprite = sprites[i];
-      //   if (sprite->_visible) {
-      //     SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
-      //   }
-      // }
 
       int extentY = MIN((window->_currentBoard->_frameY + window->_currentBoard->_frameHeight) / COIBOARD_GRID_SIZE + 1, 
                         window->_currentBoard->spriteGridHeight);
       int extentX = MIN((window->_currentBoard->_frameX + window->_currentBoard->_frameWidth) / COIBOARD_GRID_SIZE + 1,
                         window->_currentBoard->spriteGridWidth);
-      printf("grid extents: %i %i\n", extentX, extentY);
       for (int y = window->_currentBoard->_frameY / COIBOARD_GRID_SIZE; y < extentY; y++) {
         for (int x = window->_currentBoard->_frameX / COIBOARD_GRID_SIZE; x < extentX; x++) {
+      // for (int y = 0; y < window->_currentBoard->spriteGridHeight; y++) {
+      //   for (int x = 0; x < window->_currentBoard->spriteGridWidth; x++) {
           int index = y * window->_currentBoard->spriteGridWidth + x;
           if (window->_currentBoard->spriteGrid[index]) {
             sprite = window->_currentBoard->spriteGrid[index];
+            COIBoardAdjustSprite(window->_currentBoard, sprite);
             if (sprite->_autoHandle) {
               SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
             }
