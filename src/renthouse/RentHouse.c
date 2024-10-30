@@ -212,7 +212,7 @@ COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard) {
 
 void RentHouseProcessDirectionalInput(RentHouseContext* context, int event) {
   if (!context->textBox->box->_visible) {
-    COIMenuHandleInput(context->baseMenu, event);
+    COIMenuHandleInput(context->baseMenu, event, true);
     COIBoardQueueDraw(context->board);
   }
 }

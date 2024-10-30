@@ -101,9 +101,9 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
 	      battleHandleBack(battleContext);
       } else {
         if (battleContext->menuFocus == ACTION_MENU) {
-          selection = COIMenuHandleInput(battleContext->actionMenu, _sdlEventToDirectionalInput(event));
+          selection = COIMenuHandleInput(battleContext->actionMenu, _sdlEventToDirectionalInput(event), false);
         } else if (battleContext->menuFocus == SUB_MENU) {
-          selection = COIMenuHandleInput(battleContext->subMenu, _sdlEventToDirectionalInput(event));
+          selection = COIMenuHandleInput(battleContext->subMenu, _sdlEventToDirectionalInput(event), true);
         } else if (battleContext->menuFocus == LEVEL_UP) {
           selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
         } else {

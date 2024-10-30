@@ -43,7 +43,7 @@ void COIMenuSetTexts(COIMenu* menu, COIString* stringPointers[], int numIndices)
 void COIMenuAdjustFrame(COIMenu* menu);
 void COIMenuReset(COIMenu* menu);
 void COIMenuIncrement(COIMenu* menu, int step);
-bool COIMenuHandleInput(COIMenu* menu, int event);
+bool COIMenuHandleInput(COIMenu* menu, int event, bool playSound);
 bool COIMenuAddString(COIMenu* menu, COIString* string, int val);
 void COIMenuRemoveString(COIMenu* menu, int index, COIBoard* board);
 int COIMenuGetCurrentValue(COIMenu* menu);

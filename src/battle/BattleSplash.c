@@ -430,7 +430,7 @@ bool LevelUpSplashProcessInput(LevelUpSplash* splash, int event) {
         COIStringSetVisible(splash->costStrings[splash->menu->_current],
                             false);
       }
-      selection = COIMenuHandleInput(splash->menu, event);
+      selection = COIMenuHandleInput(splash->menu, event, true);
       if (shouldRefresh) {
         COIStringSetVisible(splash->descStrings[splash->menu->_current],
                             true);
@@ -438,7 +438,7 @@ bool LevelUpSplashProcessInput(LevelUpSplash* splash, int event) {
                             true);
       }
   } else {
-    selection = COIMenuHandleInput(splash->confirmMenu, event);
+    selection = COIMenuHandleInput(splash->confirmMenu, event, true);
   }
 
   return selection;

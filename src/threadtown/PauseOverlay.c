@@ -988,7 +988,7 @@ void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
     PauseOverlayBack(overlay);
   } else {
     int valueBefore = COIMenuGetCurrentValue(overlay->topRightMenu);
-    COIMenuHandleInput(overlay->topRightMenu, event);
+    COIMenuHandleInput(overlay->topRightMenu, event, true);
     int valueAfter = COIMenuGetCurrentValue(overlay->topRightMenu);
   
     // Only update stat change string if we're in the weapons or armor menu. Only these types of items

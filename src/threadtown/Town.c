@@ -9,6 +9,7 @@
 // }
 
 static int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
+  int collisionResult = COI_NO_COLLISION;;
   int newX = actorSprite->_x + changeX;
   int newY = actorSprite->_y + changeY;
   int xGridPos = newX / COIBOARD_GRID_SIZE;
@@ -17,9 +18,13 @@ static int _testForCollision(TownContext* context, COISprite* actorSprite, int c
   COISprite* collidingSprite = context->board->spriteGrid[index];
   if (collidingSprite) { // NULL if no sprite is there
     if (collidingSprite->_extraCollision) {
-      return collidingSprite->_extraCollision->returnValue;
+      collisionResult = collidingSprite->_extraCollision->returnValue;
+    } else {
+      collisionResult = COI_COLLISION;
     }
-    return COI_COLLISION;
+    if (collisionResult != COI_NO_COLLISION) {
+      return collisionResult;
+    }
   }
 
   // Probably want this to only look at visible sprites
@@ -40,7 +45,6 @@ static int _testForCollision(TownContext* context, COISprite* actorSprite, int c
   //   }
   // }
 
-  int collisionResult = COI_NO_COLLISION;;
   LinkedListResetCursor(context->allActors);
   Actor* currentActor = (Actor*)LinkedListNext(context->allActors);
   while (currentActor) {
@@ -533,7 +537,7 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
     PauseOverlayProcessInput(context->pauseOverlay, direction);
     COIBoardQueueDraw(context->board);
   } else if (context->confirmMenu->_frame->_visible) {
-    COIMenuHandleInput(context->confirmMenu, direction);
+    COIMenuHandleInput(context->confirmMenu, direction, true);
     COIBoardQueueDraw(context->board);
   } else if (!context->textBox->box->_visible && inputIsDirection(direction)) {
     Actor* player = context->pInfo->party[0];

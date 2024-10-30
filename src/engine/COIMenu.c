@@ -225,7 +225,7 @@ void COIMenuIncrement(COIMenu* menu, int step) {
   COIMenuAdjustFrame(menu);
 }
 
-bool COIMenuHandleInput(COIMenu* menu, int event) {
+bool COIMenuHandleInput(COIMenu* menu, int event, bool playSound) {
   bool selection = false;
   switch (event) {
     case MOVING_UP:
@@ -237,7 +237,9 @@ bool COIMenuHandleInput(COIMenu* menu, int event) {
       COIMenuSetVisible(menu);
       break;
     case MOVING_SELECT:
-      COISoundPlay(COI_SOUND_SELECT);
+      if (playSound) {
+        COISoundPlay(COI_SOUND_SELECT);
+      }
       selection = true;
       break;
   }
