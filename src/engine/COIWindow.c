@@ -59,7 +59,6 @@ void COIWindowLoop(void* window_v, bool repeat) {
     }
     
     if (window->_currentBoard->_shouldDraw) {
-      printf("should draw\n");
       SDL_RenderClear(window->_renderer);
 
       COIBoardUpdateSpriteVisibility(window->_currentBoard);

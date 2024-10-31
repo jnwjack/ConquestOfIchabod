@@ -96,8 +96,11 @@ void COIBoardLoadSpriteMap(COIBoard* board, SDL_Renderer* renderer, const char* 
     y = atoi(strtok(NULL, " "));
     w = atoi(strtok(NULL, " "));
     h = atoi(strtok(NULL, " "));
-    int gridX = x / COIBOARD_GRID_SIZE;
-    int gridY = y / COIBOARD_GRID_SIZE;
+    // To handle sprites bigger than 1x1
+    int extraSquaresX = MAX(0, (w / COIBOARD_GRID_SIZE) - 1);
+    int extraSquaresY = MAX(0, (h / COIBOARD_GRID_SIZE) - 1);
+    int gridX = (x / COIBOARD_GRID_SIZE) + extraSquaresX;
+    int gridY = (y / COIBOARD_GRID_SIZE) + extraSquaresY;
     if (gridX > maxGridX) {
       maxGridX = gridX;
     }
