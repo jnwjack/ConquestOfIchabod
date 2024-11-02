@@ -215,7 +215,6 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       COIMenuSetVisible(focusedMenu);
 	    break;
     case MOVING_SELECT:
-      COISoundPlay(COI_SOUND_SELECT); // Should move this event processing to the COIMenuHandleInput function.
 	    selection = true;
 	    break;
     case MOVING_DELETE:
@@ -255,9 +254,16 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       break;
     case 1:
       if (armoryContext->currentMenu == armoryContext->buyMenu) {
+        COISoundPlay(COI_SOUND_SELECT);
 	      armoryBuyItem(board);
       } else {
+        COISoundPlay(COI_SOUND_SELECT);
 	      armorySellItem(board);
+        if (armoryContext->numSellItems == 0) {
+          COIMenuSetInvisible(armoryContext->currentMenu);
+          COIMenuReset(armoryContext->currentMenu);
+          armoryContext->currentMenu = armoryContext->menu;
+        }
       }
       break;
     }
@@ -266,23 +272,31 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 
   // Behavior for buy and sell menus
   if (armoryContext->currentMenu != armoryContext->menu) {
+    COISoundPlay(COI_SOUND_SELECT);
     armoryEnableConfirmMenu(armoryContext);
   }
 
   // Buy
   if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 0) {
+    COISoundPlay(COI_SOUND_SELECT);
     COIMenuSetVisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->buyMenu;
   }
 
   // Sell
   if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 1) {
-    COIMenuSetVisible(armoryContext->sellMenu);
-    armoryContext->currentMenu = armoryContext->sellMenu;
+    if (armoryContext->numSellItems > 0) {
+      COISoundPlay(COI_SOUND_SELECT);
+      COIMenuSetVisible(armoryContext->sellMenu);
+      armoryContext->currentMenu = armoryContext->sellMenu;
+    } else {
+      COISoundPlay(COI_SOUND_INVALID);
+    }
   }
   
   // Exit
   if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 2) {
+    COISoundPlay(COI_SOUND_SELECT);
     COIBoard* threadTownBoard = armoryContext->outsideBoard;
     COIWindow* window = armoryContext->window;
 
