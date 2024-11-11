@@ -43,6 +43,8 @@ static void _updateStatChanges(PauseOverlay* overlay, int menuValue) {
     int newAGI = playerAdjustedAGI(overlay->pInfo);    
     inventoryEquipItem(inventory, oldItem);
 
+    printf("OLD: %i NEW: %i\n", oldATK, newATK);
+
     // We should only display a stat change string if there's an actual stat change.
     if (newHP != oldHP) {
       _removeStringIfExists(overlay, overlay->hpChange);
@@ -156,7 +158,7 @@ static void _makeGoldLabelAndString(PauseOverlay* overlay) {
   _removeStringIfExists(overlay, overlay->gold);
 
   char temp[MAX_STRING_SIZE];
-  if (GLOBAL_TIME.day >= 200) {
+  if (GLOBAL_TIME.day >= 100) {
     overlay->goldLabel = COIStringCreate("Days:", 0, 0, overlay->textType);
     snprintf(temp, MAX_STRING_SIZE, "%lu", 300 - GLOBAL_TIME.day);
     overlay->gold = COIStringCreate(temp, 0, 0, overlay->textType);
@@ -997,6 +999,7 @@ void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
     if ((overlay->topRightMenu == overlay->weaponsMenu ||
 	 overlay->topRightMenu == overlay->armorMenu) &&
 	(valueBefore != valueAfter)) {
+      printf("updating stat changes\n");
       _updateStatChanges(overlay, valueAfter);
     }
   }

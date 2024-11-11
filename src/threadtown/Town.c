@@ -164,8 +164,8 @@ static void _createSwordChest(TownContext* context) {
 static void _createNPCs(TownContext* context) {
   context->allActors = LinkedListCreate();
 
-  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 2176, 2080, 2176, 2976, 3872 };
-  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 2528, 2144, 2656, 3232, 928 };
+  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 1600, 2080, 2016, 2976, 3872 };
+  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 4256, 2144, 2464, 3232, 928 };
   int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY };
 
   for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
@@ -194,7 +194,6 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
   context->terrain = TT_SAFE;
-  context->battleActorType = ACTOR_SKELETON;
   context->board = board;
   context->willEnterBattle = false;
   context->_npcTicks = 0;
@@ -217,7 +216,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   context->talkingActorType = ACTOR_NONE;
   
   // Yes/No dialog
-  COISprite* frame = COISpriteCreateFromAssetID(70, 250, 150, 80,
+  COISprite* frame = COISpriteCreateFromAssetID(70, 250, 100, 60,
 						COI_GLOBAL_LOADER,
 						5,
 						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
@@ -330,6 +329,9 @@ bool townContinueMovement(Actor* actor, COIBoard* board) {
 // The likelihood of entering a battle is based off of the current terrain.
 void townCheckForBattle(TownContext* context) {
   switch (context->terrain) {
+  case TT_THICK_GRASS_CORRUPT:
+  case TT_BROWN_GRASS:
+  case TT_BROWN_GRASS_CORRUPT:
   case TT_THICK_GRASS:
     context->willEnterBattle = generateRandomBoolWeighted(0.05);
     break;
@@ -345,11 +347,18 @@ void townUpdateTerrain(TownContext* context, int collisionResult) {
   switch (collisionResult) {
   case THICK_GRASS:
     context->terrain = TT_THICK_GRASS;
-    context->battleActorType = ACTOR_BOOWOW;
+    break;
+  case BROWN_GRASS:
+    context->terrain = TT_BROWN_GRASS;
+    break;
+  case THICK_GRASS_CORRUPT:
+    context->terrain = TT_THICK_GRASS_CORRUPT;
+    break;
+  case BROWN_GRASS_CORRUPT:
+    context->terrain = TT_BROWN_GRASS_CORRUPT;
     break;
   case TENTACLE:
     context->terrain = TT_TENTACLE;
-    context->battleActorType = ACTOR_TENTACLE;
     break;
   case COI_NO_COLLISION:
     context->terrain = TT_SAFE;
@@ -433,12 +442,12 @@ static void _talkToTagnesseGuy(TownContext* context) {
         NULL);
   } else if (!inventoryHasItem(context->pInfo->inventory, ITEM_ID_TAGNESSE, ITEM_SLOT_OFFHAND)) {
     TextBoxSetStrings(context->textBox,
-        "Oh...you sold it?",
+        "Oh...you sold Tagnesse?",
         "I guess if you need to.",
         NULL);
   } else {
     TextBoxSetStrings(context->textBox,
-        "No way! I can't believe it's real.",
+        "No way! I can't believe Tagnesse is real.",
         "You should head to Havonvale in the east. There's an adventurer like you seeking other strong warriors.",
         "Maybe he could join your party!",
         NULL);
@@ -508,6 +517,7 @@ static void _confirmMenuSelect(TownContext* context) {
         townApplyTimeChanges(context);
       } else {
 	      context->pInfo->working = true;
+        context->talkingActorType = ACTOR_MERCHANT;
 	      _talkToMerchant(context);
       }
       break;
@@ -517,6 +527,7 @@ static void _confirmMenuSelect(TownContext* context) {
   }
   COIMenuSetInvisible(context->confirmMenu);
   COIBoardQueueDraw(context->board);
+  context->talkingActorType = ACTOR_NONE;
 }
 
 bool _shouldPromptForAnswer(TownContext* context) {
@@ -572,7 +583,6 @@ void townProcessSelectionInput(TownContext* context) {
 	      break;
       case ACTOR_MERCHANT:
 	      _talkToMerchant(context);
-        // printf("talked to merchant 1\n");
 	      break;
       case ACTOR_CHEST_OPEN:
         TextBoxSetStrings(context->textBox,
@@ -722,9 +732,9 @@ void townMovePlayer(TownContext* context) {
     break;
   }
 
-// #ifdef __COI_DEBUG__
-//   printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
-// #endif
+#ifdef __COI_DEBUG__
+  printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
+#endif
 
   
   if (inNextGridCell) {

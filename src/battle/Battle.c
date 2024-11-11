@@ -2,8 +2,9 @@
 #include "../actor.h"
 #include "../special.h"
 
-#define THICK_GRASS_ENEMY_COUNT 4
-static int THICK_GRASS_ENEMY_TYPES[THICK_GRASS_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE };
+#define BROWN_GRASS_ENEMY_COUNT 4
+static int BROWN_GRASS_ENEMY_TYPES[BROWN_GRASS_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE };
+
 
 static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
@@ -116,6 +117,9 @@ static void _centerActorsInBox(Actor** allies, int numAllies, COISprite* box) {
 
 static int _numEnemiesFromTerrain(Terrain terrain) {
   switch (terrain) {
+  case TT_BROWN_GRASS:
+  case TT_THICK_GRASS_CORRUPT:
+  case TT_BROWN_GRASS_CORRUPT:
   case TT_THICK_GRASS:
     if (GLOBAL_TIME.phase >= TS_EVENING) {
       return generateRandomCharInRange(1, 5);
@@ -134,8 +138,12 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
   switch (terrain) {
   case TT_THICK_GRASS:
     {
-      int randIndex = (generateRandomChar() % THICK_GRASS_ENEMY_COUNT);
-      return THICK_GRASS_ENEMY_TYPES[randIndex];
+      return ACTOR_BOOWOW;
+    }
+  case TT_BROWN_GRASS:
+    {
+      int randIndex = (generateRandomChar() % BROWN_GRASS_ENEMY_COUNT);
+      return BROWN_GRASS_ENEMY_TYPES[randIndex];
     }
   case TT_TENTACLE:
     return ACTOR_TENTACLE;

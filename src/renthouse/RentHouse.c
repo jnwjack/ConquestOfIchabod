@@ -22,7 +22,7 @@ static void _heal(RentHouseContext* context) {
     snprintf(hpString, MAX_STRING_SIZE, "%i damage healed.", amountHealed);
     snprintf(tpString, MAX_STRING_SIZE, "%i TP restored.", regainedTP);
     snprintf(spString, MAX_STRING_SIZE, "%i SP restored.", regainedSP);
-    if (!context->pInfo->rentHouseBaldUsed && GLOBAL_TIME.day > 1) {
+    if (!context->pInfo->rentHouseBaldUsed && GLOBAL_TIME.day > 57) {
       TextBoxSetStrings(context->textBox,
 		      "You tend to your wounds.",
 		      hpString,
@@ -30,6 +30,7 @@ static void _heal(RentHouseContext* context) {
           "While treating your scalp, you notice that a bald spot is starting to form.",
 		      spString,
 		      NULL);
+      context->pInfo->alreadyHealed = true;
       context->pInfo->rentHouseBaldUsed = true;
     } else {
       TextBoxSetStrings(context->textBox,

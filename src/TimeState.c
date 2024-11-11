@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 TimeState GLOBAL_TIME = { TS_MORNING, 0, 0 };
-TimeState END_TIME = { TS_MORNING, 0, 5 };
+TimeState END_TIME = { TS_MORNING, 0, 200 };
 
 void TimeStateAddVal(TimeState* state, unsigned char val) {
   state->val += val;

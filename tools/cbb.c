@@ -13,6 +13,7 @@ static int anchorsX[2] = { -1, -1 };
 static int anchorsY[2] = { -1, -1 };
 static bool shouldAnchor = false;
 static GtkWidget* grid;
+static GtkWidget* currentSprite;
 
 // Returns true if square is occupied by an asset originating in another square.
 // Used when the size of the asset is bigger than the size of a square.
@@ -117,6 +118,20 @@ static void addMultipleAssets() {
       updateSquare(square, currentAsset, COIBOARD_GRID_SIZE, COIBOARD_GRID_SIZE);
       occupyNearbySquares(x, y, COIBOARD_GRID_SIZE, COIBOARD_GRID_SIZE);
     }
+  }
+}
+
+static void copySquareAsset(GtkGestureClick *gesture,
+			      int              n_press,
+			      double           mouseX,
+			      double           mouseY,
+			      GtkWidget       *area) {
+  if (squareHasAsset(area)) {
+    int assetIndex = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(area), "assetIndex"));
+    GFile* picture = gtk_picture_get_file(GTK_PICTURE(area));
+    gtk_picture_set_file(GTK_PICTURE(currentSprite), picture);
+    currentAsset = assetIndex;
+    printf("hit\n");
   }
 }
 
@@ -310,7 +325,6 @@ static void activate(GtkApplication *app,
   GtkWidget* box;
   GtkWidget* rightBox;
   GtkWidget* button;
-  GtkWidget* currentSprite;
   GtkWidget* spriteDropDown;
   GtkWidget* spriteSelectBox;
   GtkWidget* dimensionsBox;
@@ -419,6 +433,11 @@ static void activate(GtkApplication *app,
       gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gestureRight), 3);
       gtk_widget_add_controller(image, GTK_EVENT_CONTROLLER(gestureRight));
       g_signal_connect(gestureRight, "pressed", G_CALLBACK(removeAssetFromSquare), image);
+      // Middle click - set current asset to clicked grid square's asset
+      GtkGesture* gestureMiddle = gtk_gesture_click_new();
+      gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gestureMiddle), 2);
+      gtk_widget_add_controller(image, GTK_EVENT_CONTROLLER(gestureMiddle));
+      g_signal_connect(gestureMiddle, "pressed", G_CALLBACK(copySquareAsset), image);
       
       //GtkGestureSingle* gesture = gtk_gesture_single
       

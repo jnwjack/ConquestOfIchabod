@@ -22,7 +22,6 @@ typedef struct TownContext {
   int direction;
   Terrain terrain;
   bool willEnterBattle;
-  int battleActorType;
   COITextType* textType;
   PauseOverlay* pauseOverlay;
   TextBox* textBox;

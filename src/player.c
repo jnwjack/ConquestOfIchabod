@@ -58,14 +58,14 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->partySize = 1;
   info->level = 1;
   info->xp = 0;
-  info->xpForLevelUp = 50;
+  info->xpForLevelUp = 115;
   info->renting = RS_NOT_RENTING;
   info->spriteAge = SA_YOUNG;
   info->working = false;
   info->alreadyHealed = false;
   info->rentHouseBaldUsed = false;
   info->foundMythicalSword = false;
-  info->nextRentDate = 3;
+  info->nextRentDate = 30;
   info->shiftsWorked = 0;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
@@ -427,7 +427,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 
 char* playerGetClass(PlayerInfo* pInfo) {
   // If we've worked at the shop enough, the class changes.
-  if (pInfo->shiftsWorked > 2) {
+  if (pInfo->shiftsWorked >= 20) {
     return "Clerk";
   }
 
@@ -474,7 +474,9 @@ void playerLevelDown(PlayerInfo* pInfo) {
 
     // Remove an ability if we can
     int totalAbilities = player->specials.length + player->techList->count;
-    if (totalAbilities > 0) {
+    // False when we have no abilities or when the only ability we have is the one ability given to us by a piece of armor (not learned from level-up)
+    bool shouldRemoveAbility = !(totalAbilities == 0 || (totalAbilities == 1 && player->specials.length == 1 && player->specials.values[0] == SPECIAL_ID_TIME_SKIP));
+    if (shouldRemoveAbility) {
       int index = generateRandomCharInRange(0, totalAbilities - 1);
       if (index < player->specials.length) {
         // Remove from specials
@@ -491,7 +493,7 @@ void playerLevelDown(PlayerInfo* pInfo) {
 }
 
 void playerUpdateClassProgressionFromTime(PlayerInfo* pInfo) {
-  if (pInfo->shiftsWorked >= 20) {
+  if (pInfo->shiftsWorked >= 30) {
     pInfo->classProgression.specials = LEVELUP_SPECIALS_CLERK;
     pInfo->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_CLERK;
     pInfo->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_CLERK;

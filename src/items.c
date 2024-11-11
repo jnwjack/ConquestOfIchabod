@@ -161,6 +161,10 @@ char* ItemListStringFromItemID(int item) {
     return "TP Potion";
   case ITEM_ID_MOUNTAIN_JUICE:
     return "MNTN Juice";
+  case ITEM_ID_LEATHER_ARMOR:
+    return "Leather";
+  case ITEM_ID_BOOTS:
+    return "Boots";
   default:
     return "-";
   }

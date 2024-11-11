@@ -1,7 +1,7 @@
 #ifndef ARMORY_H
 #define ARMORY_H
 
-#include "../inventory.h"
+#include "../player.h"
 #include "../inputloops.h"
 
 // Can later replace this with charisma or something
@@ -46,7 +46,7 @@ COIBoard* armoryCreateBoard(COIWindow* window,
 			    COIBoard* outsideBoard,
 			    Inventory* inventory,
 			    IntList* itemIDs);
-COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* inventory);
+COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, PlayerInfo* pInfo);
 COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory);
 COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inventory);
 

@@ -14,6 +14,9 @@
 #define TENTACLE 6
 #define SHOP_DOOR 7
 #define POTION_SHOP_DOOR 8
+#define BROWN_GRASS 9
+#define THICK_GRASS_CORRUPT 10
+#define BROWN_GRASS_CORRUPT 11
 
 typedef struct COIExtraCollision {
   int tlX;

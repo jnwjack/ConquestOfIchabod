@@ -107,20 +107,15 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
         } else if (battleContext->menuFocus == LEVEL_UP) {
           selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
         } else {
-	        switch (event->key.keysym.sym) {
-	        case SDLK_UP:
-            battleMovePointer(battleContext, MOVING_UP);
-            break;
-          case SDLK_DOWN:
-            battleMovePointer(battleContext, MOVING_DOWN);
-            break;
-          case SDLK_LEFT:
-            battleMovePointer(battleContext, MOVING_LEFT);
-            break;
-          case SDLK_RIGHT:
-            battleMovePointer(battleContext, MOVING_RIGHT);
-            break;    
-          case SDLK_z:
+          int direction = _sdlEventToDirectionalInput(event);
+	        switch (direction) {
+	        case MOVING_UP:
+          case MOVING_DOWN:
+          case MOVING_LEFT:
+          case MOVING_RIGHT:
+            battleMovePointer(battleContext, direction);
+            break; 
+          case MOVING_SELECT:
             selection = true;
             break;
 	        }
@@ -281,6 +276,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COISoundPlay(COI_SOUND_SELECT);
     COIMenuSetVisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->buyMenu;
+    COIMenuIncrement(armoryContext->currentMenu, 0);
   }
 
   // Sell
@@ -289,6 +285,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
       COISoundPlay(COI_SOUND_SELECT);
       COIMenuSetVisible(armoryContext->sellMenu);
       armoryContext->currentMenu = armoryContext->sellMenu;
+      COIMenuIncrement(armoryContext->currentMenu, 0);
     } else {
       COISoundPlay(COI_SOUND_INVALID);
     }
@@ -422,7 +419,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case ARMORY_DOOR:
       player->movementDirection = MOVING_NONE;
       if (!townShopIsClosed()) {
-        otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo->inventory);
+        otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo);
         COIWindowSetBoard(townContext->window, otherBoard, &armory);
       }
       break;

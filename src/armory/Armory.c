@@ -203,17 +203,43 @@ COIBoard* armoryCreateBoard(COIWindow* window,
   return armoryBoard;
 }
 
-COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, Inventory* inventory) {
+COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, PlayerInfo* pInfo) {
+  Inventory* inventory = pInfo->inventory;
   IntList itemIDs;
-  IntListInitialize(&itemIDs, 7);
-  IntListAdd(&itemIDs, ITEM_ID_RUSTY_SWORD);
-  IntListAdd(&itemIDs, ITEM_ID_RUSTY_BATTLEAXE);
-  IntListAdd(&itemIDs, ITEM_ID_SHABBY_BOW);
-  IntListAdd(&itemIDs, ITEM_ID_KNIFE);
-  IntListAdd(&itemIDs, ITEM_ID_CRACKED_SHIELD);
-  IntListAdd(&itemIDs, ITEM_ID_BRONZE_HELM);
-  IntListAdd(&itemIDs, ITEM_ID_BRONZE_CHEST);
-  IntListAdd(&itemIDs, ITEM_ID_BRONZE_LEGS);
+
+  switch (pInfo->class) {
+    case PLAYER_CLASS_FIGHTER:
+      IntListInitialize(&itemIDs, 10);
+      IntListAdd(&itemIDs, ITEM_ID_RUSTY_SWORD);
+      IntListAdd(&itemIDs, ITEM_ID_RUSTY_BATTLEAXE);
+      IntListAdd(&itemIDs, ITEM_ID_SHABBY_BOW);
+      IntListAdd(&itemIDs, ITEM_ID_KNIFE);
+      IntListAdd(&itemIDs, ITEM_ID_CRACKED_SHIELD);
+      IntListAdd(&itemIDs, ITEM_ID_BRONZE_HELM);
+      IntListAdd(&itemIDs, ITEM_ID_LEATHER_ARMOR);
+      IntListAdd(&itemIDs, ITEM_ID_BRONZE_CHEST);
+      IntListAdd(&itemIDs, ITEM_ID_BOOTS);
+      IntListAdd(&itemIDs, ITEM_ID_BRONZE_LEGS);
+      break;
+    case PLAYER_CLASS_ROGUE:
+      IntListInitialize(&itemIDs, 6);
+      IntListAdd(&itemIDs, ITEM_ID_RUSTY_SWORD);
+      IntListAdd(&itemIDs, ITEM_ID_SHABBY_BOW);
+      IntListAdd(&itemIDs, ITEM_ID_KNIFE);
+      IntListAdd(&itemIDs, ITEM_ID_CRACKED_SHIELD);
+      IntListAdd(&itemIDs, ITEM_ID_LEATHER_ARMOR);
+      IntListAdd(&itemIDs, ITEM_ID_BOOTS);
+      break;
+    case PLAYER_CLASS_WIZARD:
+      IntListInitialize(&itemIDs, 3);
+      IntListAdd(&itemIDs, ITEM_ID_KNIFE);
+      IntListAdd(&itemIDs, ITEM_ID_CRACKED_SHIELD);
+      IntListAdd(&itemIDs, ITEM_ID_LEATHER_ARMOR);
+      break;
+    default:
+      printf("Invalid class type in armory\n");
+      IntListInitialize(&itemIDs, 1);
+  }
 
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
 			   COI_GLOBAL_LOADER,
@@ -295,7 +321,7 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
   COIMenuSetInvisible(armoryContext->sellMenu);
 
   // Menu that asks for confirmation when buying/selling
-  frame = COISpriteCreateFromAssetID(280, 250, 150, 80, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  frame = COISpriteCreateFromAssetID(280, 250, 100, 70, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   COIBoardAddDynamicSprite(board, frame);
   COIBoardAddDynamicSprite(board, pointer);
@@ -363,11 +389,11 @@ int _priceFromItemID(int item) {
   case ITEM_ID_AGI_SCROLL:
     return 15;
   case ITEM_ID_BRONZE_HELM:
-    return 30;
+    return 80;
   case ITEM_ID_BRONZE_CHEST:
-    return 50;
+    return 95;
   case ITEM_ID_BRONZE_LEGS:
-    return 30;
+    return 65;
   case ITEM_ID_GEM_OF_PERMANENCE:
     return 120;
   case ITEM_ID_TAGNESSE:
@@ -382,6 +408,10 @@ int _priceFromItemID(int item) {
     return 20;
   case ITEM_ID_MOUNTAIN_JUICE:
     return 60;
+  case ITEM_ID_LEATHER_ARMOR:
+    return 50;
+  case ITEM_ID_BOOTS:
+    return 25;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;

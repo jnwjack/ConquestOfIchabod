@@ -21,7 +21,9 @@ static bool _critical() {
 }
 
 static int _randomDamage(int damage) {
-  return MAX(1, generateRandomCharWithCenter(damage, MAX(1, damage / 10)));
+  int randomSpread = generateRandomCharWithCenter(damage, MAX(1, damage / 10));
+  printf("DAMAGE BASE: %i RANDOM SPREAD: %i\n", damage, randomSpread);
+  return MAX(1, randomSpread);
 }
 
 static void _buffStat(Stat* stat) {
@@ -438,6 +440,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   bool actionFails = false;
   switch (action->type) {
   case ATTACK:
+    printf("ATK mod: %f\n", action->attackModifier);
     damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
     // Trying new damage calculation
     if (aAtk >= tDef) {

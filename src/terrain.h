@@ -5,6 +5,9 @@
 typedef enum Terrain {
   TT_THICK_GRASS,
   TT_TENTACLE,
+  TT_BROWN_GRASS,
+  TT_THICK_GRASS_CORRUPT,
+  TT_BROWN_GRASS_CORRUPT,
   TT_SAFE // No chance of battle
 } Terrain;
 
