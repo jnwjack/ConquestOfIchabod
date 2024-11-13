@@ -118,10 +118,14 @@ Item* ItemListGetItem(ItemList* list, int index) {
   return &list->items[index];
 }
 
+// int ItemAdjustStat(int baseStat, int itemStrength) {
+//   float modifier = (float)(itemStrength / 10.0);
+//   printf("MODIFIER: %f\n", MAX(1.0, modifier));
+//   return baseStat * MAX(1.0, modifier);
+// }
+
 int ItemAdjustStat(int baseStat, int itemStrength) {
-  float modifier = (float)(itemStrength / 10.0);
-  printf("MODIFIER: %f\n", MAX(1.0, modifier));
-  return baseStat * MAX(1.0, modifier);
+  return baseStat + itemStrength;
 }
 
 char* ItemListStringFromItemID(int item) {

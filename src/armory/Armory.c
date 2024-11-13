@@ -375,13 +375,13 @@ void armoryDestroy(ArmoryContext* context) {
 int _priceFromItemID(int item) {
   switch (item) {
   case ITEM_ID_RUSTY_SWORD:
-    return 20;
+    return 105;
   case ITEM_ID_RUSTY_BATTLEAXE:
-    return 28;
+    return 275;
   case ITEM_ID_SHABBY_BOW:
-    return 20;
+    return 125;
   case ITEM_ID_CRACKED_SHIELD:
-    return 10;
+    return 85;
   case ITEM_ID_STRENGTH_POTION:
     return 25;
   case ITEM_ID_DEF_SCROLL:
@@ -389,17 +389,17 @@ int _priceFromItemID(int item) {
   case ITEM_ID_AGI_SCROLL:
     return 15;
   case ITEM_ID_BRONZE_HELM:
-    return 80;
+    return 150;
   case ITEM_ID_BRONZE_CHEST:
-    return 95;
+    return 200;
   case ITEM_ID_BRONZE_LEGS:
-    return 65;
+    return 115;
   case ITEM_ID_GEM_OF_PERMANENCE:
-    return 120;
+    return 75;
   case ITEM_ID_TAGNESSE:
     return 700;
   case ITEM_ID_KNIFE:
-    return 13;
+    return 90;
   case ITEM_ID_HEALING_POTION:
     return 25;
   case ITEM_ID_TP_POTION:
@@ -409,9 +409,9 @@ int _priceFromItemID(int item) {
   case ITEM_ID_MOUNTAIN_JUICE:
     return 60;
   case ITEM_ID_LEATHER_ARMOR:
-    return 50;
+    return 125;
   case ITEM_ID_BOOTS:
-    return 25;
+    return 100;
   default:
     printf("Error: No valid text ID %i\n", item);
     return -1;

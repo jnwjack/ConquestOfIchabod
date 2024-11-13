@@ -2,6 +2,8 @@
 
 static int slideAssetIDs[TITLE_NUM_INTRO_SLIDES] = { 51, 52, 53, 54, 55, 55 };
 
+static bool shouldSkipIntro = true;
+
 void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
   strings[TITLE_STRING_NEW_GAME] = COIStringCreate("New", 330, 170, textType);
   strings[TITLE_STRING_CONTINUE_GAME] = COIStringCreate("Continue", 450, 170, textType);
@@ -188,15 +190,18 @@ void _displaySlide(TitleContext* context) {
     if (!context->textBox->box->_visible) {
       // Move to next slide
       if (context->currentSlide > 0) {
-	context->slides[context->currentSlide-1]->_visible = false;
+	      context->slides[context->currentSlide-1]->_visible = false;
       }
       printf("set slide %i to FALSE\n", context->currentSlide-1);
       if (context->currentSlide < TITLE_NUM_INTRO_SLIDES) {
-	context->slides[context->currentSlide]->_visible = true;
-	printf("set slide %i to TRUE\n", context->currentSlide);
-	_setTextBox(context, context->textBox, context->currentSlide);
+        context->slides[context->currentSlide]->_visible = true;
+        _setTextBox(context, context->textBox, context->currentSlide);
       }
-      context->currentSlide++;
+      if (shouldSkipIntro && context->currentSlide > 2) {
+        context->currentSlide = TITLE_NUM_INTRO_SLIDES;
+      } else {
+        context->currentSlide++;
+      }
     } else if (!context->textBox->currentStringDone) {
       TextBoxAnimate(context->textBox);
     } else {
@@ -269,8 +274,17 @@ void _select(TitleContext* context) {
     case TITLE_STRING_NEW_GAME:
       COISoundPlay(COI_SOUND_SELECT);
       _closeTitle(context);
-      // context->currentSlide = TITLE_NUM_INTRO_SLIDES - 1; // Testing
-      context->currentSlide++;
+      if (shouldSkipIntro) {
+        context->currentSlide = 2;
+        // context->currentSlide = TITLE_NUM_INTRO_SLIDES - 1;
+        // context->textBox->box->_visible = false;
+        // context->creatingCharacter = true;
+        // context->slides[context->currentSlide]->_visible = true;
+        // ClassSelectorSetVisible(&context->cs, true);
+      } else {
+        context->currentSlide++;
+        shouldSkipIntro = true;
+      }
       break;
     case TITLE_STRING_QUIT_GAME:
       COISoundPlay(COI_SOUND_SELECT);

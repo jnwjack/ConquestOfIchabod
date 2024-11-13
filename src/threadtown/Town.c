@@ -1,7 +1,7 @@
 #include "Town.h"
 #include "../special.h"
 
-#define PAY_PER_SHIFT 100
+#define PAY_PER_SHIFT 70
 
 // When moving NPCs
 // static void _queueDrawIfSpriteVisible(TownContext* context, COISprite* sprite) {
