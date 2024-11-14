@@ -192,6 +192,9 @@ COIBoard* armoryCreateBoard(COIWindow* window,
   
   COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, loader);
 
+  COISprite* background = COISpriteCreateFromAssetID(0, 0, 640, 480, COI_GLOBAL_LOADER, 92, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(armoryBoard, background);
+
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
 
