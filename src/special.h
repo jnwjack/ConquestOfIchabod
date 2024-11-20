@@ -46,6 +46,7 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_SILENCE 13 // Target can't use specials for a bit
 #define SPECIAL_ID_BACKSTAB 14 // Deal damage based on AGI
 #define SPECIAL_ID_TIME_SKIP 21
+#define SPECIAL_ID_MINOR_HEAL 22
 
 // These are for a gag and don't do anything
 #define SPECIAL_ID_DAYDREAM 15

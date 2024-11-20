@@ -64,6 +64,10 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 29, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 13, 10, 5, 25, 0, 0);
+  case ACTOR_MEAT_FLAYER:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 94, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    return actorCreate(actorType, sprite, 25, 17, 12, 25, 0, 0);
   case ACTOR_TENTACLE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
@@ -75,27 +79,13 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
       return actor;
     }
-  case ACTOR_CHAGGAI:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
-    COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
-  case ACTOR_LANDLORD:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
-    COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
-  case ACTOR_MERCHANT:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
-    COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
-  case ACTOR_TAGNESSE_GUY:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
-    COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
-  case ACTOR_TREE_GUY:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
-    COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
   case ACTOR_HAVONVALE_GUY:
+  case ACTOR_TAGNESSE_GUY:
+  case ACTOR_TREE_GUY:
+  case ACTOR_MERCHANT:
+  case ACTOR_LANDLORD:
+  case ACTOR_CHAGGAI:
+  case ACTOR_CHESTS_GUY:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);
@@ -108,7 +98,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       return actor;
     }
   case ACTOR_FEARWOLF:
-    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 1, COIWindowGetRenderer(window));
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 93, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 15, 15, 12, 32, 0, 5);
   case ACTOR_WIRE_MOTHER:
@@ -121,6 +111,16 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       return actor;
     }
+  case ACTOR_WIRE_MAIDEN:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 95, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    {
+      Actor* actor = actorCreate(actorType, sprite, 10, 18, 7, 30, 0, 75);
+      IntListAdd(&actor->specials, SPECIAL_ID_MINOR_HEAL);
+      IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
+      IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
+      return actor;
+    } 
   case ACTOR_VOLCANETTE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 27, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
@@ -131,6 +131,16 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
       return actor;
     }
+  case ACTOR_PYROID:
+    sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 96, COIWindowGetRenderer(window));
+    COISpriteSetSheetIndex(sprite, 2, 2);
+    {
+      Actor* actor = actorCreate(actorType, sprite, 14, 15, 25, 27, 0, 75);
+      IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
+      // IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
+      IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
+      return actor;
+    }    
   case ACTOR_CHEST:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 68, COIWindowGetRenderer(window));
     return actorCreate(actorType, sprite, 0, 0, 0, 0, 0, 0);
@@ -171,6 +181,8 @@ char* actorGetNameFromType(int actorType) {
   switch (actorType) {
   case ACTOR_SKELETON:
     return "MEATGRINDER";
+  case ACTOR_MEAT_FLAYER:
+    return "MEATFLAYER";
   case ACTOR_TENTACLE:
     return "CORRUPTION";
   case ACTOR_BOOWOW:
@@ -179,8 +191,12 @@ char* actorGetNameFromType(int actorType) {
     return "FEARWOLF";
   case ACTOR_WIRE_MOTHER:
     return "WIRE MOTHER";
+  case ACTOR_WIRE_MAIDEN:
+    return "WIRE MAIDEN";
   case ACTOR_VOLCANETTE:
     return "VOLCANETTE";
+  case ACTOR_PYROID:
+    return "PYROID";
   default:
     return "UNKNOWN";
   }

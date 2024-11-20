@@ -6,7 +6,8 @@ typedef enum COISoundID {
   COI_SOUND_BLIP,
   COI_SOUND_SELECT,
   COI_SOUND_INVALID,
-  COI_SOUND_HIT
+  COI_SOUND_HIT,
+  COI_SOUND_DEFEAT
 } COISoundID;
 
 void COISoundPlay(COISoundID sound);

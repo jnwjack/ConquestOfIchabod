@@ -19,7 +19,7 @@ static unsigned int LEVELUP_TECHS_ROGUE[] = { TECH_ID_FOCUS, TECH_ID_EAGLEEYE, T
 static unsigned int LEVELUP_SPECIALS_ROGUE[] = { SPECIAL_ID_BACKSTAB, SPECIAL_ID_HASTE, SPECIAL_ID_PARRY, SPECIAL_ID_NEUTRALIZE };
 // static unsigned int LEVELUP_TECHS_MIN_LEVELS_ROGUE[] = { 1, 5, 7 };
 static unsigned int LEVELUP_TECHS_MIN_LEVELS_ROGUE[] = { 1, 1, 1 };
-static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_ROGUE[] = { 1, 3, 5, 8 };
+static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_ROGUE[] = { 1, 3, 3, 6 };
 #define LEVELUP_NUM_TECHS_ROGUE 3
 #define LEVELUP_NUM_SPECIALS_ROGUE 4
 
@@ -28,9 +28,9 @@ static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_CLERK[] = { 1, 1, 1, 6, 6, 10 };
 #define LEVELUP_NUM_SPECIALS_CLERK 6
 
 SpriteAge playerSpriteAgeFromGlobalTime() {
-  if (GLOBAL_TIME.day < 150) {
+  if (GLOBAL_TIME.day < SA_DAYS_OLDER) {
     return SA_YOUNG;
-  } else if (GLOBAL_TIME.day < 250) {
+  } else if (GLOBAL_TIME.day < SA_DAYS_OLDEST) {
     return SA_OLDER;
   }
   return SA_OLDEST;

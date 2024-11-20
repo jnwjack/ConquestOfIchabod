@@ -164,9 +164,9 @@ static void _createSwordChest(TownContext* context) {
 static void _createNPCs(TownContext* context) {
   context->allActors = LinkedListCreate();
 
-  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 1600, 2080, 2016, 2976, 3872 };
-  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 4256, 2144, 2464, 3232, 928 };
-  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY };
+  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 1600, 2080, 2016, 2976, 3872, 1568 };
+  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 4256, 2144, 2464, 3232, 928, 3392 };
+  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY, ACTOR_CHESTS_GUY };
 
   for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
     context->npcs[i] = actorCreateOfType(actorIDs[i],
@@ -392,6 +392,31 @@ static int _getNextCollision(TownContext* context, Actor* actor, int direction) 
   return  _testForCollision(context, actor->sprite, changeX, changeY);
 }
 
+static void _talkToChestsGuy(TownContext* context) {
+  if (GLOBAL_TIME.day > SA_DAYS_OLDEST) {
+    TextBoxSetStrings(context->textBox,
+                      "Sorry old timer, can't let you in here.",
+                      "I'm guarding this gear for my buddy while he's away in Havonvale.",
+                      "These are his prized possessions. He won't let anyone else touch them.",
+                      "Haven't heard from him in a while though...",
+                      NULL);
+  } else if (GLOBAL_TIME.day > SA_DAYS_OLDER) {
+    TextBoxSetStrings(context->textBox,
+                      "Sorry pal, can't let you in here.",
+                      "I'm guarding this gear for my buddy while he's away in Havonvale.",
+                      "These are his prized possessions. He won't let anyone else touch them.",
+                      "Haven't heard from him in a while though...",
+                      NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+                  "Sorry kid, can't let you in here.",
+                  "I'm guarding this gear for my buddy while he's away in Havonvale.",
+                  "These are his prized possessions. He won't let anyone else touch them.",
+                  "Haven't heard from him in a while though...",
+                  NULL);
+  }
+}
+
 static void _talkToLandlord(TownContext* context) {
   if (context->pInfo->renting == RS_RENTING) {
     unsigned long daysLeft = context->pInfo->nextRentDate - GLOBAL_TIME.day;
@@ -530,7 +555,7 @@ static void _confirmMenuSelect(TownContext* context) {
   context->talkingActorType = ACTOR_NONE;
 }
 
-bool _shouldPromptForAnswer(TownContext* context) {
+static bool _shouldPromptForAnswer(TownContext* context) {
   if (context->talkingActorType == ACTOR_LANDLORD &&
       context->pInfo->renting == RS_NOT_RENTING &&
       context->textBox->currentStringDone) {
@@ -540,6 +565,17 @@ bool _shouldPromptForAnswer(TownContext* context) {
     return true;
   }
   return false;
+}
+
+static bool _npcCanMove(Actor* npc) {
+  switch (npc->actorType) {
+    case ACTOR_LANDLORD:
+    case ACTOR_MERCHANT:
+    case ACTOR_CHESTS_GUY:
+      return false;
+    default:
+      return true;
+  }
 }
 
 void townProcessDirectionalInput(TownContext* context, int direction) {
@@ -581,6 +617,9 @@ void townProcessSelectionInput(TownContext* context) {
       case ACTOR_LANDLORD:
 	      _talkToLandlord(context);
 	      break;
+      case ACTOR_CHESTS_GUY:
+        _talkToChestsGuy(context);
+        break;
       case ACTOR_MERCHANT:
 	      _talkToMerchant(context);
 	      break;
@@ -660,7 +699,7 @@ void townTick(TownContext* context) {
     if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
       for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
 	// 30% chance they move
-	if (context->npcs[i]->actorType != ACTOR_MERCHANT && context->npcs[i]->actorType != ACTOR_LANDLORD && generateRandomBoolWeighted(0.3)) {
+	if (_npcCanMove(context->npcs[i]) && generateRandomBoolWeighted(0.3)) {
 	  // If we do move, pick 1 of the 4 directions
 	  _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
 	  // Cancel movement if there's a collision

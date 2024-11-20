@@ -10,6 +10,8 @@ char* specialName(int id) {
     return "Avalanche";
   case SPECIAL_ID_HEAL:
     return "Heal";
+  case SPECIAL_ID_MINOR_HEAL:
+    return "Minor Heal";
   case SPECIAL_ID_PARRY:
     return "Parry";
   case SPECIAL_ID_CURSE:
@@ -69,13 +71,15 @@ char* specialVerb(int id) {
 int specialStrength(int id) {
   switch (id) {
   case SPECIAL_ID_FIREBALL:
-    return 25;
+    return 35;
   case SPECIAL_ID_AVALANCHE:
     return 15;
   case SPECIAL_ID_ICE_SPEAR:
-    return 12;
+    return 18;
   case SPECIAL_ID_HEAL:
-    return 20;
+    return 30;
+  case SPECIAL_ID_MINOR_HEAL:
+    return 15;
   case SPECIAL_ID_DRAIN_SPIRIT:
     return 5;
   default:
@@ -92,6 +96,7 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_BACKSTAB:
     return SPECIAL_DAMAGING;
   case SPECIAL_ID_HEAL:
+  case SPECIAL_ID_MINOR_HEAL:
     return SPECIAL_HEALING;
   case SPECIAL_ID_CURSE:
   case SPECIAL_ID_DRAIN_SPIRIT:
@@ -133,8 +138,10 @@ int specialCost(int id) {
     return 8;
   case SPECIAL_ID_DRAIN_SPIRIT:
   case SPECIAL_ID_ICE_SPEAR:
+  case SPECIAL_ID_NEUTRALIZE:
     return 4;
   case SPECIAL_ID_HEAL:
+  case SPECIAL_ID_MINOR_HEAL:
   case SPECIAL_ID_CURSE:
     return 7;
   case SPECIAL_ID_PARRY:
@@ -163,9 +170,10 @@ char* specialDescription(int id) {
   case SPECIAL_ID_FIREBALL:
     return "Deal high damage to a single target";
   case SPECIAL_ID_ICE_SPEAR:
-    return "Deal weak damage to a single target";
+    return "Deal moderate damage to a single target";
   case SPECIAL_ID_AVALANCHE:
-    return "Deal moderate damage to multiple targets";
+    return "Deal low damage to multiple targets";
+  case SPECIAL_ID_MINOR_HEAL:
   case SPECIAL_ID_HEAL:
     return "Restore HP to a friendly target";
   case SPECIAL_ID_CURSE:
@@ -194,6 +202,8 @@ char* specialDescription(int id) {
     return "Increase AGI";
   case SPECIAL_ID_TIME_SKIP:
     return "Escape battle by moving forward in time.";
+  case SPECIAL_ID_NEUTRALIZE:
+    return "Remove modifiers to target's stats.";
   default:
     return "Error: Not implemented";
   }
@@ -201,5 +211,5 @@ char* specialDescription(int id) {
 
 // Strength value for spells that apply a secondary, weaker effect. Ex: Avalanche
 int specialSecondaryStrength(int id) {
-  return specialStrength(id) * 0.25;
+  return specialStrength(id) * 1;
 }

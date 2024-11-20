@@ -6,6 +6,7 @@ Mix_Chunk* select_sound = NULL;
 Mix_Chunk* celebration = NULL;
 Mix_Chunk* invalid = NULL;
 Mix_Chunk* hit = NULL;
+Mix_Chunk* defeat = NULL;
 
 Mix_Chunk* _loadSound(const char* soundString) {
   char temp[100];
@@ -25,6 +26,7 @@ void COISoundInit() {
   celebration = _loadSound("celebration.wav");
   invalid = _loadSound("invalid.wav");
   hit = _loadSound("hit.wav");
+  defeat = _loadSound("battle_death.wav");
 }
 
 void COISoundPlay(COISoundID sound) {
@@ -44,6 +46,9 @@ void COISoundPlay(COISoundID sound) {
   case COI_SOUND_HIT:
     Mix_PlayChannel(-1, hit, 0);
     break;
+  case COI_SOUND_DEFEAT:
+    Mix_PlayChannel(-1, defeat, 0);
+    break;
   default:
     printf("Error: Invalid sound ID.\n");
   }
@@ -54,4 +59,5 @@ void COISoundShutdown() {
   Mix_FreeChunk(select_sound);
   Mix_FreeChunk(celebration);
   Mix_FreeChunk(invalid);
+  Mix_FreeChunk(defeat);
 }

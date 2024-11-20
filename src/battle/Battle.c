@@ -5,6 +5,13 @@
 #define BROWN_GRASS_ENEMY_COUNT 4
 static int BROWN_GRASS_ENEMY_TYPES[BROWN_GRASS_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE };
 
+#define BROWN_GRASS_LATER_ENEMY_COUNT 9
+static int BROWN_GRASS_LATER_ENEMY_TYPES[BROWN_GRASS_LATER_ENEMY_COUNT] = { ACTOR_SKELETON, ACTOR_BOOWOW, ACTOR_WIRE_MOTHER, ACTOR_VOLCANETTE, 
+                                                                      ACTOR_MEAT_FLAYER, ACTOR_FEARWOLF, ACTOR_WIRE_MAIDEN, ACTOR_PYROID, ACTOR_TENTACLE };
+
+#define BROWN_GRASS_LATEST_ENEMY_COUNT 5
+static int BROWN_GRASS_LATEST_ENEMY_TYPES[BROWN_GRASS_LATEST_ENEMY_COUNT] = { ACTOR_MEAT_FLAYER, ACTOR_FEARWOLF, ACTOR_WIRE_MAIDEN, ACTOR_PYROID, ACTOR_TENTACLE };
+
 
 static int _getNumStrings(BattleContext* context) {
   int count = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
@@ -138,10 +145,26 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
   switch (terrain) {
   case TT_THICK_GRASS:
     {
+      if (GLOBAL_TIME.day > 150) {
+        return ACTOR_FEARWOLF;
+      } else if (GLOBAL_TIME.day > 75) {
+        int randVal = generateRandomChar() % 2;
+        if (randVal == 1) {
+          return ACTOR_FEARWOLF;
+        }
+        return ACTOR_BOOWOW;
+      }
       return ACTOR_BOOWOW;
     }
   case TT_BROWN_GRASS:
     {
+      if (GLOBAL_TIME.day > 150) {
+        int randIndex = (generateRandomChar() % BROWN_GRASS_LATEST_ENEMY_COUNT);
+        return BROWN_GRASS_LATEST_ENEMY_TYPES[randIndex];
+      } else if (GLOBAL_TIME.day > 75) {
+        int randIndex = (generateRandomChar() % BROWN_GRASS_LATER_ENEMY_COUNT);
+        return BROWN_GRASS_LATER_ENEMY_TYPES[randIndex];
+      }
       int randIndex = (generateRandomChar() % BROWN_GRASS_ENEMY_COUNT);
       return BROWN_GRASS_ENEMY_TYPES[randIndex];
     }
@@ -624,9 +647,9 @@ void _specialSelection(BattleContext* context) {
   context->pointingAtEnemies = specialTargetsEnemies(special);
   context->targetedActorIndex = 0;
   if (specialCost(special) <= ally->sp) {
+    _battleInitPointer(context);
     _adjustPointer(context);
     _toggleTargetNameVisibility(context, true);
-    _battleInitPointer(context);
     context->pointer->_visible = true;
     COIMenuSetInvisible(context->subMenu);
     context->menuFocus = ACTORS;
