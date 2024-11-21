@@ -1,4 +1,5 @@
 #include "COIBoard.h"
+#include "COIWindow.h"
 
 COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoader* loader) {
   COIBoard* board = malloc(sizeof(COIBoard));
@@ -175,6 +176,14 @@ void COIBoardAdjustSprite(COIBoard* board, COISprite* sprite) {
       sprite->_visible = false;
     }
   }
+}
+
+void COIBoardUpdateBGColor(COIBoard* board) {
+  SDL_SetRenderDrawColor(COIWindowGetRenderer(COI_GLOBAL_WINDOW),
+      COIBoardBGColor(board, INDEX_RED),
+      COIBoardBGColor(board, INDEX_GREEN),
+      COIBoardBGColor(board, INDEX_BLUE),
+      COIBoardBGColor(board, INDEX_ALPHA));
 }
 
 void COIBoardUpdateSpriteVisibility(COIBoard* board) {

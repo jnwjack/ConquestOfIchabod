@@ -688,6 +688,8 @@ int townCheckForCollision(TownContext* context, Actor* actor) {
 }
 
 void townTick(TownContext* context) {
+  COIBoardUpdateBGColor(context->board);
+
   // Text box
   if (context->textBox->box->_visible && !context->textBox->currentStringDone) {
     TextBoxAnimate(context->textBox);

@@ -72,5 +72,6 @@ void COIBoardRemoveString(COIBoard* board, COIString* string);
 void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite);
 void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite);
 void COIBoardAdjustSprite(COIBoard* board, COISprite* sprite);
+void COIBoardUpdateBGColor(COIBoard* board);
 
 #endif
