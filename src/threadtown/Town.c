@@ -1,12 +1,7 @@
 #include "Town.h"
 #include "../special.h"
 
-#define PAY_PER_SHIFT 70
-
-// When moving NPCs
-// static void _queueDrawIfSpriteVisible(TownContext* context, COISprite* sprite) {
-//   if (sprite->_x > context->board->_fra)
-// }
+#define PAY_PER_SHIFT 85
 
 static int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
   int collisionResult = COI_NO_COLLISION;;
@@ -26,24 +21,6 @@ static int _testForCollision(TownContext* context, COISprite* actorSprite, int c
       return collisionResult;
     }
   }
-
-  // Probably want this to only look at visible sprites
-  // COIBoard* board = context->board;
-  // int maxSpriteIndex = board->_spriteCount;
-  // COISprite* currentSprite = NULL;
-  // int i;
-  // int collisionResult = COI_NO_COLLISION;
-  // for (i = 0; i < maxSpriteIndex; i++) {
-  //   currentSprite = board->_sprites[i];
-  //   collisionResult = COISpriteCollision(currentSprite,
-	// 				 actorSprite->_x + changeX,
-	// 				 actorSprite->_y + changeY,
-	// 				 actorSprite->_width,
-	// 				 actorSprite->_height);
-  //   if (collisionResult != COI_NO_COLLISION) {
-  //     return collisionResult;
-  //   }
-  // }
 
   LinkedListResetCursor(context->allActors);
   Actor* currentActor = (Actor*)LinkedListNext(context->allActors);
@@ -99,6 +76,39 @@ static void _animateTentacles(TownContext* context) {
 
     tentacle = (COISprite*)LinkedListNext(context->topTentacles);
   }
+}
+
+// True when coord is immediately north, south, east, or west of player sprite
+static bool _actorWillMoveNextToPlayer(Actor* actor, Actor* player, int direction) {
+  int x, y;
+  switch (direction) {
+  case MOVING_LEFT:
+    x = actor->sprite->_x - 1;
+    y = actor->sprite->_y;
+    break;
+  case MOVING_RIGHT:
+    x = actor->sprite->_x + 1;
+    y = actor->sprite->_y;
+    break;
+  case MOVING_UP:
+    x = actor->sprite->_x;
+    y = actor->sprite->_y - 1;
+    break;
+  case MOVING_DOWN:
+    x = actor->sprite->_x;
+    y = actor->sprite->_y + 1;
+    break;
+  default:
+    x = -1;
+    y = -1;
+  }
+
+  if (x == player->sprite->_x && ABS_DIFF(y, player->sprite->_y) <= 1) {
+    return true;
+  } else if (y == player->sprite->_y && ABS_DIFF(x, player->sprite->_x) <= 1) {
+    return true;
+  }
+  return false;
 }
 
 static Actor* _facingNPC(Actor* player, LinkedList* actors) {
@@ -543,7 +553,9 @@ static void _confirmMenuSelect(TownContext* context) {
       } else {
 	      context->pInfo->working = true;
         context->talkingActorType = ACTOR_MERCHANT;
-	      _talkToMerchant(context);
+        TextBoxSetStrings(context->textBox,
+                          "Talk to me when you're ready to work a shift.",
+                          NULL);
       }
       break;
     default:
@@ -688,8 +700,6 @@ int townCheckForCollision(TownContext* context, Actor* actor) {
 }
 
 void townTick(TownContext* context) {
-  COIBoardUpdateBGColor(context->board);
-
   // Text box
   if (context->textBox->box->_visible && !context->textBox->currentStringDone) {
     TextBoxAnimate(context->textBox);
@@ -703,11 +713,18 @@ void townTick(TownContext* context) {
 	// 30% chance they move
 	if (_npcCanMove(context->npcs[i]) && generateRandomBoolWeighted(0.3)) {
 	  // If we do move, pick 1 of the 4 directions
-	  _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
-	  // Cancel movement if there's a collision
-	  if (townCheckForCollision(context, context->npcs[i]) != COI_NO_COLLISION) {
-	    context->npcs[i]->movementDirection = MOVING_NONE;
-	  }
+    int movement = generateRandomDirectionalMovement();
+
+    // Fix to a problem where npc will move through player if both try to move into the same square at the same time.
+    // Just don't allow movement into a square directly next to the player.
+    if (!_actorWillMoveNextToPlayer(context->npcs[i], context->pInfo->party[0], movement)) {
+	    _queueMovement(context, context->npcs[i], generateRandomDirectionalMovement(), TOWN_MOVE_SPEED);
+
+      // Cancel movement if there's a collision
+      if (townCheckForCollision(context, context->npcs[i]) != COI_NO_COLLISION) {
+        context->npcs[i]->movementDirection = MOVING_NONE;
+      }
+    }
 	} else {
 	  //	_queueMovement(context, context->npcs[i], MOVING_NONE, TOWN_MOVE_SPEED);
 	}
@@ -805,6 +822,8 @@ void townTogglePauseOverlay(TownContext* context) {
 // Ex: The merchant should only appear during the day.
 // Run this whenever we change the active board to the town.
 void townApplyTimeChanges(TownContext* context) {
+  // COIBoardUpdateBGColor(context->board);
+
   if (GLOBAL_TIME.phase < TS_EVENING) {
     COISpriteSetPos(context->npcs[4]->sprite, 2080, 2144);
   } else {
@@ -812,7 +831,7 @@ void townApplyTimeChanges(TownContext* context) {
     COISpriteSetPos(context->npcs[4]->sprite, -50, -50);
   }
 
-  if (GLOBAL_TIME.day - context->pInfo->lastXPGain.day > 3 &&
+  if (GLOBAL_TIME.day - context->pInfo->lastXPGain.day > 2 &&
       context->pInfo->level > 1) {
     int numAbilities = context->pInfo->party[0]->specials.length + context->pInfo->party[0]->techList->count;
     if (numAbilities > 0) { // We're going to lose an ability when we level down.
@@ -858,12 +877,6 @@ void townDestroyBoard(TownContext* context) {
     currentActor = LinkedListNext(context->allActors);
   }
   LinkedListDestroy(context->allActors);
-  // for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
-  //   COISprite* sprite = context->npcs[i]->sprite;
-  //   COIBoardRemoveDynamicSprite(context->board, sprite);
-  //   COISpriteDestroy(sprite);
-  //   actorDestroy(context->npcs[i]);
-  // }
   COIMenuDestroyAndFreeComponents(context->confirmMenu, context->board);
   COIBoardDestroy(context->board);
   free(context);

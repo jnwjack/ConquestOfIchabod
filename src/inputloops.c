@@ -67,9 +67,9 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
   case BR_FLEE:
   case BR_WIN:
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
+    TimeStateIncrement(1);
     _changeBoardToThreadTown(battleContext->outside); // Breaks if we have another "overworld" board besides the town.
     // COIWindowSetBoard(battleContext->window, battleContext->outside, battleContext->outsideLoop);
-    TimeStateIncrement(1);
     playerCheckForEviction(battleContext->pInfo);
     battleDestroyBoard(board);
     break;
@@ -160,11 +160,14 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 
   TitleNextBoard nextBoard = titleGetNextBoard(titleContext);
   if (nextBoard == TITLE_NEW_GAME) {
+    GLOBAL_TIME.day = 0;
+    GLOBAL_TIME.val = 0;
+    GLOBAL_TIME.phase = TS_MORNING;
     // Global item data
-   ItemList* itemList = loadItems();
+    ItemList* itemList = loadItems();
 
-   // Test inventory
-   Inventory* inventory = createEmptyInventory(itemList);
+    // Test inventory
+    Inventory* inventory = createEmptyInventory(itemList);
 
     // Initialize player data
     COISprite* playerSprite = COISpriteCreateFromAssetID(3552, 3232, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));

@@ -255,20 +255,27 @@ static void _applyStatIncrease(PlayerInfo* pInfo) {
   Actor* actor = pInfo->party[0];
   switch (pInfo->class) {
   case PLAYER_CLASS_FIGHTER:
-    actor->atk.base += 3;
-    actor->def.base += 3;
+    actor->atk.base += generateRandomCharInRange(1, 3);
+    actor->def.base += generateRandomCharInRange(1, 3);
     break;
   case PLAYER_CLASS_WIZARD:
-    actor->tpMax += 3;
-    actor->tp = MIN(actor->tpMax, actor->tp + 3);
-    actor->spMax += 3;
-    actor->sp = MIN(actor->spMax, actor->sp + 3);
+  {
+    int tpGain = generateRandomCharInRange(3, 6);
+    int spGain = generateRandomCharInRange(3, 6);
+    actor->tpMax += tpGain;
+    actor->tp = MIN(actor->tpMax, actor->tp + tpGain);
+    actor->spMax += spGain;
+    actor->sp = MIN(actor->spMax, actor->sp + spGain);
     break;
+  }
   case PLAYER_CLASS_ROGUE:
-    actor->tpMax += 3;
-    actor->tp = MIN(actor->tpMax, actor->tp + 3);
-    actor->agi.base += 3;
+  {
+    int tpGain = generateRandomCharInRange(3, 6);
+    actor->tpMax += tpGain;
+    actor->tp = MIN(actor->tpMax, actor->tp + tpGain);
+    actor->agi.base += generateRandomCharInRange(1, 3);
     break;
+  }
   default:
     printf("Error: invalid class during level up.\n");
   }

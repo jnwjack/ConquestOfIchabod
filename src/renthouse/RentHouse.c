@@ -93,7 +93,7 @@ static void _pay(RentHouseContext* context) {
 		      temp,
 		      NULL);
     context->pInfo->inventory->money -= RENT_HOUSE_PRICE;
-    context->pInfo->nextRentDate += 30;
+    context->pInfo->nextRentDate += RENT_INTERVAL;
     context->statusWindow._refreshFlags |= (RENT_HOUSE_REFRESH_MONEY |
 					     RENT_HOUSE_REFRESH_DAYS);
 

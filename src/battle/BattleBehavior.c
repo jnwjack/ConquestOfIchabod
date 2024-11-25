@@ -60,7 +60,8 @@ static void _sortHelper(BattleAction* actions, int lo, int hi) {
     return;
   }
 
-  int pivot = lo + (size / 2);
+  int pivot = generateRandomCharInRange(lo, hi);
+  // int pivot = lo + (size / 2);
   // Swap pivot with rightmost element
   battleBehaviorSwapActions(&actions[pivot], &actions[hi]);
 
@@ -87,6 +88,7 @@ static void _initializeAction(BattleAction* action) {
   action->attackModifier = 1.0;
   action->spCostModifier = 1.0;
   action->damageAttacker = false;
+  action->noSpecialDamage = false;
 }
 
 // Breaks if you call this and there are no alive actors provided
@@ -107,15 +109,19 @@ static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBo
   Actor* t = action->target;
   int damage;
   char temp[MAX_STRING_SIZE];
-  if (action->index == SPECIAL_ID_BACKSTAB) {
+  if (action->noSpecialDamage) {
+    damage = 0;
+  } else if (action->index == SPECIAL_ID_BACKSTAB) {
+    printf("ACTOR AGI 2: %i\n", actorModifiedAgi(action->actor));
+    printf("TARGET AGI 2: %i\n", actorModifiedAgi(action->target));
     int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
-    damage = _randomDamage(specialStrength(base));
+    damage = _randomDamage(base);
   } else {
     damage = _randomDamage(specialStrength(action->index));
   }
 
   if (_critical()) {
-    damage *= 2;
+    damage *= 1.5;
     // snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
     //   aName, specialVerb(action->index), specialName(action->index), tName);
     // summary = ActionSummaryCreate(board, box, textType, temp, NULL);
@@ -327,6 +333,7 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
   a->spCostModifier = b->spCostModifier;
   a->damageAttacker = b->damageAttacker;
   a->successfulFlee = b->successfulFlee;
+  a->noSpecialDamage = b->noSpecialDamage;
   a->numOtherTargets = b->numOtherTargets;
   for (int i = 0; i < a->numOtherTargets; i++) {
     a->otherTargets[i] = b->otherTargets[i];
@@ -340,6 +347,7 @@ void battleBehaviorSwapActions(BattleAction* a, BattleAction* b) {
   b->spCostModifier = temp.spCostModifier;
   b->damageAttacker = temp.damageAttacker;
   b->successfulFlee = temp.successfulFlee;
+  b->noSpecialDamage = temp.noSpecialDamage;
   b->numOtherTargets = temp.numOtherTargets;
   for (int i = 0; i < b->numOtherTargets; i++) {
     b->otherTargets[i] = temp.otherTargets[i];
@@ -408,6 +416,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       case TECH_ID_FADE:
         hitRate = BB_FADE_HIT_RATE;
         break;
+      case TECH_ID_MAGIC_GUARD:
+        action->noSpecialDamage = true;
+        break;
       }
     }
   }
@@ -432,7 +443,8 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     tDef = actorModifiedDef(t);
   }
 
-  printf("TARGET DEF BASE: %i\n", t->def.base);
+  printf("TARGET AGI: %i\n", actorModifiedAgi(t));
+  printf("ACTOR AGI: %i\n", actorModifiedAgi(a));
 
   // JNW: cleanup. Pull each action type out into its own function
   char temp[MAX_STRING_SIZE];
@@ -451,7 +463,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     damage = _randomDamage(damageBase);
     bool successfulHit = generateRandomBoolWeighted(hitRate);
     if (successfulHit && _critical()) {
-      damage *= 2;
+      damage *= 1.5;
       sprintf(atkString, "%s ATTACKS %s", aName, tName);
       summary = ActionSummaryCreate(board, box, textType, atkString, NULL);
       ActionSummaryAddString(summary, "CRITICAL HIT!", board, box, textType);

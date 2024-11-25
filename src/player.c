@@ -8,11 +8,11 @@ static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_FIGHTER[] = { 1 };
 #define LEVELUP_NUM_TECHS_FIGHTER 4
 #define LEVELUP_NUM_SPECIALS_FIGHTER 1
 
-static unsigned int LEVELUP_TECHS_MAGE[] = { TECH_ID_FOCUS, TECH_ID_QUICKSTRIKE };
+static unsigned int LEVELUP_TECHS_MAGE[] = { TECH_ID_FOCUS, TECH_ID_QUICKSTRIKE, TECH_ID_MAGIC_GUARD };
 static unsigned int LEVELUP_SPECIALS_MAGE[] = { SPECIAL_ID_ICE_SPEAR, SPECIAL_ID_HEAL, SPECIAL_ID_AVALANCHE, SPECIAL_ID_NEUTRALIZE, SPECIAL_ID_FIREBALL, SPECIAL_ID_CURSE, SPECIAL_ID_SILENCE };
-static unsigned int LEVELUP_TECHS_MIN_LEVELS_MAGE[] = { 1, 7 };
+static unsigned int LEVELUP_TECHS_MIN_LEVELS_MAGE[] = { 1, 5, 5 };
 static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_MAGE[] = { 1, 3, 5, 5, 7, 9, 9 };
-#define LEVELUP_NUM_TECHS_MAGE 2
+#define LEVELUP_NUM_TECHS_MAGE 3
 #define LEVELUP_NUM_SPECIALS_MAGE 7
 
 static unsigned int LEVELUP_TECHS_ROGUE[] = { TECH_ID_FOCUS, TECH_ID_EAGLEEYE, TECH_ID_QUICKSTRIKE };
@@ -65,7 +65,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->alreadyHealed = false;
   info->rentHouseBaldUsed = false;
   info->foundMythicalSword = false;
-  info->nextRentDate = 30;
+  info->nextRentDate = RENT_INTERVAL;
   info->shiftsWorked = 0;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;

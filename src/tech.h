@@ -19,6 +19,7 @@
 #define TECH_ID_EAGLEEYE 4 // Can't miss
 #define TECH_ID_QUICKSTRIKE 5 // Damaging specials activate twice.
 #define TECH_ID_FADE 6 // Increased dodge chance
+#define TECH_ID_MAGIC_GUARD 7 // No damage from specials
 // --------------------------------------
 
 #define MAX_TECH_COUNT_ALLY 50

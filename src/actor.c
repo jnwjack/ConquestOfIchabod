@@ -157,7 +157,7 @@ Actor* actorCreatePlayer(COISprite* sprite) {
   // Process for random stat generation, maybe specific for each class?
   Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 8, 10, 7, 50, 25, 15);
   
-  COISpriteSetSheetIndex(actor->sprite, 2, 2);
+  COISpriteSetSheetIndex(actor->sprite, 1, 2);
     
   return actor;
 }
