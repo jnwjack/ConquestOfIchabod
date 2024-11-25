@@ -12,14 +12,16 @@ COIWindow* COIWindowCreate() {
 
   
   COIWindow* window = malloc(sizeof(COIWindow));
-  window->_width = 640;
-  window->_height = 480;
-  window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
+  window->_width = 1680;
+  window->_height = 1050;
+  window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, SDL_WINDOW_RESIZABLE);
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
   window->shouldQuit = false;
   COITransitionInit(&window->transition, COI_TRANSITION_NONE, window);
+
+  SDL_SetWindowFullscreen(window->_screen, SDL_WINDOW_FULLSCREEN_DESKTOP);
   return window;
 }
 
@@ -40,6 +42,13 @@ void COIWindowLoop(void* window_v, bool repeat) {
   SDL_Event event;
   bool shouldDraw = true;
 
+  SDL_Rect drawRect;
+
+  float factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
+  float factorW = (float)window->_width / WINDOW_BASE_WIDTH;
+
+  // printf("H: %f\n", factorH);
+
   while (!window->shouldQuit){
     SDL_Delay(20);
     SDL_PollEvent(&event);
@@ -50,6 +59,13 @@ void COIWindowLoop(void* window_v, bool repeat) {
       case SDL_QUIT:
 	      window->shouldQuit = true;
 	      break;
+      case SDL_WINDOWEVENT:
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+          SDL_GetWindowSize(window->_screen, &window->_width, &window->_height);
+          factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
+          factorW = (float)window->_width / WINDOW_BASE_WIDTH;
+        }
+        break;
       default:
 	if (window->_loop) {
 	  window->_loop(window->_currentBoard, &event, window->_currentBoard->context);
@@ -77,7 +93,9 @@ void COIWindowLoop(void* window_v, bool repeat) {
             sprite = window->_currentBoard->spriteGrid[index];
             COIBoardAdjustSprite(window->_currentBoard, sprite);
             if (sprite->_autoHandle) {
-              SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+              scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+              SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
+              // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
             }
           }
         }
@@ -87,7 +105,9 @@ void COIWindowLoop(void* window_v, bool repeat) {
       for (int i = 0; i < window->_currentBoard->perSpriteCount; i++) {
 	      sprite = window->_currentBoard->persistentSprites[i];
         if (sprite->_visible) {
-          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+          scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+          // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
         }
       }
 
@@ -96,7 +116,9 @@ void COIWindowLoop(void* window_v, bool repeat) {
       sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
       while (sprite != NULL) {
         if (sprite->_visible) {
-          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+          scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
+          // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
         }
 	      sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
       }
@@ -105,7 +127,7 @@ void COIWindowLoop(void* window_v, bool repeat) {
       COIString** strings = window->_currentBoard->strings;
       for (int i = 0; i < window->_currentBoard->stringCount; i++) {
         if (strings[i]->visible) {
-          COIStringDraw(strings[i], window->_renderer);
+          COIStringDraw(strings[i], window->_renderer, &drawRect, factorW, factorH);
         }
       }
 
@@ -127,8 +149,8 @@ void COIWindowLoop(void* window_v, bool repeat) {
 }
 
 void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop) {
-  board->_frameWidth = window->_width;
-  board->_frameHeight = window->_height;
+  board->_frameWidth = WINDOW_BASE_WIDTH;
+  board->_frameHeight = WINDOW_BASE_HEIGHT;
   window->_currentBoard = board;
   window->_loop = loop;
   COIBoardQueueDraw(window->_currentBoard);

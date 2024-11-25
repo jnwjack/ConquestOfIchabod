@@ -168,3 +168,12 @@ bool inputIsDirection(int input) {
   return input == MOVING_UP || input == MOVING_DOWN || input == MOVING_LEFT || input == MOVING_RIGHT || input == MOVING_NONE;
 }
 
+void scaleRect(float factorW, float factorH, SDL_Rect* src, SDL_Rect* dst) {
+  if (src) {
+    dst->h = src->h * factorH;
+    dst->w = src->w * factorW;
+    dst->y = src->y * factorH;
+    dst->x = src->x * factorW;
+  }
+}
+

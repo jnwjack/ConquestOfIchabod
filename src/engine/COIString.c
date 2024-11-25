@@ -86,11 +86,12 @@ void COIStringDestroy(COIString* obj) {
   free(obj);
 }
 
-void COIStringDraw(COIString* obj, SDL_Renderer* renderer) {
+void COIStringDraw(COIString* obj, SDL_Renderer* renderer, SDL_Rect* buf, float factorW, float factorH) {
   COIChar* current = obj->_head;
   while (current != NULL) {
     if (current->visible) {
-      SDL_RenderCopy(renderer, current->texture, NULL, current->drawRect);
+      scaleRect(factorW, factorH, current->drawRect, buf);
+      SDL_RenderCopy(renderer, current->texture, NULL, buf);
     }
     current = current->next;
   }

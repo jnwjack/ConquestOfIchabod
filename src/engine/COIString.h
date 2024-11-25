@@ -48,7 +48,7 @@ typedef struct COIString {
 
 COIString* COIStringCreate(char* string, int x, int y, COITextType* textType);
 void COIStringDestroy(COIString* obj);
-void COIStringDraw(COIString* obj, SDL_Renderer* renderer);
+void COIStringDraw(COIString* obj, SDL_Renderer* renderer, SDL_Rect* buf, float factorW, float factorH);
 void COIStringSetPos(COIString* obj, int x, int y);
 void COIStringSetVisible(COIString* obj, bool visible);
 void COIStringSetPosWithWrapping(COIString* obj, int x, int y, int width);

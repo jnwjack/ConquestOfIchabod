@@ -218,9 +218,9 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   Actor* player = context->pInfo->party[0];
   // Adjust board player is in the center of the screen.
   int playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
-  COIBoardShiftFrameX(board, playerCenterX - COI_GLOBAL_WINDOW->_width / 2);
+  COIBoardShiftFrameX(board, playerCenterX - WINDOW_BASE_WIDTH / 2);
   int playerCenterY = player->sprite->_y - board->_frameY + (player->sprite->_height / 2);
-  COIBoardShiftFrameY(board, playerCenterY - COI_GLOBAL_WINDOW->_height / 2);
+  COIBoardShiftFrameY(board, playerCenterY - WINDOW_BASE_HEIGHT / 2);
 
   _createNPCs(context);
   context->talkingActorType = ACTOR_NONE;

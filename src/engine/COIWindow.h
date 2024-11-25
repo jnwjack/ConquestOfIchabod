@@ -13,6 +13,9 @@
 #include "COIBoard.h"
 #include "COITransition.h"
 
+#define WINDOW_BASE_WIDTH 640
+#define WINDOW_BASE_HEIGHT 480
+
 typedef void (*COILoop)(COIBoard*, SDL_Event* event, void* context);
 
 typedef struct COIWindow {

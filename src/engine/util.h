@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <SDL2/SDL.h>
 
 #define MIN(a,b) ((a > b) ? b : a)
 #define MAX(a,b) ((a > b) ? a : b)
@@ -63,5 +64,6 @@ int generateRandomCharInRange(int lowInclusive, int highInclusive);
 int generateRandomDirectionalMovement();
 int generateRandomCharWithCenter(int center, int rangeSize);
 bool inputIsDirection(int input);
+void scaleRect(float factorW, float factorH, SDL_Rect* src, SDL_Rect* dst);
 
 #endif
