@@ -9,7 +9,7 @@ void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
   strings[TITLE_STRING_CONTINUE_GAME] = COIStringCreate("Continue", 450, 170, textType);
   strings[TITLE_STRING_QUIT_GAME] = COIStringCreate("Quit", 600, 170, textType);
   for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
-    COIBoardAddString(board, strings[i]);
+    COIBoardAddString(board, strings[i], 0);
   }
   COIStringPositionRightOfString(strings[TITLE_STRING_CONTINUE_GAME],
 				 strings[TITLE_STRING_NEW_GAME],
@@ -45,14 +45,18 @@ COIBoard* titleCreateBoard() {
   context->currentSlide = -1;
   context->selectedStringIndex = 0;
   context->creatingCharacter = false;
+
   COIBoard* board = COIBoardCreate(0, 0, 0, 0, 640, 480, COI_GLOBAL_LOADER);
+
   context->drawing = COISpriteCreateFromAssetID(0, 0, 640, 480,
 						COI_GLOBAL_LOADER,
 						25,
 						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   context->drawing->_autoHandle = false;
   context->drawing->_visible = true;
-  COIBoardAddDynamicSprite(board, context->drawing);
+  printf("about to add sprite\n");
+  COIBoardAddDynamicSprite(board, context->drawing, 0);
+  printf("added sprite\n");
   // Slides
   for (int i = 0; i < TITLE_NUM_INTRO_SLIDES; i++) {
     context->slides[i] = COISpriteCreateFromAssetID(0, 0, 640, 480,
@@ -61,7 +65,7 @@ COIBoard* titleCreateBoard() {
 						    COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     context->slides[i]->_autoHandle = false;
     context->slides[i]->_visible = false;
-    COIBoardAddDynamicSprite(board, context->slides[i]);
+    COIBoardAddDynamicSprite(board, context->slides[i], 0);
   }
 
   context->name = COISpriteCreateFromAssetID(280, 0, 360, 136,
@@ -69,7 +73,7 @@ COIBoard* titleCreateBoard() {
 					     26,
 					     COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   context->name->viewWindowWidth = 90;
-  COIBoardAddDynamicSprite(board, context->name);
+  COIBoardAddDynamicSprite(board, context->name, 0);
   COISpriteSetSheetIndex(context->name, 0, 3);
   context->name->_autoHandle = false;
   context->name->_visible = true;
@@ -99,24 +103,28 @@ COIBoard* titleCreateBoard() {
   KeyboardSetVisible(&context->kb, false);
   ClassSelectorSetVisible(&context->cs, false);
 
+  COIPreferencesMenuInit(&context->prefMenu, board);  
+
   COIBoardSetContext(board, (void*)context);
+
+  printf("done with board\n");
   return board;
 }
 
 void titleDestroyBoard(TitleContext* context) {
   COIBoard* board = context->board;
-  COIBoardRemoveDynamicSprite(board, context->drawing);
-  COIBoardRemoveDynamicSprite(board, context->name);
+  COIBoardRemoveDynamicSprite(board, context->drawing, 0);
+  COIBoardRemoveDynamicSprite(board, context->name, 0);
   COISpriteDestroy(context->drawing);
   COISpriteDestroy(context->name);
   for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
-    COIBoardRemoveString(board, context->strings[i]);
-    COIBoardRemoveString(board, context->grayStrings[i]);
+    COIBoardRemoveString(board, context->strings[i], 0);
+    COIBoardRemoveString(board, context->grayStrings[i], 0);
     COIStringDestroy(context->strings[i]);
     COIStringDestroy(context->grayStrings[i]);
   }
   for (int i = 0; i < TITLE_NUM_INTRO_SLIDES; i++) {
-    COIBoardRemoveDynamicSprite(board, context->slides[i]);
+    COIBoardRemoveDynamicSprite(board, context->slides[i], 0);
     COISpriteDestroy(context->slides[i]);
   }
   COITextTypeDestroy(context->tBoxTextType);
@@ -228,10 +236,10 @@ void titleTick(TitleContext* context) {
     if (context->ticks >= TITLE_NAME_TICKS * 5) {
       context->animating = !context->animating;
       if (!context->animating) {
-	// Plain static title, no gold.
-	COISpriteSetSheetIndex(context->name, 0, 3);
+        // Plain static title, no gold.
+        COISpriteSetSheetIndex(context->name, 0, 3);
       } else {
-	COISpriteSetSheetIndex(context->name, 0, 0);
+        COISpriteSetSheetIndex(context->name, 0, 0);
       }
       COIBoardQueueDraw(context->board);
       context->ticks = 0;
@@ -242,7 +250,6 @@ void titleTick(TitleContext* context) {
       COISpriteSetSheetIndex(context->name, 0, (oldCol + 1) % 3);
       COIBoardQueueDraw(context->board);
     }
-    
   }
 }
 
@@ -380,7 +387,10 @@ void _processInputMain(TitleContext* context, int direction) {
 }
 
 void titleProcessInput(TitleContext* context, int direction) {
-  if (context->creatingCharacter) {
+  if (context->prefMenu.frame->_visible) {
+    COIPreferencesMenuProcessInput(&context->prefMenu, direction);
+    COIBoardQueueDraw(context->board);
+  } else if (context->creatingCharacter) {
     _processInputCharacterCreation(context, direction);
   } else {
     _processInputMain(context, direction);

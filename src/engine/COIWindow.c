@@ -1,5 +1,6 @@
 #include "COIWindow.h"
 #include "COISound.h"
+#include "COIPreferences.h"
 
 COIWindow* COI_GLOBAL_WINDOW = NULL;
 
@@ -12,16 +13,21 @@ COIWindow* COIWindowCreate() {
 
   
   COIWindow* window = malloc(sizeof(COIWindow));
-  window->_width = 1680;
-  window->_height = 1050;
-  window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, SDL_WINDOW_RESIZABLE);
+  window->_width = (int)GLOBAL_PREFERENCES.resolution.width;
+  window->_height = (int)GLOBAL_PREFERENCES.resolution.height;
+  // window->_width = 640;
+  // window->_height = 480;
+  window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
   window->shouldQuit = false;
   COITransitionInit(&window->transition, COI_TRANSITION_NONE, window);
 
-  SDL_SetWindowFullscreen(window->_screen, SDL_WINDOW_FULLSCREEN_DESKTOP);
+  // int res = SDL_SetWindowFullscreen(window->_screen, 0);
+  SDL_ShowCursor(false);
+  int res = SDL_SetWindowFullscreen(window->_screen, GLOBAL_PREFERENCES.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+  printf("RESULT: %i\n", res);
   return window;
 }
 
@@ -111,23 +117,35 @@ void COIWindowLoop(void* window_v, bool repeat) {
         }
       }
 
-      // Draw dynamic sprites
-      LinkedListResetCursor(window->_currentBoard->dynamicSprites);
-      sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
-      while (sprite != NULL) {
-        if (sprite->_visible) {
-          scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
-          SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
-          // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+      for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+        Layer* layer = &window->_currentBoard->drawLayers[i];
+        // Draw dynamic sprites
+        LinkedListResetCursor(layer->dynamicSprites);
+        sprite = (COISprite*)LinkedListNext(layer->dynamicSprites);
+        while (sprite != NULL) {
+          if (sprite->_visible) {
+            scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+            SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
+            // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
+          }
+          sprite = (COISprite*)LinkedListNext(layer->dynamicSprites);
         }
-	      sprite = (COISprite*)LinkedListNext(window->_currentBoard->dynamicSprites);
-      }
 
-      // New method of handling strings
-      COIString** strings = window->_currentBoard->strings;
-      for (int i = 0; i < window->_currentBoard->stringCount; i++) {
-        if (strings[i]->visible) {
-          COIStringDraw(strings[i], window->_renderer, &drawRect, factorW, factorH);
+        // Draw rects
+        for (int i = 0; i < layer->numRects; i++) {
+          COIRect rect = layer->rects[i];
+          if (rect.visible) {
+            SDL_SetRenderDrawColor(window->_renderer, rect.r, rect.g, rect.b, rect.a);
+            SDL_RenderFillRect(window->_renderer, &rect.sdlRect);
+          }
+        }
+
+        // New method of handling strings
+        COIString** strings = layer->strings;
+        for (int i = 0; i < layer->stringCount; i++) {
+          if (strings[i]->visible) {
+            COIStringDraw(strings[i], window->_renderer, &drawRect, factorW, factorH);
+          }
         }
       }
 

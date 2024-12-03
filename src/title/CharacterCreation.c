@@ -23,7 +23,7 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
     int y = KEYBOARD_OFFSET_Y + (row * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
     snprintf(buf, 2, "%c", kb->characters[i]);
     kb->gridStrings[i] = COIStringCreate(buf, x, y, kb->textType);
-    COIBoardAddString(board, kb->gridStrings[i]);
+    COIBoardAddString(board, kb->gridStrings[i], 0);
     if (col > maxCol) {
       row++;
       col = 0;
@@ -35,14 +35,14 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
                             KEYBOARD_OFFSET_X - 5,
                             KEYBOARD_OFFSET_Y + ((KEYBOARD_GRID_HEIGHT) * (kb->textType->fontSize + KEYBOARD_GRID_PADDING)) + 5,
                             kb->textTypeWords);
-  COIBoardAddString(board, kb->end);
+  COIBoardAddString(board, kb->end, 0);
 
   const int underscoreY = KEYBOARD_OFFSET_Y - (2 * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
   for (int i = 0; i < KEYBOARD_NAME_SIZE; i++) {
     kb->name[i] = '\0'; // Initialize each char in name to \0
     int x = KEYBOARD_OFFSET_X + (i * (kb->textType->fontSize + KEYBOARD_GRID_PADDING));
     kb->underscores[i] = COIStringCreate("_", x, underscoreY, kb->textType);
-    COIBoardAddString(board, kb->underscores[i]);
+    COIBoardAddString(board, kb->underscores[i], 0);
     kb->nameStrings[i] = NULL;
   }
   kb->name[KEYBOARD_NAME_SIZE] = '\0';
@@ -56,7 +56,7 @@ void KeyboardInit(Keyboard* kb, COIBoard* board) {
                                             kb->textType->fontSize + KEYBOARD_GRID_PADDING,
                                             COI_GLOBAL_LOADER, 45, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   kb->highlight->_autoHandle = false;                                            
-  COIBoardAddDynamicSprite(board, kb->highlight);
+  COIBoardAddDynamicSprite(board, kb->highlight, 0);
 }
 
 void KeyboardMoveCursor(Keyboard* kb, int dX, int dY) {
@@ -98,7 +98,7 @@ bool KeyboardSelect(Keyboard* kb, COIBoard* board) {
       snprintf(buf, 2, "%c", c);
       kb->name[kb->currentNameChar] = c;
       kb->nameStrings[kb->currentNameChar] = COIStringCreate(buf, newCharX, underscoreY - 5, kb->textType);
-      COIBoardAddString(board, kb->nameStrings[kb->currentNameChar]);
+      COIBoardAddString(board, kb->nameStrings[kb->currentNameChar], 0);
       kb->currentNameChar++;
     }
 
@@ -112,7 +112,7 @@ bool KeyboardSelect(Keyboard* kb, COIBoard* board) {
 
 void KeyboardRemoveCharacter(Keyboard* kb, COIBoard* board) {
   if (kb->currentNameChar > 0) {
-    COIBoardRemoveString(board, kb->nameStrings[kb->currentNameChar - 1]);
+    COIBoardRemoveString(board, kb->nameStrings[kb->currentNameChar - 1], 0);
     COIStringDestroy(kb->nameStrings[kb->currentNameChar - 1]);
     kb->currentNameChar--;
     kb->name[kb->currentNameChar] = 0;
@@ -140,23 +140,23 @@ bool KeyboardIsVisible(Keyboard* kb) {
 void KeyboardDestroy(Keyboard* kb, COIBoard* board) {
   COITextTypeDestroy(kb->textType);
   COITextTypeDestroy(kb->textTypeWords);
-  COIBoardRemoveString(board, kb->end);
+  COIBoardRemoveString(board, kb->end, 0);
   COIStringDestroy(kb->end);
-  COIBoardRemoveDynamicSprite(board, kb->highlight);
+  COIBoardRemoveDynamicSprite(board, kb->highlight, 0);
   COISpriteDestroy(kb->highlight);
 
   for (int i = 0; i < KEYBOARD_NUM_CHARS; i++) {
-    COIBoardRemoveString(board, kb->gridStrings[i]);
+    COIBoardRemoveString(board, kb->gridStrings[i], 0);
     COIStringDestroy(kb->gridStrings[i]);
   }
 
   for (int i = 0; i < KEYBOARD_NAME_SIZE; i++) {
-    COIBoardRemoveString(board, kb->underscores[i]);
+    COIBoardRemoveString(board, kb->underscores[i], 0);
     COIStringDestroy(kb->underscores[i]);
   }
 
   for (int i = 0; i < kb->currentNameChar; i++) {
-    COIBoardRemoveString(board, kb->nameStrings[i]);
+    COIBoardRemoveString(board, kb->nameStrings[i], 0);
     COIStringDestroy(kb->nameStrings[i]);
   }
 }
@@ -166,12 +166,12 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
                                             COI_GLOBAL_LOADER, 46, 
                                             COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   cs->leftArrow->_autoHandle = false;
-  COIBoardAddDynamicSprite(board, cs->leftArrow);
+  COIBoardAddDynamicSprite(board, cs->leftArrow, 0);
   cs->rightArrow = COISpriteCreateFromAssetID(CLASSSELECTOR_OFFSET_X + 240, CLASSSELECTOR_OFFSET_Y, 64, 64, 
                                             COI_GLOBAL_LOADER, 47, 
                                             COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   cs->rightArrow->_autoHandle = false;
-  COIBoardAddDynamicSprite(board, cs->rightArrow);
+  COIBoardAddDynamicSprite(board, cs->rightArrow, 0);
 
   COITextType* textType = COITextTypeCreate(24, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
@@ -188,11 +188,11 @@ void ClassSelectorInit(ClassSelector* cs, COIBoard* board) {
 
   for (int i = 0; i < CLASSSELECTOR_NUM_CLASSES; i++) {
     bool visible = i == cs->currentClass;
-    COIBoardAddDynamicSprite(board, cs->classIcons[i]);
+    COIBoardAddDynamicSprite(board, cs->classIcons[i], 0);
     cs->classIcons[i]->_autoHandle = false;
     cs->classIcons[i]->_visible = visible;
     cs->classNames[i] = COIStringCreate(playerClassNameFromID(i), CLASSSELECTOR_OFFSET_X + 100, CLASSSELECTOR_OFFSET_Y + 100, textType);
-    COIBoardAddString(board, cs->classNames[i]);
+    COIBoardAddString(board, cs->classNames[i], 0);
     COIStringSetStringCenter(cs->classNames[i], CLASSSELECTOR_OFFSET_X + 152, CLASSSELECTOR_OFFSET_Y + 100);
     COIStringSetVisible(cs->classNames[i], visible);
   }
@@ -227,15 +227,15 @@ bool ClassSelectorIsVisible(ClassSelector* cs) {
 }
 
 void ClassSelectorDestroy(ClassSelector* cs, COIBoard* board) {
-  COIBoardRemoveDynamicSprite(board, cs->leftArrow);
+  COIBoardRemoveDynamicSprite(board, cs->leftArrow, 0);
   COISpriteDestroy(cs->leftArrow);
-  COIBoardRemoveDynamicSprite(board, cs->rightArrow);
+  COIBoardRemoveDynamicSprite(board, cs->rightArrow, 0);
   COISpriteDestroy(cs->rightArrow);
 
   for (int i = 0; i < CLASSSELECTOR_NUM_CLASSES; i++) {
-    COIBoardRemoveDynamicSprite(board, cs->classIcons[i]);
+    COIBoardRemoveDynamicSprite(board, cs->classIcons[i], 0);
     COISpriteDestroy(cs->classIcons[i]);
-    COIBoardRemoveString(board, cs->classNames[i]);
+    COIBoardRemoveString(board, cs->classNames[i], 0);
     COIStringDestroy(cs->classNames[i]);
   }
 }

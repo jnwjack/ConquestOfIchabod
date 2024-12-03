@@ -14,6 +14,25 @@
 #define INDEX_ALPHA 3
 
 #define COIBOARD_MAX_STRINGS 100
+#define COIBOARD_MAX_RECTS 50
+#define COIBOARD_NUM_DRAW_LAYERS 2
+
+typedef struct COIRect {
+  SDL_Rect sdlRect;
+  bool visible;
+  Uint8 r;
+  Uint8 g;
+  Uint8 b;
+  Uint8 a;
+} COIRect;
+
+typedef struct Layer {
+  LinkedList* dynamicSprites;
+  COIString** strings;
+  int stringCount;
+  COIRect rects[COIBOARD_MAX_RECTS];
+  int numRects;
+} Layer;
 
 
 typedef struct COIBoard {
@@ -27,15 +46,13 @@ typedef struct COIBoard {
   int _frameWidth;
   int _frameHeight;
 
+  Layer drawLayers[COIBOARD_NUM_DRAW_LAYERS];
+
   // Sprites loaded in via spritemap
   // New structure for static sprites
   COISprite** spriteGrid;
   int spriteGridHeight;
   int spriteGridWidth;
-
-  // Loaded in "on-the-fly"
-  //COISprite** dynamicSprites;
-  LinkedList* dynamicSprites;
   
   // Sprites loaded in dynamically that persist after COIBoard desturction
   // It'd be better to structure the code so we don't need this
@@ -44,10 +61,6 @@ typedef struct COIBoard {
   
   int _shouldDraw;
   void* context;
-
-  // New method of handling strings
-  COIString** strings;
-  int stringCount;
 
   // Used to load spritemap
   COIAssetLoader* loader;
@@ -65,13 +78,14 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board);
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
 void COIBoardQueueDraw(COIBoard* board); // Request draw for this board
 void COIBoardSetContext(COIBoard* board, void* context);
-void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
-bool COIBoardAddString(COIBoard* board, COIString* string);
+// void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
+bool COIBoardAddString(COIBoard* board, COIString* string, unsigned int layer);
 bool COIBoardAddSprite(COIBoard* board, COISprite* sprite);
-void COIBoardRemoveString(COIBoard* board, COIString* string);
-void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite);
-void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite);
+void COIBoardRemoveString(COIBoard* board, COIString* string, unsigned int layer);
+void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite, unsigned int layer);
+void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite, unsigned int layer);
 void COIBoardAdjustSprite(COIBoard* board, COISprite* sprite);
 void COIBoardUpdateBGColor(COIBoard* board);
+void COIBoardAddRect(COIBoard* board, int x, int y, int w, int h, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool visible, unsigned int layer);
 
 #endif

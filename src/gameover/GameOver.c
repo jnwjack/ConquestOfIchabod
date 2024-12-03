@@ -14,7 +14,7 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
   {
     COITextType* deathType = COITextTypeCreate(24, 0, 0, 0, COIWindowGetRenderer(window));
     COIString* nameString = COIStringCreate(pInfo->name, 250, 360, deathType);
-    COIBoardAddString(board, nameString);
+    COIBoardAddString(board, nameString, 0);
 
     context->background = COISpriteCreateFromAssetID(0, 0, 640, 480, loader, 56, COIWindowGetRenderer(window));
     break;
@@ -23,10 +23,10 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
   {
     context->background = COISpriteCreateFromAssetID(0, 0, 640, 480, loader, 57, COIWindowGetRenderer(window));
     COIString* gameOverString = COIStringCreate("Game Over", 220, 200, textType);
-    COIBoardAddString(board, gameOverString);
+    COIBoardAddString(board, gameOverString, 0);
     COIString* explanationString = COIStringCreate("You have run out of time.", 0, 0, smallerTextType);
     COIStringSetPosWithWrapping(explanationString, 220, 264, 300);
-    COIBoardAddString(board, explanationString);
+    COIBoardAddString(board, explanationString, 0);
     
     break;
   }
@@ -34,19 +34,19 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
   {
     COITextType* timeAndJobType = COITextTypeCreate(6, 0, 0, 0, COIWindowGetRenderer(window));
     COIString* nameString = COIStringCreate(pInfo->name, 395, 320, timeAndJobType);
-    COIBoardAddString(board, nameString);
+    COIBoardAddString(board, nameString, 0);
     COIString* gameOverString = COIStringCreate("Game Over", 10, 200, textType);
-    COIBoardAddString(board, gameOverString);
+    COIBoardAddString(board, gameOverString, 0);
     COIString* explanationString = COIStringCreate("You have run out of time.", 0, 0, smallerTextType);
     COIStringSetPosWithWrapping(explanationString, 10, 264, 300);
-    COIBoardAddString(board, explanationString);
+    COIBoardAddString(board, explanationString, 0);
 
 
     context->background = COISpriteCreateFromAssetID(0, 0, 640, 480, loader, 58, COIWindowGetRenderer(window));
     break;
   }
   }
-  COIBoardAddDynamicSprite(board, context->background);
+  COIBoardAddDynamicSprite(board, context->background, 0);
 
   COIBoardSetContext(board, (void*)context);
 
@@ -57,9 +57,11 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
 }
 
 void gameOverDestroyBoard(GameOverContext* context) {
-  COIBoardRemoveDynamicSprite(context->board, context->background);
-  for (int i = 0; i < context->board->stringCount; i++) {
-    COIStringDestroy(context->board->strings[i]);
+  COIBoardRemoveDynamicSprite(context->board, context->background, 0);
+  for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+    for (int i = 0; i < context->board->drawLayers[i].stringCount; i++) {
+      COIStringDestroy(context->board->drawLayers[i].strings[i]);
+    }
   }
   COIBoardDestroy(context->board);
 }

@@ -3,7 +3,7 @@
 
 void _cleanupString(COIBoard* board, COIString* string) {
   if (string) {
-    COIBoardRemoveString(board, string);
+    COIBoardRemoveString(board, string, 0);
     COIStringDestroy(string);
   }
 }
@@ -19,11 +19,11 @@ AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize) {
   status->cursedIcon = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 78, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   status->cursedIcon->_visible = false;
   status->cursedIcon->_autoHandle = false;
-  COIBoardAddDynamicSprite(status->board, status->cursedIcon);
+  COIBoardAddDynamicSprite(status->board, status->cursedIcon, 0);
   status->silencedIcon = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 77, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   status->silencedIcon->_visible = false;
   status->silencedIcon->_autoHandle = false;
-  COIBoardAddDynamicSprite(status->board, status->silencedIcon);
+  COIBoardAddDynamicSprite(status->board, status->silencedIcon, 0);
   status->_hpVal = -1;
   status->_tpVal = -1;
   status->_spVal = -1;
@@ -46,7 +46,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
 					       COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     status->frame->_autoHandle = false;
     status->frame->_visible = true;
-    COIBoardAddDynamicSprite(status->board, status->frame);
+    COIBoardAddDynamicSprite(status->board, status->frame, 0);
   }
   
   if (actor->hp != status->_hpVal) {
@@ -60,7 +60,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
 				 sprite->_y,
 				 status->textType);
     COIStringSetVisible(status->hp, true);
-    COIBoardAddString(status->board, status->hp);
+    COIBoardAddString(status->board, status->hp, 0);
 
     status->_hpVal = actor->hp;
   }
@@ -75,7 +75,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
 				 sprite->_y + fs + COI_PADDING,
 				 status->textType);
     COIStringSetVisible(status->tp, true);
-    COIBoardAddString(status->board, status->tp);    
+    COIBoardAddString(status->board, status->tp, 0);    
 
     status->_tpVal = actor->tp;
   }
@@ -90,7 +90,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
           sprite->_y + ((fs + COI_PADDING) * 2),
           status->textType);
     COIStringSetVisible(status->sp, true);
-    COIBoardAddString(status->board, status->sp);
+    COIBoardAddString(status->board, status->sp, 0);
 
     status->_spVal = actor->sp;
   }

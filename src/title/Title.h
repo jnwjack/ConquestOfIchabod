@@ -39,6 +39,7 @@ typedef struct TitleContext {
   Keyboard kb;
   ClassSelector cs;
   bool creatingCharacter;
+  COIPreferencesMenu prefMenu;
 } TitleContext;
 
 COIBoard* titleCreateBoard();

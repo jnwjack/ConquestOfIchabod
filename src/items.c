@@ -135,7 +135,7 @@ char* ItemListStringFromItemID(int item) {
   case ITEM_ID_RUSTY_BATTLEAXE:
     return "Battleaxe";
   case ITEM_ID_SHABBY_BOW:
-    return "Bow";
+    return "Falchion";
   case ITEM_ID_CRACKED_SHIELD:
     return "Shield";
   case ITEM_ID_STRENGTH_POTION:

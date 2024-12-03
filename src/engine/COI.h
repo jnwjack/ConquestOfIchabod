@@ -4,6 +4,7 @@
 #include "COIWindow.h"
 #include "COIMenu.h"
 #include "COISound.h"
+#include "COIPreferences.h"
 #include "util.h"
 
 #endif

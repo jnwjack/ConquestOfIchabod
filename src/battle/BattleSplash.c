@@ -34,13 +34,13 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
   splash->_currentProgress = 0;
   splash->_ticks = 0;
   splash->box = box;
-  COIBoardAddDynamicSprite(board, splash->box);
+  COIBoardAddDynamicSprite(board, splash->box, 0);
   splash->box->_autoHandle = false;
   splash->box->_visible = true;
 
   if (victorious) {
     splash->result = COIStringCreate("Victory", 0, 0, textType);
-    COIBoardAddString(board, splash->result);
+    COIBoardAddString(board, splash->result, 0);
     // Accept some list of items or something in the future
     char temp[MAX_STRING_SIZE];
     snprintf(temp, MAX_STRING_SIZE, "Found: %u Gold", gold);
@@ -48,27 +48,27 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
               0,
               0,
               textType);
-    COIBoardAddString(board, splash->rewards);
+    COIBoardAddString(board, splash->rewards, 0);
 
     sprintf(temp, "Gained EXP: %lu", gainedXP); 
     splash->xp = COIStringCreate(temp, 0, 0, textType);
-    COIBoardAddString(board, splash->xp);
+    COIBoardAddString(board, splash->xp, 0);
 
     if (levelUp) {
       splash->levelUp = COIStringCreate("Level Up", 0, 0, textType);
-      COIBoardAddString(board, splash->levelUp);
+      COIBoardAddString(board, splash->levelUp, 0);
     } else {
       splash->levelUp = NULL;
     }
   } else {
     splash->result = COIStringCreate("Defeat", 0, 0, textType);
-    COIBoardAddString(board, splash->result);
+    COIBoardAddString(board, splash->result, 0);
 
     splash->rewards = COIStringCreate("Your party has perished.", 0, 0, textType);
-    COIBoardAddString(board, splash->rewards);
+    COIBoardAddString(board, splash->rewards, 0);
 
     splash->xp = COIStringCreate("Your quest is in vain.", 0, 0, textType);
-    COIBoardAddString(board, splash->xp);
+    COIBoardAddString(board, splash->xp, 0);
 
     splash->levelUp = NULL;
   }
@@ -148,17 +148,17 @@ bool BattleSplashFinished(BattleSplash* splash) {
 }
 
 void BattleSplashDestroy(BattleSplash* splash, COIBoard* board) {
-  COIBoardRemoveString(board, splash->result);
+  COIBoardRemoveString(board, splash->result, 0);
   COIStringDestroy(splash->result);
-  COIBoardRemoveString(board, splash->rewards);
+  COIBoardRemoveString(board, splash->rewards, 0);
   COIStringDestroy(splash->rewards);
-  COIBoardRemoveString(board, splash->xp);
+  COIBoardRemoveString(board, splash->xp, 0);
   COIStringDestroy(splash->xp);
   if (splash->levelUp) {
-    COIBoardRemoveString(board, splash->levelUp);
+    COIBoardRemoveString(board, splash->levelUp, 0);
     COIStringDestroy(splash->levelUp);
   }
-  COIBoardRemoveDynamicSprite(board, splash->box);
+  COIBoardRemoveDynamicSprite(board, splash->box, 0);
   COISpriteDestroy(splash->box);
   // splash->box->_visible = false;
   free(splash);
@@ -312,31 +312,31 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
                                                   COI_GLOBAL_LOADER,
                                                   5,
                                                   COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, menuFrame);
+  COIBoardAddDynamicSprite(board, menuFrame, 0);
   COISprite* menuPointer = COISpriteCreateFromAssetID(0, 0, 32, 32,
                                                   COI_GLOBAL_LOADER,
                                                   6,
                                                   COIWindowGetRenderer(COI_GLOBAL_WINDOW));    
-  COIBoardAddDynamicSprite(board, menuPointer);                                            
+  COIBoardAddDynamicSprite(board, menuPointer, 0);                                            
   splash->menu = COIMenuCreateWithCapacity(menuFrame, menuPointer, 10);
 
 
   splash->descBox = COISpriteCreateFromAssetID(325, 125, 275, 200, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   splash->descBox->_autoHandle = false;
-  COIBoardAddDynamicSprite(board, splash->descBox);
+  COIBoardAddDynamicSprite(board, splash->descBox, 0);
 
   // Stat increase
   COIString* increaseName = COIStringCreate("Stat Increase", 0, 0, tt);
   COIStringSetVisible(increaseName, true);
-  COIBoardAddString(board, increaseName);
+  COIBoardAddString(board, increaseName, 0);
   COIMenuAddString(splash->menu, increaseName, LEVEL_UP_STAT);
   splash->descStrings[0] = COIStringCreate(_getStatIncreaseString(pInfo), 0, 0, tt);
   splash->costStrings[0] = COIStringCreate("COST: N/A", 0, 0, tt);
   COIStringConfineToSprite(splash->costStrings[0], splash->descBox);
   COIStringConfineToSprite(splash->descStrings[0], splash->descBox);
   COIStringPositionBelowString(splash->descStrings[0], splash->costStrings[0], true);
-  COIBoardAddString(board, splash->descStrings[0]);
-  COIBoardAddString(board, splash->costStrings[0]);
+  COIBoardAddString(board, splash->descStrings[0], 0);
+  COIBoardAddString(board, splash->costStrings[0], 0);
 
   int specials[2] = { -1, -1 };
   int techs[2] = { -1, -1 };
@@ -356,7 +356,7 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
       Tech* tech = techCreate(techs[i]);
       COIString* techName = techNameAsCOIString(tech, 0, 0, tt, false);
       COIStringSetVisible(techName, true);
-      COIBoardAddString(board, techName);
+      COIBoardAddString(board, techName, 0);
       COIMenuAddString(splash->menu, techName, LEVEL_UP_TECH);
       snprintf(temp, MAX_STRING_SIZE, "COST: %i TP / turn", tech->cost);
       splash->costStrings[indexInMenu] = COIStringCreate(temp, 0, 0, tt);
@@ -367,8 +367,8 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
       COIStringConfineToSprite(splash->costStrings[indexInMenu], splash->descBox);
       COIStringConfineToSprite(splash->descStrings[indexInMenu], splash->descBox);
       COIStringPositionBelowString(splash->descStrings[indexInMenu], splash->costStrings[indexInMenu], true);
-      COIBoardAddString(board, splash->descStrings[indexInMenu]);
-      COIBoardAddString(board, splash->costStrings[indexInMenu]);
+      COIBoardAddString(board, splash->descStrings[indexInMenu], 0);
+      COIBoardAddString(board, splash->costStrings[indexInMenu], 0);
       indexInMenu++;
     }
   }
@@ -380,7 +380,7 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
       printf("specials[%i]: %i\n", indexInMenu, specials[i]);
       COIString* sName = COIStringCreate(specialName(specials[i]), 0, 0, tt);
       COIStringSetVisible(sName, true);
-      COIBoardAddString(board, sName);
+      COIBoardAddString(board, sName, 0);
       COIMenuAddString(splash->menu, sName, LEVEL_UP_SPECIAL);
       snprintf(temp, MAX_STRING_SIZE, "COST: %i SP", specialCost(specials[i]));
       splash->costStrings[indexInMenu] = COIStringCreate(temp, 0, 0, tt);
@@ -391,8 +391,8 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
       COIStringConfineToSprite(splash->costStrings[indexInMenu], splash->descBox);
       COIStringConfineToSprite(splash->descStrings[indexInMenu], splash->descBox);
       COIStringPositionBelowString(splash->descStrings[indexInMenu], splash->costStrings[indexInMenu], true);
-      COIBoardAddString(board, splash->descStrings[indexInMenu]);
-      COIBoardAddString(board, splash->costStrings[indexInMenu]);
+      COIBoardAddString(board, splash->descStrings[indexInMenu], 0);
+      COIBoardAddString(board, splash->costStrings[indexInMenu], 0);
       indexInMenu++;
     }
   }
@@ -404,18 +404,18 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
                                                       COI_GLOBAL_LOADER,
                                                       5,
                                                       COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, confirmFrame);
+  COIBoardAddDynamicSprite(board, confirmFrame, 0);
   COISprite* confirmPointer = COISpriteCreateFromAssetID(0, 0, 32, 32,
                                                         COI_GLOBAL_LOADER,
                                                         6,
                                                         COIWindowGetRenderer(COI_GLOBAL_WINDOW)); 
-  COIBoardAddDynamicSprite(board, confirmPointer);  
+  COIBoardAddDynamicSprite(board, confirmPointer, 0);  
   splash->confirmMenu = COIMenuCreateWithCapacity(confirmFrame, confirmPointer, 5);
   COIString* no = COIStringCreate("No", 0, 0, tt);
-  COIBoardAddString(board, no);
+  COIBoardAddString(board, no, 0);
   COIMenuAddString(splash->confirmMenu, no, 0);
   COIString* yes = COIStringCreate("Yes", 0, 0, tt);
-  COIBoardAddString(board, yes);
+  COIBoardAddString(board, yes, 0);
   COIMenuAddString(splash->confirmMenu, yes, 1);
   COIMenuSetInvisible(splash->confirmMenu);
 

@@ -308,13 +308,20 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     _changeBoardToThreadTown(threadTownBoard);
 
     armoryDestroy(armoryContext);
+
     // Destroy dynamic sprites
-    LinkedListResetCursor(board->dynamicSprites);
-    COISprite* sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
-    while (sprite) {
-      COIBoardRemoveDynamicSprite(board, sprite);
-      COISpriteDestroy(sprite);
-      sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
+    for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+      LinkedListResetCursor(board->drawLayers[i].dynamicSprites);
+      COISprite* sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
+      while (sprite) {
+        printf("1\n");
+        COIBoardRemoveDynamicSprite(board, sprite, i);
+        printf("2\n");
+        COISpriteDestroy(sprite);
+        printf("3\n");
+        sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
+        printf("4\n");
+      }
     }
     COIBoardDestroy(board);
     return;

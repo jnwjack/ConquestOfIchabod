@@ -148,7 +148,7 @@ static Actor* _facingNPC(Actor* player, LinkedList* actors) {
 static void _createSwordChest(TownContext* context) {
   if (context->swordChest) {
     LinkedListRemove(context->allActors, (void*)context->swordChest);
-    COIBoardRemoveDynamicSprite(context->board, context->swordChest->sprite);
+    COIBoardRemoveDynamicSprite(context->board, context->swordChest->sprite, 0);
     COISpriteDestroy(context->swordChest->sprite);
     actorDestroy(context->swordChest);
   }
@@ -166,7 +166,7 @@ static void _createSwordChest(TownContext* context) {
               COI_GLOBAL_LOADER,
               COI_GLOBAL_WINDOW);
   }
-  COIBoardAddDynamicSprite(context->board, context->swordChest->sprite);
+  COIBoardAddDynamicSprite(context->board, context->swordChest->sprite, 0);
   LinkedListResetCursor(context->allActors);
   LinkedListAdd(context->allActors, (void*)context->swordChest);
 }
@@ -184,7 +184,7 @@ static void _createNPCs(TownContext* context) {
                 yPositions[i],
                 COI_GLOBAL_LOADER,
                 COI_GLOBAL_WINDOW);
-    COIBoardAddDynamicSprite(context->board, context->npcs[i]->sprite);
+    COIBoardAddDynamicSprite(context->board, context->npcs[i]->sprite, 0);
     actorFaceRight(context->npcs[i]);
   }
   _createSwordChest(context);
@@ -231,18 +231,18 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
 						5,
 						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   frame->_autoHandle = false;
-  COIBoardAddDynamicSprite(context->board, frame);
+  COIBoardAddDynamicSprite(context->board, frame, 0);
   COISprite* pointer = COISpriteCreateFromAssetID(0, 0, 32, 32,
 						  COI_GLOBAL_LOADER,
 						  6,
 						  COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   pointer->_autoHandle = false;
-  COIBoardAddDynamicSprite(context->board, pointer);
+  COIBoardAddDynamicSprite(context->board, pointer, 0);
   context->confirmMenu = COIMenuCreateWithCapacity(frame, pointer, BACKPACK_SIZE);
   COIString* yes = COIStringCreate("Yes", 0, 0, context->textType);
-  COIBoardAddString(context->board, yes);
+  COIBoardAddString(context->board, yes, 0);
   COIString* no = COIStringCreate("No", 0, 0, context->textType);
-  COIBoardAddString(context->board, no);
+  COIBoardAddString(context->board, no, 0);
   COIMenuAddString(context->confirmMenu, yes, 0);
   COIMenuAddString(context->confirmMenu, no, 1);
   COIMenuSetInvisible(context->confirmMenu);
@@ -871,7 +871,7 @@ void townDestroyBoard(TownContext* context) {
   LinkedListResetCursor(context->allActors);
   Actor* currentActor = LinkedListNext(context->allActors);
   while (currentActor) {
-    COIBoardRemoveDynamicSprite(context->board, currentActor->sprite);
+    COIBoardRemoveDynamicSprite(context->board, currentActor->sprite, 0);
     COISpriteDestroy(currentActor->sprite);
     actorDestroy(currentActor);
     currentActor = LinkedListNext(context->allActors);

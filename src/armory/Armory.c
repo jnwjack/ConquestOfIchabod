@@ -47,8 +47,12 @@ void armoryUpdateBoardText(COIBoard* board) {
     strings[5+context->numBuyItems+i] = context->sellItems[i].string;
   }
   strings[5+context->numBuyItems+context->numSellItems] = context->moneyString;
+
+  for (int i = 0; i < 6 + context->numBuyItems + context->numSellItems; i++) {
+    COIBoardAddString(board, strings[i], 0);
+  }
   
-  COIBoardSetStrings(board, strings, 6 + context->numBuyItems + context->numSellItems);
+  // COIBoardSetStrings(board, strings, 6 + context->numBuyItems + context->numSellItems);
 }
 
 // Read money value from Inventory and update COIString
@@ -193,7 +197,7 @@ COIBoard* armoryCreateBoard(COIWindow* window,
   COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, loader);
 
   COISprite* background = COISpriteCreateFromAssetID(0, 0, 640, 480, COI_GLOBAL_LOADER, 92, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(armoryBoard, background);
+  COIBoardAddDynamicSprite(armoryBoard, background, 0);
 
   COILoop armoryLoop = &armory;
   COIBoardLoadSpriteMap(armoryBoard, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
@@ -300,8 +304,8 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
   // First level menu for armory
   COISprite* frame = COISpriteCreateFromAssetID(60, 40, 200, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   COISprite* pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame);
-  COIBoardAddDynamicSprite(board, pointer);
+  COIBoardAddDynamicSprite(board, frame, 0);
+  COIBoardAddDynamicSprite(board, pointer, 0);
   COIMenu* menu = COIMenuCreate(frame, pointer);
   COIMenuSetTexts(menu, armoryContext->mainStrings, 3);
   COIMenuSetVisible(menu);
@@ -310,8 +314,8 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
   // Fill item list for buy menu
   frame = COISpriteCreateFromAssetID(280, 40, 350, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame);
-  COIBoardAddDynamicSprite(board, pointer);
+  COIBoardAddDynamicSprite(board, frame, 0);
+  COIBoardAddDynamicSprite(board, pointer, 0);
   armoryContext->buyMenu = COIMenuCreate(frame, pointer);
   armoryPopulateBuy(armoryContext, itemIDs);
   armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
@@ -326,8 +330,8 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
   // Menu that asks for confirmation when buying/selling
   frame = COISpriteCreateFromAssetID(280, 250, 100, 70, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame);
-  COIBoardAddDynamicSprite(board, pointer);
+  COIBoardAddDynamicSprite(board, frame, 0);
+  COIBoardAddDynamicSprite(board, pointer, 0);
   armoryContext->confirmMenu = COIMenuCreate(frame, pointer);
   armoryContext->confirmStrings[0] = COIStringCreate("No", 0, 0, armoryContext->textType);
   armoryContext->confirmStrings[1] = COIStringCreate("Yes", 0, 0, armoryContext->textType);
@@ -337,7 +341,7 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
 
   // Display money
   frame = COISpriteCreateFromAssetID(60, 245, 200, 50, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame);
+  COIBoardAddDynamicSprite(board, frame, 0);
   armoryContext->moneyString = NULL;
   armoryUpdateMoneyString(armoryContext);
 

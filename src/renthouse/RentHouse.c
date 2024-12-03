@@ -2,7 +2,7 @@
 
 static void _destroyString(COIBoard* board, COIString* string) {
   if (string != NULL) {
-    COIBoardRemoveString(board, string);
+    COIBoardRemoveString(board, string, 0);
     COIStringDestroy(string);
   }
 }
@@ -116,7 +116,7 @@ static void _makeStatWindowStrings(RentHouseContext* context) {
     window->currentGold = COIStringCreate(temp, 0, 0, context->textType);
     COIStringConfineToSprite(window->currentGold, window->frame);
     COIStringSetVisible(window->currentGold, true);
-    COIBoardAddString(context->board, window->currentGold);
+    COIBoardAddString(context->board, window->currentGold, 0);
   }
   if ((window->_refreshFlags & RENT_HOUSE_REFRESH_PRICE) > 0) {
     _destroyString(context->board, window->price);
@@ -124,7 +124,7 @@ static void _makeStatWindowStrings(RentHouseContext* context) {
     window->price = COIStringCreate(temp, 0, 0, context->textType);
     COIStringPositionBelowString(window->price, window->currentGold, false);
     COIStringSetVisible(window->price, true);
-    COIBoardAddString(context->board, window->price);
+    COIBoardAddString(context->board, window->price, 0);
   }
   if (window->_refreshFlags & RENT_HOUSE_REFRESH_DAYS) {
     _destroyString(context->board, window->daysLeft);
@@ -137,7 +137,7 @@ static void _makeStatWindowStrings(RentHouseContext* context) {
     }
     COIStringPositionBelowString(window->daysLeft, window->price, false);
     COIStringSetVisible(window->daysLeft, true);
-    COIBoardAddString(context->board, window->daysLeft);
+    COIBoardAddString(context->board, window->daysLeft, 0);
   }
 
   window->_refreshFlags = 0;
@@ -160,7 +160,7 @@ static void _makeStatWindow(RentHouseContext* context) {
   window->daysLeft = NULL;
   window->price = NULL;
   _makeStatWindowStrings(context);
-  COIBoardAddDynamicSprite(context->board, window->frame);
+  COIBoardAddDynamicSprite(context->board, window->frame, 0);
 }
 
 
@@ -178,29 +178,29 @@ COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard) {
 						5,
 						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   frame->_autoHandle = false;
-  COIBoardAddDynamicSprite(context->board, frame);
+  COIBoardAddDynamicSprite(context->board, frame, 0);
   COISprite* pointer = COISpriteCreateFromAssetID(0, 0, 32, 32,
 						  COI_GLOBAL_LOADER,
 						  6,
 						  COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   pointer->_autoHandle = false;
-  COIBoardAddDynamicSprite(context->board, pointer);
+  COIBoardAddDynamicSprite(context->board, pointer, 0);
 
   context->baseMenu = COIMenuCreateWithCapacity(frame, pointer, 4);
   COIString* healString = COIStringCreate("Heal", 0, 0, context->textType);
-  COIBoardAddString(context->board, healString);
+  COIBoardAddString(context->board, healString, 0);
   COIMenuAddString(context->baseMenu, healString, 0);
   
   COIString* sleepString = COIStringCreate("Sleep", 0, 0, context->textType);
-  COIBoardAddString(context->board, sleepString);
+  COIBoardAddString(context->board, sleepString, 0);
   COIMenuAddString(context->baseMenu, sleepString, 1);
 
   COIString* payString = COIStringCreate("Pay Rent", 0, 0, context->textType);
-  COIBoardAddString(context->board, payString);
+  COIBoardAddString(context->board, payString, 0);
   COIMenuAddString(context->baseMenu, payString, 2);
 
   COIString* exitString = COIStringCreate("Exit", 0, 0, context->textType);
-  COIBoardAddString(context->board, exitString);
+  COIBoardAddString(context->board, exitString, 0);
   COIMenuAddString(context->baseMenu, exitString, 3);
   COIMenuSetVisible(context->baseMenu);
 
@@ -265,7 +265,7 @@ void RentHouseDestroyBoard(RentHouseContext* context) {
   _destroyString(context->board, context->statusWindow.price);
   _destroyString(context->board, context->statusWindow.daysLeft);
   _destroyString(context->board, context->statusWindow.currentGold);
-  COIBoardRemoveDynamicSprite(context->board, context->statusWindow.frame);
+  COIBoardRemoveDynamicSprite(context->board, context->statusWindow.frame, 0);
   COISpriteDestroy(context->statusWindow.frame);
 
   COIBoardDestroy(context->board);

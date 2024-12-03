@@ -14,18 +14,23 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
   board->_frameY = 0;
   board->_frameWidth = 0;
   board->_frameHeight = 0;
+  board->spriteGridWidth = 0;
+  board->spriteGridHeight = 0;
   board->persistentSprites = NULL;
   board->perSpriteCount = 0;
-  board->dynamicSprites = LinkedListCreate();
   board->_shouldDraw = true;
   board->context = NULL;
-  // JNW
-  board->strings = malloc(sizeof(COIString*) * COIBOARD_MAX_STRINGS);
-  for (int i = 0; i < COIBOARD_MAX_STRINGS; i++) {
-    board->strings[i] = NULL;
+
+  for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+    board->drawLayers[i].dynamicSprites = LinkedListCreate();
+    board->drawLayers[i].strings = malloc(sizeof(COIString*) * COIBOARD_MAX_STRINGS);
+    for (int j = 0; j < COIBOARD_MAX_STRINGS; j++) {
+      board->drawLayers[i].strings[j] = NULL;
+    }
+    board->drawLayers[i].stringCount = 0;
+    board->drawLayers[i].numRects = 0;
   }
-  //board->strings = NULL;
-  board->stringCount = 0;
+
   board->loader = loader;
 
   return board;
@@ -34,9 +39,6 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
 void COIBoardDestroy(COIBoard* board) {
   if (board == NULL){
     return;
-  }
-  if (board->strings != NULL) {
-    free(board->strings);
   }
   if (board->spriteGrid) {
     free(board->spriteGrid);
@@ -49,7 +51,13 @@ void COIBoardDestroy(COIBoard* board) {
     }
     free(board->persistentSprites);
   }
-  LinkedListDestroy(board->dynamicSprites);
+
+  for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+    if (board->drawLayers[i].strings != NULL) {
+      free(board->drawLayers[i].strings);
+    }
+    LinkedListDestroy(board->drawLayers[i].dynamicSprites);
+  }
   free(board);
 }
 
@@ -192,12 +200,15 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board) {
     COIBoardAdjustSprite(board, board->persistentSprites[i]);
   }
 
+
   // Dynamic sprites
-  LinkedListResetCursor(board->dynamicSprites);
-  COISprite* sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
-  while (sprite != NULL) {
-    COIBoardAdjustSprite(board, sprite);
-    sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
+  for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+    LinkedListResetCursor(board->drawLayers[i].dynamicSprites);
+    COISprite* sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
+    while (sprite != NULL) {
+      COIBoardAdjustSprite(board, sprite);
+      sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
+    }
   }
 }
 
@@ -252,56 +263,96 @@ void COIBoardSetContext(COIBoard* board, void* context) {
   board->context = context;
 }
 
-bool COIBoardAddString(COIBoard* board, COIString* string) {
-  if (board->stringCount == COIBOARD_MAX_STRINGS) {
+bool COIBoardAddString(COIBoard* board, COIString* string, unsigned int layer) {
+  if (layer < COIBOARD_NUM_DRAW_LAYERS) {
+    if (board->drawLayers[layer].stringCount == COIBOARD_MAX_STRINGS) {
+      return false;
+    }
+
+    board->drawLayers[layer].strings[board->drawLayers[layer].stringCount] = string;
+    string->index = board->drawLayers[layer].stringCount;
+    board->drawLayers[layer].stringCount++;
+    return true;
+  } else {
+    printf("Can't add string. No such layer %u\n", layer);
     return false;
   }
-
-  board->strings[board->stringCount] = string;
-  string->index = board->stringCount;
-  board->stringCount++;
-  return true;
 }
 
-void COIBoardRemoveString(COIBoard* board, COIString* string) {
-  if (string->index == -1) {
-    return;
+void COIBoardRemoveString(COIBoard* board, COIString* string, unsigned int layer) {
+  if (layer < COIBOARD_NUM_DRAW_LAYERS) {
+    if (string->index == -1) {
+      return;
+    }
+
+    board->drawLayers[layer].strings[string->index] = NULL;
+    int holeIndex = string->index;
+
+    // Shift all strings at a higher index down a position to fill hole
+    for (int i = holeIndex + 1; i < board->drawLayers[layer].stringCount; i++) {
+      board->drawLayers[layer].strings[i - 1] = board->drawLayers[layer].strings[i];
+      board->drawLayers[layer].strings[i - 1]->index = i - 1;
+      board->drawLayers[layer].strings[i] = NULL;
+    }
+
+    board->drawLayers[layer].stringCount -= 1;
+    string->index = -1;
+  } else {
+    printf("Can't remove string. No such layer %u\n", layer);
   }
-
-  board->strings[string->index] = NULL;
-  int holeIndex = string->index;
-
-  // Shift all strings at a higher index down a position to fill hole
-  for (int i = holeIndex + 1; i < board->stringCount; i++) {
-    board->strings[i - 1] = board->strings[i];
-    board->strings[i - 1]->index = i - 1;
-    board->strings[i] = NULL;
-  }
-
-  board->stringCount -= 1;
-  string->index = -1;
 }
 
-void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
-  /*if (board->strings != NULL) {
-    free(board->strings);
-    }*/
+// Should get rid of this. For now, this just adds strings to layer 0.
+// void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
+//   /*if (board->strings != NULL) {
+//     free(board->strings);
+//     }*/
 
-  board->stringCount = count;
-  //board->strings = malloc(sizeof(COIString*) * board->stringCount);
-  for (int i = 0; i < board->stringCount; i++) {
-    board->strings[i] = strings[i];
-  }
+//   board->stringCount = count;
+//   //board->strings = malloc(sizeof(COIString*) * board->stringCount);
+//   for (int i = 0; i < board->stringCount; i++) {
+//     board->strings[i] = strings[i];
+//   }
   
-  /*  board->strings = strings;
-      board->stringCount = count;*/
+//   /*  board->strings = strings;
+//       board->stringCount = count;*/
+// }
+
+void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite, unsigned int layer) {
+  if (layer < COIBOARD_NUM_DRAW_LAYERS) {
+    LinkedListAdd(board->drawLayers[layer].dynamicSprites, (void*)sprite);
+  } else {
+    printf("Can't add dynamic sprite. No such layer %u\n", layer);
+  }
 }
 
-void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite) {
-  LinkedListAdd(board->dynamicSprites, (void*)sprite);
+void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite, unsigned int layer) {
+  if (layer < COIBOARD_NUM_DRAW_LAYERS) {
+    LinkedListRemove(board->drawLayers[layer].dynamicSprites, (void*)sprite);
+  } else {
+    printf("Can't remove dynamic sprite. No such layer %u\n", layer);
+  }
 }
 
-void COIBoardRemoveDynamicSprite(COIBoard* board, COISprite* sprite) {
-  LinkedListRemove(board->dynamicSprites, (void*)sprite);
+void COIBoardAddRect(COIBoard* board, int x, int y, int w, int h, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool visible, unsigned int layer) {
+  if (layer < COIBOARD_NUM_DRAW_LAYERS) {
+    Layer* drawLayer = &board->drawLayers[layer];
+    if (drawLayer->numRects < COIBOARD_MAX_RECTS) {
+      drawLayer->rects[drawLayer->numRects].sdlRect.x = x;
+      drawLayer->rects[drawLayer->numRects].sdlRect.y = y;
+      drawLayer->rects[drawLayer->numRects].sdlRect.w = w;
+      drawLayer->rects[drawLayer->numRects].sdlRect.h = h;
+      drawLayer->rects[drawLayer->numRects].r = r;
+      drawLayer->rects[drawLayer->numRects].g = g;
+      drawLayer->rects[drawLayer->numRects].b = b;
+      drawLayer->rects[drawLayer->numRects].a = a;
+      drawLayer->rects[drawLayer->numRects].visible = visible;
+      drawLayer->numRects++;
+    } else {
+      printf("Tried to add a rect to full list.\n");
+    }
+  } else {
+    printf("Can't add rect. No such layer %u\n", layer);
+  }
 }
 

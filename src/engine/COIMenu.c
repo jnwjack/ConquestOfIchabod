@@ -43,7 +43,7 @@ void COIMenuFreeComponents(COIMenu* menu, COIBoard* board) {
   printf("string count in menu: %i\n", menu->_stringCount);
   for (int i = 0; i < menu->_stringCount; i++) {
     COIString* str = menu->_strings[i];
-    COIBoardRemoveString(board, str);
+    COIBoardRemoveString(board, str, 0);
     COIStringDestroy(str);
   }
   menu->_stringCount = 0;
@@ -57,10 +57,10 @@ void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board) {
   }
   
   COISprite* frame = menu->_frame;
-  COIBoardRemoveDynamicSprite(board, frame);
+  COIBoardRemoveDynamicSprite(board, frame, 0);
   COISpriteDestroy(frame);
   COISprite* pointer = menu->_pointer;
-  COIBoardRemoveDynamicSprite(board, pointer);
+  COIBoardRemoveDynamicSprite(board, pointer, 0);
   COISpriteDestroy(pointer);
   
   if (menu->_strings != NULL) {
@@ -269,7 +269,7 @@ bool COIMenuAddString(COIMenu* menu, COIString* string, int val) {
 }
 
 void COIMenuRemoveString(COIMenu* menu, int index, COIBoard* board) {
-  COIBoardRemoveString(board, menu->_strings[index]);
+  COIBoardRemoveString(board, menu->_strings[index], 0);
   COIStringDestroy(menu->_strings[index]);
   for (int i = index; i + 1 < menu->_stringCount; i++) {
     menu->_strings[i] = menu->_strings[i + 1];

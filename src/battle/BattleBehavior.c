@@ -704,7 +704,7 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
     //summary->strings[i] 
     COIStringConfineToSprite(coiString, box);
     // Add COIString to board
-    COIBoardAddString(board, coiString);
+    COIBoardAddString(board, coiString, 0);
     COIStringSetVisible(coiString, false);
     LinkedListAdd(summary->strings, (void*)coiString);
     currentString = va_arg(list, char*);
@@ -759,7 +759,7 @@ void ActionSummaryAddString(ActionSummary* summary, char* newString, COIBoard* b
   //summary->strings[i] 
   COIStringConfineToSprite(coiString, sprite);
   // Add COIString to board
-  COIBoardAddString(board, coiString);
+  COIBoardAddString(board, coiString, 0);
   COIStringSetVisible(coiString, false);
   LinkedListAdd(summary->strings, (void*)coiString);
   LinkedListResetCursor(summary->strings);
@@ -778,7 +778,7 @@ void ActionSummaryDestroy(ActionSummary* summary, COIBoard* board) {
   LinkedListResetCursor(summary->strings);
   COIString* string = LinkedListNext(summary->strings);
   while (string) {
-    COIBoardRemoveString(board, string);
+    COIBoardRemoveString(board, string, 0);
     COIStringDestroy(string);
     string = LinkedListNext(summary->strings);
   }

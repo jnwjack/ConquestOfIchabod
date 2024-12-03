@@ -28,6 +28,8 @@ EM_BOOL one_iter(double time, void* userData) {
 static void _init() {
   
   // Initialize global window and asset loader
+  COIPreferencesInit();
+  COIPreferencesWriteToFile();
   COIWindowInit();
   COIAssetLoaderInit();
 

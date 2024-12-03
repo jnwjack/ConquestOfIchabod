@@ -58,7 +58,11 @@ static void _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
     allStrings[BATTLE_NUM_ACTIONS+context->numEnemies+i] = context->allyNames[i];
   }
 
-  COIBoardSetStrings(board, allStrings, context->numStrings);
+  for (int i = 0; i < context->numStrings; i++) {
+    COIBoardAddString(board, allStrings[i], 0);
+  }
+
+  // COIBoardSetStrings(board, allStrings, context->numStrings);
 }
 
 static void _updateStatuses(BattleContext* context) {
@@ -251,14 +255,14 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     actorFaceLeft(context->allies[i]);
   }
   COISprite* aBox = COISpriteCreateFromAssetID(450, 80, 100, 300, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, aBox);
+  COIBoardAddDynamicSprite(board, aBox, 0);
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   aBox->_autoHandle = false;
   aBox->_visible = false;
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
 
   context->descBox = COISpriteCreateFromAssetID(320, 350, 300, 100, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, context->descBox);
+  COIBoardAddDynamicSprite(board, context->descBox, 0);
   context->descBox->_autoHandle = false;
   context->descBox->_visible = false;
 
@@ -278,7 +282,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   // Pointer for enemies and allies
   context->pointer = COISpriteCreateFromAssetID(320, 350, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, context->pointer);
+  COIBoardAddDynamicSprite(board, context->pointer, 0);
   context->pointer->_autoHandle = false;
   context->pointer->_visible = false;
 
@@ -298,15 +302,15 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   // Name box
   context->nameBox = COISpriteCreateFromAssetID(210, 20, 200, 75, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, context->nameBox);
+  COIBoardAddDynamicSprite(board, context->nameBox, 0);
   context->nameBox->_autoHandle = false;
   context->nameBox->_visible = true;
 
   // Top-level menu
   COISprite* topLevelMenuFrame = COISpriteCreateFromAssetID(400, 320, 200, 150, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, topLevelMenuFrame);
+  COIBoardAddDynamicSprite(board, topLevelMenuFrame, 0);
   COISprite* topLevelPointer = COISpriteCreateFromAssetID(100, 200, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, topLevelPointer);
+  COIBoardAddDynamicSprite(board, topLevelPointer, 0);
   topLevelMenuFrame->_autoHandle = false;
   topLevelMenuFrame->_visible = true;
   topLevelPointer->_autoHandle = false;
@@ -317,9 +321,9 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Submenu
   //context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
   COISprite* subMenuFrame = COISpriteCreateFromAssetID(170, 320, 220, 150, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, subMenuFrame);
+  COIBoardAddDynamicSprite(board, subMenuFrame, 0);
   COISprite* subMenuPointer = COISpriteCreateFromAssetID(100, 200, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, subMenuPointer);
+  COIBoardAddDynamicSprite(board, subMenuPointer, 0);
   context->subMenu = COIMenuCreateWithCapacity(subMenuFrame, subMenuPointer, MAX_TECH_COUNT_ALLY);
   COIMenuSetInvisible(context->subMenu);
 
@@ -346,7 +350,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     context->techParticles[i]->_autoHandle = false;
     context->techParticles[i]->_visible = false;
     COISpriteSetSheetIndex(context->techParticles[i], 0, 0);
-    COIBoardAddDynamicSprite(board, context->techParticles[i]);
+    COIBoardAddDynamicSprite(board, context->techParticles[i], 0);
   }
 
   context->levelUpSplash = NULL;
@@ -556,7 +560,7 @@ bool _item(BattleContext* context) {
 					  0, 0,
 					  context->textType);
       COIStringSetVisible(string, true);
-      COIBoardAddString(context->board, string);
+      COIBoardAddString(context->board, string, 0);
       COIMenuAddString(context->subMenu, string, i);
     }
   }
@@ -585,7 +589,7 @@ bool _special(BattleContext* context) {
 					0, 0,
 					context->textType);
     COIStringSetVisible(string, true);
-    COIBoardAddString(context->board, string);
+    COIBoardAddString(context->board, string, 0);
     COIMenuAddString(context->subMenu, string, specials->values[i]);
   }
   
@@ -608,7 +612,7 @@ bool _tech(BattleContext* context) {
   for (int i = 0; i < tList->count; i++) {
     COIString* string = techNameAsCOIString(tList->techs[i], 0, 0, context->textType, tList->techs[i]->active);
     COIStringSetVisible(string, true);
-    COIBoardAddString(context->board, string);
+    COIBoardAddString(context->board, string, 0);
     COIMenuAddString(context->subMenu, string, tList->techs[i]->id);
   }
 
@@ -673,19 +677,19 @@ void _techSelection(BattleContext* context) {
   
   if (tech->active) {
     tech->active = false;
-    COIBoardRemoveString(context->board, tNames[selectedTech]);
+    COIBoardRemoveString(context->board, tNames[selectedTech], 0);
     COIStringDestroy(tNames[selectedTech]);
     tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
-    COIBoardAddString(context->board, tNames[selectedTech]);
+    COIBoardAddString(context->board, tNames[selectedTech], 0);
     COIMenuSetVisible(context->subMenu);
     _disableTechParticlesIfNecessary(context, context->turnIndex);
     COISoundPlay(COI_SOUND_SELECT);
   } else if (ally->tp >= tech->cost + activeTPCost) {
     tech->active = true;
-    COIBoardRemoveString(context->board, tNames[selectedTech]);
+    COIBoardRemoveString(context->board, tNames[selectedTech], 0);
     COIStringDestroy(tNames[selectedTech]);
     tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
-    COIBoardAddString(context->board, tNames[selectedTech]);
+    COIBoardAddString(context->board, tNames[selectedTech], 0);
     COIMenuSetVisible(context->subMenu);
     context->techParticles[context->turnIndex]->_visible = true;
     COISoundPlay(COI_SOUND_SELECT);
