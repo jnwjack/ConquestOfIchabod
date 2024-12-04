@@ -12,6 +12,35 @@ static void _resolutionToString(COIResolution resolution, char* buf, size_t bufS
   snprintf(buf, bufSize, "%ix%i", resolution.width, resolution.height);
 }
 
+static void CircleListInit(CircleList* circleList, LinkedList* baseList) {
+  circleList->list = baseList;
+  LinkedListResetCursor(baseList);
+  void* data = LinkedListNext(baseList);
+  int i = 0;
+  CircleListNode* prev = NULL;
+  CircleListNode* first = NULL;
+  while (data) {
+    circleList->current = malloc(sizeof(CircleListNode));
+    circleList->current->index = i++;
+    circleList->current->data = data;
+    if (prev) {
+      prev->next = circleList->current;
+      circleList->current->prev = prev;
+    } else {
+      first = circleList->current; 
+    }
+    prev = circleList->current;
+
+    data = LinkedListNext(baseList);
+  }
+
+  if (first) {
+    first->prev = circleList->current;
+    circleList->current->next = first;
+    circleList->current = first;
+  }
+}
+
 void COIPreferencesInit() {
   FILE* fp = fopen("src/engine/etc/preferences.dat", "r");
 
@@ -50,7 +79,7 @@ void COIPreferencesWriteToFile() {
   fclose(fp);
 }
 
-void MenuListComponentInit(MenuListComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y, LinkedList* list) {
+static void MenuListComponentInit(MenuListComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y, LinkedList* list) {
   component->label = COIStringCreate(label, x, 0, textType);
   COIBoardAddString(board, component->label, 1);
   COIStringSetVisible(component->label, false);
@@ -87,16 +116,38 @@ void MenuListComponentInit(MenuListComponent* component, COIBoard* board, COITex
 
     string = LinkedListNext(component->list);
   }
+
+  CircleListInit(&component->circleList, list);
 }
 
-void MenuListComponentSetActive(MenuListComponent* component, bool active) {
+static void MenuListComponentSetActive(MenuListComponent* component, bool active) {
   COIStringSetVisible(component->label, active);
   COIStringSetVisible(component->labelGray, !active);
   component->leftArrow->_visible = active;
   component->rightArrow->_visible = active;
 }
 
-void MenuVolumeComponentInit(MenuVolumeComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y) {
+static void MenuListComponentNext(MenuListComponent* component, int val) {
+  COIString* oldString = (COIString*)component->circleList.current->data;
+  if (val > 0) {
+    component->circleList.current = component->circleList.current->next;
+  } else {
+    component->circleList.current = component->circleList.current->prev;
+  }
+  
+  COIStringSetVisible(oldString, false);
+  COIStringSetVisible((COIString*)component->circleList.current->data, true);
+}
+
+static void MenuListComponentSetVisible(MenuListComponent* component, bool visible) {
+  COIStringSetVisible(component->label, visible);
+  COIStringSetVisible(component->labelGray, visible);
+  component->leftArrow->_visible = visible;
+  component->rightArrow->_visible = visible;
+  COIStringSetVisible((COIString*)component->circleList.current->data, visible);
+}
+
+static void MenuVolumeComponentInit(MenuVolumeComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y) {
   component->label = COIStringCreate(label, x, 0, textType);
   COIBoardAddString(board, component->label, 1);
   COIStringSetVisible(component->label, false);
@@ -131,17 +182,43 @@ void MenuVolumeComponentInit(MenuVolumeComponent* component, COIBoard* board, CO
   for (int i = 0; i < VOLUME_BARS_COUNT; i++) {
     height += heightIncrease;
     COIBoardAddRect(board, baseX + (widthPerBar + paddingBetweenBars) * i, bottomY - height, widthPerBar, height, 255, 255, 255, 255, true, 1);
+    component->rects[i] = &board->drawLayers[1].rects[board->drawLayers[1].numRects - 1];
   }
 }
 
-void MenuVolumeComponentSetActive(MenuVolumeComponent* component, bool active) {
+static void MenuVolumeComponentSetActive(MenuVolumeComponent* component, bool active) {
   COIStringSetVisible(component->label, active);
   COIStringSetVisible(component->labelGray, !active);
   component->leftArrow->_visible = active;
   component->rightArrow->_visible = active;
 }
 
-void MenuStringComponentInit(MenuStringComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y) {
+static void MenuVolumeComponentUpdateBarVisibility(MenuVolumeComponent* component, unsigned int val) {
+  unsigned int highestBar = val / (COI_SOUND_MAX_VOLUME / VOLUME_BARS_COUNT);
+  for (unsigned int i = 0; i < VOLUME_BARS_COUNT; i++) {
+    if (i < highestBar) {
+      component->rects[i]->r = 255;
+      component->rects[i]->g = 255;
+      component->rects[i]->b = 255;
+    } else {
+      component->rects[i]->r = 120;
+      component->rects[i]->g = 120;
+      component->rects[i]->b = 120;
+    }
+  }
+}
+
+static void MenuVolumeComponentSetVisible(MenuVolumeComponent* component, bool visible) {
+  COIStringSetVisible(component->label, visible);
+  COIStringSetVisible(component->labelGray, visible);
+  component->leftArrow->_visible = visible;
+  component->rightArrow->_visible = visible;
+  for (unsigned int i = 0; i < VOLUME_BARS_COUNT; i++) {
+    component->rects[i]->visible = visible;
+  }
+}
+
+static void MenuStringComponentInit(MenuStringComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y) {
   component->label = COIStringCreate(label, x, y, textType);
   COIBoardAddString(board, component->label, 1);
   COIStringSetVisible(component->label, false);
@@ -150,9 +227,18 @@ void MenuStringComponentInit(MenuStringComponent* component, COIBoard* board, CO
   COIStringSetVisible(component->labelGray, true);
 }
 
-void MenuStringComponentSetActive(MenuStringComponent* component, bool active) {
+static void MenuStringComponentSetActive(MenuStringComponent* component, bool active) {
   COIStringSetVisible(component->label, active);
   COIStringSetVisible(component->labelGray, !active);
+}
+
+static bool MenuStringComponentIsActive(MenuStringComponent* component) {
+  return component->label->visible;
+}
+
+static void MenuStringComponentSetVisible(MenuStringComponent* component, bool visible) {
+  COIStringSetVisible(component->label, visible);
+  COIStringSetVisible(component->labelGray, visible);
 }
 
 void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board) {
@@ -193,6 +279,9 @@ void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board) {
 
   menu->selectedComponent = COMPONENT_INDEX_RESOLUTION;
   MenuListComponentSetActive(&menu->resolutionComponent, true);
+
+  menu->oldEffectValue = GLOBAL_PREFERENCES.effectVolume;
+  menu->oldMusicValue = GLOBAL_PREFERENCES.musicVolume;
 }
 
 static void _setComponentActive(COIPreferencesMenu* menu, unsigned int componentIndex, bool active) {
@@ -218,17 +307,96 @@ static void _setComponentActive(COIPreferencesMenu* menu, unsigned int component
   }
 } 
 
+static void _horizontalInputToComponent(COIPreferencesMenu* menu, unsigned int componentIndex, int val) {
+  switch (componentIndex) {
+  case COMPONENT_INDEX_RESOLUTION:
+    MenuListComponentNext(&menu->resolutionComponent, val);
+    break;
+  case COMPONENT_INDEX_FULLSCREEN:
+    MenuListComponentNext(&menu->fullscreenComponent, val);
+    break;
+  case COMPONENT_INDEX_MUSIC:
+    if (!(GLOBAL_PREFERENCES.musicVolume == 0 && val < 0) && !(GLOBAL_PREFERENCES.musicVolume == COI_SOUND_MAX_VOLUME && val > 0)) {
+      GLOBAL_PREFERENCES.musicVolume += (val * (COI_SOUND_MAX_VOLUME / VOLUME_BARS_COUNT));
+    }
+    MenuVolumeComponentUpdateBarVisibility(&menu->musicComponent, GLOBAL_PREFERENCES.musicVolume);
+    break;
+  case COMPONENT_INDEX_EFFECT:
+    if (!(GLOBAL_PREFERENCES.effectVolume == 0 && val < 0) && !(GLOBAL_PREFERENCES.effectVolume == COI_SOUND_MAX_VOLUME && val > 0)) {
+      GLOBAL_PREFERENCES.effectVolume += (val * (COI_SOUND_MAX_VOLUME / VOLUME_BARS_COUNT));
+    }
+    MenuVolumeComponentUpdateBarVisibility(&menu->effectComponent, GLOBAL_PREFERENCES.effectVolume);
+    break;
+  case COMPONENT_INDEX_CONFIRM:
+    MenuStringComponentSetActive(&menu->cancelComponent, !menu->cancelComponent.label->visible);
+    MenuStringComponentSetActive(&menu->applyComponent, !menu->applyComponent.label->visible);
+    break;
+  default:
+    printf("Invalid preferences menu component.\n");
+  }
+}
+
+void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible) {
+  menu->frame->_visible = visible;
+  MenuListComponentSetVisible(&menu->resolutionComponent, visible);
+  MenuListComponentSetVisible(&menu->fullscreenComponent, visible);
+  MenuVolumeComponentSetVisible(&menu->musicComponent, visible);
+  MenuVolumeComponentSetVisible(&menu->effectComponent, visible);
+  MenuStringComponentSetVisible(&menu->cancelComponent, visible);
+  MenuStringComponentSetVisible(&menu->applyComponent, visible);
+
+  if (visible) {
+    menu->oldEffectValue = GLOBAL_PREFERENCES.effectVolume;
+    menu->oldMusicValue = GLOBAL_PREFERENCES.musicVolume;
+    MenuListComponentSetActive(&menu->resolutionComponent, true);
+    MenuListComponentSetActive(&menu->fullscreenComponent, false);
+    MenuVolumeComponentSetActive(&menu->musicComponent, false);
+    MenuVolumeComponentSetActive(&menu->effectComponent, false);
+    MenuVolumeComponentUpdateBarVisibility(&menu->musicComponent, GLOBAL_PREFERENCES.musicVolume);
+    MenuVolumeComponentUpdateBarVisibility(&menu->effectComponent, GLOBAL_PREFERENCES.effectVolume);
+    MenuStringComponentSetActive(&menu->cancelComponent, false);
+    MenuStringComponentSetActive(&menu->applyComponent, false);
+    menu->selectedComponent = COMPONENT_INDEX_RESOLUTION;
+  }
+}
+
 void COIPreferencesMenuProcessInput(COIPreferencesMenu* menu, int direction) {
   if (direction == MOVING_UP) {
+    COISoundPlay(COI_SOUND_BLIP);
     unsigned int oldIndex = menu->selectedComponent;
     menu->selectedComponent = menu->selectedComponent == 0 ? COMPONENT_INDEX_CONFIRM : (menu->selectedComponent - 1);
     _setComponentActive(menu, oldIndex, false);
     _setComponentActive(menu, menu->selectedComponent, true);
   } else if (direction == MOVING_DOWN) {
+    COISoundPlay(COI_SOUND_BLIP);
     unsigned int oldIndex = menu->selectedComponent;
     menu->selectedComponent = (menu->selectedComponent + 1) % 5;
     _setComponentActive(menu, oldIndex, false);
     _setComponentActive(menu, menu->selectedComponent, true);
+  } else if (direction == MOVING_LEFT || direction == MOVING_RIGHT) {
+    COISoundPlay(COI_SOUND_BLIP);
+    _horizontalInputToComponent(menu, menu->selectedComponent, direction == MOVING_LEFT ? -1 : 1);
+  } else if (direction == MOVING_SELECT && menu->selectedComponent == COMPONENT_INDEX_CONFIRM) {
+    COISoundPlay(COI_SOUND_SELECT);
+    if (MenuStringComponentIsActive(&menu->applyComponent)) {
+      // Graphics settings
+      GLOBAL_PREFERENCES.fullscreen = menu->fullscreenComponent.circleList.current->index == 1;
+      GLOBAL_PREFERENCES.resolution = resolutions[menu->resolutionComponent.circleList.current->index];
+      // Sound settings are already applied
+
+      COIPreferencesWriteToFile();
+      COIWindowReloadPreferences(COI_GLOBAL_WINDOW);
+    } else {
+      GLOBAL_PREFERENCES.musicVolume = menu->oldMusicValue;
+      GLOBAL_PREFERENCES.effectVolume = menu->oldEffectValue;
+    }
+    COIPreferencesMenuSetVisible(menu, false);
+  } else if (direction == MOVING_DELETE || direction == MOVING_PAUSE) {
+    COISoundPlay(COI_SOUND_INVALID);
+    GLOBAL_PREFERENCES.musicVolume = menu->oldMusicValue;
+    GLOBAL_PREFERENCES.effectVolume = menu->oldEffectValue;
+
+    COIPreferencesMenuSetVisible(menu, false);
   }
 }
 

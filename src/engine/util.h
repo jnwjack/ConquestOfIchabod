@@ -35,7 +35,6 @@ typedef struct LinkedList {
   LinkedListNode* cursor; // Used when traversing list
 } LinkedList;
 
-
 LinkedList* LinkedListCreate();
 void LinkedListAdd(LinkedList* list, void* data);
 void LinkedListRemove(LinkedList* list, void* data);

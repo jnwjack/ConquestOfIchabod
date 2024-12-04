@@ -239,7 +239,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   // Required for determining what to do after battle ends
   context->outside = outsideBoard;
   context->outsideLoop = outsideLoop;
-  context->window = window;
 
   if (terrain == TT_TENTACLE) {
     context->playerOutsideX = pInfo->party[0]->sprite->_x - 32;

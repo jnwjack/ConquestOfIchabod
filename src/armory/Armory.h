@@ -18,7 +18,6 @@ typedef struct ArmoryItem {
 // Set of indices to texts in file that indicate the armory's stock.
 // there should be a armory object that holds current stock, prices, mappings to text object, etc.
 typedef struct ArmoryContext {
-  COIWindow* window;
   COIBoard* outsideBoard; // Board to load when leaving shop
   COIMenu* menu;
   // may want to wrap submenu in a "buymenu" object or something

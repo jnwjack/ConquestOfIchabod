@@ -24,6 +24,8 @@ typedef struct COIWindow {
   COIBoard* _currentBoard;
   int _width;
   int _height;
+  float _factorW;
+  float _factorH;
   COILoop _loop;
   void* _loopContext;
   bool shouldQuit;
@@ -31,6 +33,7 @@ typedef struct COIWindow {
 }COIWindow;
 
 COIWindow* COIWindowCreate();
+void COIWindowReloadPreferences(COIWindow* window);
 void COIWindowDestroy(COIWindow* window);
 
 void COIWindowLoop(void* window, bool repeat);

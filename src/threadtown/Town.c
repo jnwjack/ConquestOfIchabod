@@ -200,7 +200,6 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
   
   COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
   TownContext* context = malloc(sizeof(TownContext));
-  context->window = window;
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
   context->terrain = TT_SAFE;

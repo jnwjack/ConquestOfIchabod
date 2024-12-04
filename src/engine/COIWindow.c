@@ -15,6 +15,8 @@ COIWindow* COIWindowCreate() {
   COIWindow* window = malloc(sizeof(COIWindow));
   window->_width = (int)GLOBAL_PREFERENCES.resolution.width;
   window->_height = (int)GLOBAL_PREFERENCES.resolution.height;
+  window->_factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
+  window->_factorW = (float)window->_width / WINDOW_BASE_WIDTH;
   // window->_width = 640;
   // window->_height = 480;
   window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
@@ -24,11 +26,22 @@ COIWindow* COIWindowCreate() {
   window->shouldQuit = false;
   COITransitionInit(&window->transition, COI_TRANSITION_NONE, window);
 
-  // int res = SDL_SetWindowFullscreen(window->_screen, 0);
   SDL_ShowCursor(false);
   int res = SDL_SetWindowFullscreen(window->_screen, GLOBAL_PREFERENCES.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
-  printf("RESULT: %i\n", res);
   return window;
+}
+
+void COIWindowReloadPreferences(COIWindow* window) {
+  // SDL_DestroyRenderer(window->_renderer);
+  // SDL_DestroyWindow(window->_screen);
+  window->_width = (int)GLOBAL_PREFERENCES.resolution.width;
+  window->_height = (int)GLOBAL_PREFERENCES.resolution.height;
+  window->_factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
+  window->_factorW = (float)window->_width / WINDOW_BASE_WIDTH;
+  // window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
+  // window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
+  SDL_SetWindowSize(window->_screen, window->_width, window->_height);
+  int res = SDL_SetWindowFullscreen(window->_screen, GLOBAL_PREFERENCES.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
 }
 
 void COIWindowDestroy(COIWindow* window) {
@@ -50,9 +63,6 @@ void COIWindowLoop(void* window_v, bool repeat) {
 
   SDL_Rect drawRect;
 
-  float factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
-  float factorW = (float)window->_width / WINDOW_BASE_WIDTH;
-
   // printf("H: %f\n", factorH);
 
   while (!window->shouldQuit){
@@ -68,8 +78,8 @@ void COIWindowLoop(void* window_v, bool repeat) {
       case SDL_WINDOWEVENT:
         if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
           SDL_GetWindowSize(window->_screen, &window->_width, &window->_height);
-          factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
-          factorW = (float)window->_width / WINDOW_BASE_WIDTH;
+          window->_factorH = (float)window->_height / WINDOW_BASE_HEIGHT;
+          window->_factorW = (float)window->_width / WINDOW_BASE_WIDTH;
         }
         break;
       default:
@@ -99,7 +109,7 @@ void COIWindowLoop(void* window_v, bool repeat) {
             sprite = window->_currentBoard->spriteGrid[index];
             COIBoardAdjustSprite(window->_currentBoard, sprite);
             if (sprite->_autoHandle) {
-              scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+              scaleRect(window->_factorW, window->_factorH, sprite->_drawRect, &drawRect);
               SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
               // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
             }
@@ -111,7 +121,7 @@ void COIWindowLoop(void* window_v, bool repeat) {
       for (int i = 0; i < window->_currentBoard->perSpriteCount; i++) {
 	      sprite = window->_currentBoard->persistentSprites[i];
         if (sprite->_visible) {
-          scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+          scaleRect(window->_factorW, window->_factorH, sprite->_drawRect, &drawRect);
           // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
           SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
         }
@@ -124,7 +134,7 @@ void COIWindowLoop(void* window_v, bool repeat) {
         sprite = (COISprite*)LinkedListNext(layer->dynamicSprites);
         while (sprite != NULL) {
           if (sprite->_visible) {
-            scaleRect(factorW, factorH, sprite->_drawRect, &drawRect);
+            scaleRect(window->_factorW, window->_factorH, sprite->_drawRect, &drawRect);
             SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
             // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
           }
@@ -135,8 +145,9 @@ void COIWindowLoop(void* window_v, bool repeat) {
         for (int i = 0; i < layer->numRects; i++) {
           COIRect rect = layer->rects[i];
           if (rect.visible) {
+            scaleRect(window->_factorW, window->_factorH, &rect.sdlRect, &drawRect);
             SDL_SetRenderDrawColor(window->_renderer, rect.r, rect.g, rect.b, rect.a);
-            SDL_RenderFillRect(window->_renderer, &rect.sdlRect);
+            SDL_RenderFillRect(window->_renderer, &drawRect);
           }
         }
 
@@ -144,7 +155,7 @@ void COIWindowLoop(void* window_v, bool repeat) {
         COIString** strings = layer->strings;
         for (int i = 0; i < layer->stringCount; i++) {
           if (strings[i]->visible) {
-            COIStringDraw(strings[i], window->_renderer, &drawRect, factorW, factorH);
+            COIStringDraw(strings[i], window->_renderer, &drawRect, window->_factorW, window->_factorH);
           }
         }
       }

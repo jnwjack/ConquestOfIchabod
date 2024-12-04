@@ -18,7 +18,6 @@
 
 typedef struct TownContext {
   PlayerInfo* pInfo;
-  COIWindow* window;
   int direction;
   Terrain terrain;
   bool willEnterBattle;

@@ -78,7 +78,6 @@ void COIBoardUpdateSpriteVisibility(COIBoard* board);
 void COIBoardMoveSprite(COIBoard* board, COISprite* sprite, int x, int y);
 void COIBoardQueueDraw(COIBoard* board); // Request draw for this board
 void COIBoardSetContext(COIBoard* board, void* context);
-// void COIBoardSetStrings(COIBoard* board, COIString** strings, int count);
 bool COIBoardAddString(COIBoard* board, COIString* string, unsigned int layer);
 bool COIBoardAddSprite(COIBoard* board, COISprite* sprite);
 void COIBoardRemoveString(COIBoard* board, COIString* string, unsigned int layer);

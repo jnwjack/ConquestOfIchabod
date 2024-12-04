@@ -5,18 +5,22 @@ static int slideAssetIDs[TITLE_NUM_INTRO_SLIDES] = { 51, 52, 53, 54, 55, 55 };
 static bool shouldSkipIntro = true;
 
 void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
-  strings[TITLE_STRING_NEW_GAME] = COIStringCreate("New", 330, 170, textType);
-  strings[TITLE_STRING_CONTINUE_GAME] = COIStringCreate("Continue", 450, 170, textType);
-  strings[TITLE_STRING_QUIT_GAME] = COIStringCreate("Quit", 600, 170, textType);
+  strings[TITLE_STRING_NEW_GAME] = COIStringCreate("New", 290, 150, textType);
+  strings[TITLE_STRING_CONTINUE_GAME] = COIStringCreate("Continue", 400, 150, textType);
+  strings[TITLE_STRING_QUIT_GAME] = COIStringCreate("Quit", 470, 150, textType);
+  strings[TITLE_STRING_OPTIONS] = COIStringCreate("Options", 540, 150, textType);
   for (int i = 0; i < TITLE_NUM_OPTIONS; i++) {
     COIBoardAddString(board, strings[i], 0);
   }
   COIStringPositionRightOfString(strings[TITLE_STRING_CONTINUE_GAME],
 				 strings[TITLE_STRING_NEW_GAME],
-				 30);
+				 25);
   COIStringPositionRightOfString(strings[TITLE_STRING_QUIT_GAME],
 				 strings[TITLE_STRING_CONTINUE_GAME],
-				 30);
+				 25);
+  COIStringPositionRightOfString(strings[TITLE_STRING_OPTIONS],
+        strings[TITLE_STRING_QUIT_GAME],
+        25);
 }
 
 void _setStringSelected(TitleContext* context, int index, bool selected) {
@@ -54,9 +58,7 @@ COIBoard* titleCreateBoard() {
 						COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   context->drawing->_autoHandle = false;
   context->drawing->_visible = true;
-  printf("about to add sprite\n");
   COIBoardAddDynamicSprite(board, context->drawing, 0);
-  printf("added sprite\n");
   // Slides
   for (int i = 0; i < TITLE_NUM_INTRO_SLIDES; i++) {
     context->slides[i] = COISpriteCreateFromAssetID(0, 0, 640, 480,
@@ -78,8 +80,8 @@ COIBoard* titleCreateBoard() {
   context->name->_autoHandle = false;
   context->name->_visible = true;
   
-  COITextType* white = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COITextType* gray = COITextTypeCreate(16, 120, 120, 120, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COITextType* white = COITextTypeCreate(12, 255, 255, 255, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COITextType* gray = COITextTypeCreate(12, 120, 120, 120, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
   _makeStrings(board, context->strings, white);
   _makeStrings(board, context->grayStrings, gray);
@@ -87,6 +89,7 @@ COIBoard* titleCreateBoard() {
   _setStringSelected(context, TITLE_STRING_NEW_GAME, true);
   _setStringSelected(context, TITLE_STRING_CONTINUE_GAME, false);
   _setStringSelected(context, TITLE_STRING_QUIT_GAME, false);
+  _setStringSelected(context, TITLE_STRING_OPTIONS, false);
   
   COITextTypeDestroy(white);
   COITextTypeDestroy(gray);
@@ -104,10 +107,12 @@ COIBoard* titleCreateBoard() {
   ClassSelectorSetVisible(&context->cs, false);
 
   COIPreferencesMenuInit(&context->prefMenu, board);  
+  COIPreferencesMenuSetVisible(&context->prefMenu, false);
 
   COIBoardSetContext(board, (void*)context);
 
-  printf("done with board\n");
+  COISoundPlay(COI_SOUND_TITLE);
+
   return board;
 }
 
@@ -297,6 +302,10 @@ void _select(TitleContext* context) {
       COISoundPlay(COI_SOUND_SELECT);
       COI_GLOBAL_WINDOW->shouldQuit = true;
       break;
+    case TITLE_STRING_OPTIONS:
+      COISoundPlay(COI_SOUND_SELECT);
+      COIPreferencesMenuSetVisible(&context->prefMenu, true);
+      break;
     default:
       printf("Error in title selection.\n");
     }
@@ -365,11 +374,11 @@ void _processInputMain(TitleContext* context, int direction) {
   switch (direction) {
   case MOVING_LEFT:
     COISoundPlay(COI_SOUND_BLIP);
-    newIndex = MAX(0, context->selectedStringIndex - 1);
+    newIndex = MAX(TITLE_STRING_NEW_GAME, context->selectedStringIndex - 1);
     break;
   case MOVING_RIGHT:
     COISoundPlay(COI_SOUND_BLIP);
-    newIndex = MIN(2, context->selectedStringIndex + 1);
+    newIndex = MIN(TITLE_STRING_OPTIONS, context->selectedStringIndex + 1);
     break;
   case MOVING_SELECT:
     _select(context);
@@ -392,8 +401,10 @@ void titleProcessInput(TitleContext* context, int direction) {
     COIBoardQueueDraw(context->board);
   } else if (context->creatingCharacter) {
     _processInputCharacterCreation(context, direction);
+    COIBoardQueueDraw(context->board);
   } else {
     _processInputMain(context, direction);
+    COIBoardQueueDraw(context->board);
   }
 }
 

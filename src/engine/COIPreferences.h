@@ -12,6 +12,19 @@
 #define COMPONENT_INDEX_EFFECT 3
 #define COMPONENT_INDEX_CONFIRM 4
 
+struct CircleListNode;
+typedef struct CircleListNode {
+  void* data;
+  struct CircleListNode* prev;
+  struct CircleListNode* next;
+  int index;
+} CircleListNode;
+
+typedef struct CircleList {
+   CircleListNode* current;
+   LinkedList* list;
+}CircleList;
+
 typedef struct COIResolution {
   unsigned int width;
   unsigned int height;
@@ -32,11 +45,9 @@ typedef struct MenuListComponent {
   COIString* labelGray;
   COISprite* leftArrow;
   COISprite* rightArrow;
+  CircleList circleList;
   LinkedList* list;
 } MenuListComponent;
-
-void MenuListComponentInit(MenuListComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y, LinkedList* list);
-void MenuListComponentSetActive(MenuListComponent* component, bool active);
 
 typedef struct MenuVolumeComponent {
   COIString* label;
@@ -46,17 +57,10 @@ typedef struct MenuVolumeComponent {
   COIRect *rects[VOLUME_BARS_COUNT];
 } MenuVolumeComponent;
 
-void MenuVolumeComponentInit(MenuVolumeComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y);
-void MenuVolumeComponentSetActive(MenuVolumeComponent* component, bool active);
-
 typedef struct MenuStringComponent {
   COIString* label;
   COIString* labelGray;
 } MenuStringComponent;
-
-void MenuStringComponentInit(MenuStringComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y);
-void MenuStringComponentSetActive(MenuStringComponent* component, bool active);
-
 
 typedef struct COIPreferencesMenu {
   COISprite* frame;
@@ -67,9 +71,13 @@ typedef struct COIPreferencesMenu {
   MenuStringComponent cancelComponent;
   MenuStringComponent applyComponent;
   unsigned int selectedComponent;
+
+  unsigned int oldMusicValue;
+  unsigned int oldEffectValue;
 } COIPreferencesMenu;
 
 void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board);
+void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible);
 void COIPreferencesMenuProcessInput(COIPreferencesMenu* menu, int direction);
 
 extern COIPreferences GLOBAL_PREFERENCES;

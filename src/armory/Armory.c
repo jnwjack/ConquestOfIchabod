@@ -348,7 +348,6 @@ ArmoryContext* _armoryCreateContext(COIBoard* board,
   armoryContext->outsideBoard = outsideBoard;
   armoryContext->currentMenu = menu;
   
-  armoryContext->window = window;
 
   return armoryContext;
 }

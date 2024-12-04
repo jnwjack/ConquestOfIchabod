@@ -134,7 +134,6 @@ typedef struct BattleContext {
   // Data for next board after battle completes
   COIBoard* outside;
   COILoop outsideLoop;
-  COIWindow* window;
   int playerOutsideX;
   int playerOutsideY;
 } BattleContext;

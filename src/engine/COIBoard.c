@@ -302,22 +302,6 @@ void COIBoardRemoveString(COIBoard* board, COIString* string, unsigned int layer
   }
 }
 
-// Should get rid of this. For now, this just adds strings to layer 0.
-// void COIBoardSetStrings(COIBoard* board, COIString** strings, int count) {
-//   /*if (board->strings != NULL) {
-//     free(board->strings);
-//     }*/
-
-//   board->stringCount = count;
-//   //board->strings = malloc(sizeof(COIString*) * board->stringCount);
-//   for (int i = 0; i < board->stringCount; i++) {
-//     board->strings[i] = strings[i];
-//   }
-  
-//   /*  board->strings = strings;
-//       board->stringCount = count;*/
-// }
-
 void COIBoardAddDynamicSprite(COIBoard* board, COISprite* sprite, unsigned int layer) {
   if (layer < COIBOARD_NUM_DRAW_LAYERS) {
     LinkedListAdd(board->drawLayers[layer].dynamicSprites, (void*)sprite);
