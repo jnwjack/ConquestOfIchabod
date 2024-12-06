@@ -59,9 +59,9 @@ COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType, 
   char name[MAX_NAME_SIZE];
   // Include asterisk at end? Used when indicating a tech is active
   if (asterisk) {
-    snprintf(name, MAX_NAME_SIZE, "%s *", techNameFromID(tech->id));
+    snprintf(name, MAX_NAME_SIZE, "%s-%i*", techNameFromID(tech->id), tech->cost);
   } else {
-    snprintf(name, MAX_NAME_SIZE, "%s", techNameFromID(tech->id));
+    snprintf(name, MAX_NAME_SIZE, "%s-%i", techNameFromID(tech->id), tech->cost);
   }
   
   return COIStringCreate(name, x, y, textType);

@@ -313,14 +313,14 @@ static COIMenu* _makeTopRightMenu(COIBoard* board) {
 
 static void _makeBaseMenu(PauseOverlay* overlay, COITextType* textType, COIBoard* board) {
   overlay->baseMenu = _makeTopRightMenu(board);
-  char* baseMenuOptions[] = { "Items", "Weapons", "Armor", "Quit Game" };
-  COIString* strings[4];
-  for (int i = 0; i < 4; i++) {
+  char* baseMenuOptions[] = { "Items", "Weapons", "Armor", "Options", "Quit Game" };
+  COIString* strings[5];
+  for (int i = 0; i < 5; i++) {
     char* option = baseMenuOptions[i];
     strings[i] = COIStringCreate(option, 0, 0, textType);
     COIBoardAddString(board, strings[i], 0);
   }
-  COIMenuSetTexts(overlay->baseMenu, strings, 4);
+  COIMenuSetTexts(overlay->baseMenu, strings, 5);
 }
 
 static void _makeItemsMenu(PauseOverlay* overlay, PlayerInfo* pInfo, COITextType* textType, COIBoard* board) {
@@ -566,6 +566,9 @@ static bool _baseMenuSelect(PauseOverlay* overlay) {
       validSelection = true;
     }
     break;
+  case PAUSE_OVERLAY_OPTIONS:
+    COIPreferencesMenuSetVisible(&overlay->prefMenu, true);
+    break;
   case PAUSE_OVERLAY_QUIT:
     overlay->topRightMenu = overlay->quitMenu;
     validSelection = true;
@@ -758,6 +761,8 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
   overlay->tpChange = NULL;
   overlay->goldLabel = NULL;
   overlay->gold = NULL;
+  COIPreferencesMenuInit(&overlay->prefMenu, board);
+  COIPreferencesMenuSetVisible(&overlay->prefMenu, false);
  
 
   // Used to show how an item will affect the player's stats.
@@ -787,6 +792,11 @@ void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox) {
   // Used to determine what sound we play on selection
   bool validSelection = true;
 
+  if (overlay->prefMenu.frame->_visible) {
+    COIPreferencesMenuProcessInput(&overlay->prefMenu, MOVING_SELECT);
+    return;
+  }
+  
   if (overlay->topRightMenu == overlay->baseMenu) {
     validSelection = _baseMenuSelect(overlay);
   } else if (overlay->topRightMenu == overlay->itemsMenu ||
@@ -986,6 +996,11 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
 
 
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
+  if (overlay->prefMenu.frame->_visible) {
+    COIPreferencesMenuProcessInput(&overlay->prefMenu, event);
+    return;
+  } 
+
   if (event == MOVING_DELETE) {
     PauseOverlayBack(overlay);
   } else {
@@ -999,7 +1014,6 @@ void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
     if ((overlay->topRightMenu == overlay->weaponsMenu ||
 	 overlay->topRightMenu == overlay->armorMenu) &&
 	(valueBefore != valueAfter)) {
-      printf("updating stat changes\n");
       _updateStatChanges(overlay, valueAfter);
     }
   }

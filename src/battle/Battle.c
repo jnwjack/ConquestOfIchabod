@@ -583,8 +583,10 @@ bool _special(BattleContext* context) {
 
   // JNW: Using new menu functions. Should port the _tech function similarly
   IntList* specials = &context->allies[context->turnIndex]->specials;
+  char buf[MAX_STRING_SIZE];
   for (int i = 0; i < specials->length; i++) {
-    COIString* string = COIStringCreate(specialName(specials->values[i]),
+    snprintf(buf, MAX_STRING_SIZE, "%s-%i", specialName(specials->values[i]), specialCost(specials->values[i]));
+    COIString* string = COIStringCreate(buf,
 					0, 0,
 					context->textType);
     COIStringSetVisible(string, true);

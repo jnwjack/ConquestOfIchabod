@@ -63,16 +63,16 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_SKELETON:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 29, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 13, 10, 5, 25, 0, 0);
+    return actorCreate(actorType, sprite, 39, 30, 15, 25, 0, 0);
   case ACTOR_MEAT_FLAYER:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 94, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 25, 17, 12, 25, 0, 0);
+    return actorCreate(actorType, sprite, 75, 51, 36, 25, 0, 0);
   case ACTOR_TENTACLE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 18, 10, 8, 45, 10, 30);
+      Actor* actor = actorCreate(actorType, sprite, 54, 30, 24, 45, 10, 30);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       IntListAdd(&actor->specials, SPECIAL_ID_REINFORCE);
@@ -93,19 +93,19 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 31, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 9, 8, 7, 15, 0, 5);
+      Actor* actor = actorCreate(actorType, sprite, 27, 24, 21, 15, 0, 5);
       IntListAdd(&actor->specials, SPECIAL_ID_HOWL);
       return actor;
     }
   case ACTOR_FEARWOLF:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 93, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 15, 15, 12, 32, 0, 5);
+    return actorCreate(actorType, sprite, 45, 45, 36, 32, 0, 5);
   case ACTOR_WIRE_MOTHER:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 28, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 5, 10, 2, 25, 0, 75);
+      Actor* actor = actorCreate(actorType, sprite, 15, 30, 6, 25, 0, 75);
       IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
@@ -115,7 +115,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 95, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 10, 18, 7, 30, 0, 75);
+      Actor* actor = actorCreate(actorType, sprite, 30, 54, 21, 30, 0, 75);
       IntListAdd(&actor->specials, SPECIAL_ID_MINOR_HEAL);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
@@ -125,7 +125,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 27, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 7, 7, 15, 20, 0, 75);
+      Actor* actor = actorCreate(actorType, sprite, 21, 21, 45, 20, 0, 75);
       // IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
       IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
       IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
@@ -135,7 +135,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 96, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 14, 15, 25, 27, 0, 75);
+      Actor* actor = actorCreate(actorType, sprite, 42, 45, 75, 27, 0, 75);
       IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
       // IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
       IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
@@ -155,7 +155,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
 
 Actor* actorCreatePlayer(COISprite* sprite) {
   // Process for random stat generation, maybe specific for each class?
-  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 8, 10, 7, 50, 25, 15);
+  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 24, 30, 21, 50, 25, 15);
   
   COISpriteSetSheetIndex(actor->sprite, 1, 2);
     

@@ -58,6 +58,7 @@ void COISoundPlay(COISoundID sound) {
     Mix_PlayChannel(-1, select_sound, 0);
     break;
   case COI_SOUND_CELEBRATION:
+    Mix_HaltMusic();
     Mix_PlayChannel(-1, celebration, 0);
     break;
   case COI_SOUND_INVALID:
@@ -67,6 +68,7 @@ void COISoundPlay(COISoundID sound) {
     Mix_PlayChannel(-1, hit, 0);
     break;
   case COI_SOUND_DEFEAT:
+    Mix_HaltMusic();
     Mix_PlayChannel(-1, defeat, 0);
     break;
   case COI_SOUND_THREADTOWN:

@@ -127,6 +127,9 @@ void COIWindowLoop(void* window_v, bool repeat) {
         }
       }
 
+      // Save current R, G, B, and A values
+      Uint8 r, g, b, a;
+      SDL_GetRenderDrawColor(window->_renderer, &r, &g, &b, &a);
       for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
         Layer* layer = &window->_currentBoard->drawLayers[i];
         // Draw dynamic sprites
@@ -136,7 +139,6 @@ void COIWindowLoop(void* window_v, bool repeat) {
           if (sprite->_visible) {
             scaleRect(window->_factorW, window->_factorH, sprite->_drawRect, &drawRect);
             SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, &drawRect);
-            // SDL_RenderCopy(window->_renderer, sprite->_texture, sprite->_srcRect, sprite->_drawRect);
           }
           sprite = (COISprite*)LinkedListNext(layer->dynamicSprites);
         }
@@ -159,6 +161,8 @@ void COIWindowLoop(void* window_v, bool repeat) {
           }
         }
       }
+      // Restore draw color so the background stays the same
+      SDL_SetRenderDrawColor(window->_renderer, r, g, b, a);
 
       if (!window->transition.complete) {
 	      window->transition.update(&window->transition, window);

@@ -147,6 +147,14 @@ static void MenuListComponentSetVisible(MenuListComponent* component, bool visib
   COIStringSetVisible((COIString*)component->circleList.current->data, visible);
 }
 
+static void MenuListComponentSetCurrentString(MenuListComponent* component, int index) {
+  COIStringSetVisible((COIString*)component->circleList.current->data, false);
+  while (component->circleList.current->index != index) {
+    component->circleList.current = component->circleList.current->next;
+  }
+  COIStringSetVisible((COIString*)component->circleList.current->data, true);
+}
+
 static void MenuVolumeComponentInit(MenuVolumeComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y) {
   component->label = COIStringCreate(label, x, 0, textType);
   COIBoardAddString(board, component->label, 1);
@@ -264,10 +272,23 @@ void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board) {
   }
   MenuListComponentInit(&menu->resolutionComponent, board, textType, textTypeGray, "Resolution", menu->frame->_x + padding, menu->frame->_y + padding, list);
 
+  for (int i = 0; i < RESOLUTION_COUNT; i++) {
+    if (resolutions[i].width == GLOBAL_PREFERENCES.resolution.width && resolutions[i].height == GLOBAL_PREFERENCES.resolution.height) {
+      MenuListComponentSetCurrentString(&menu->resolutionComponent, i);
+      break;
+    }
+  }
+
   list = LinkedListCreate();
   LinkedListAdd(list, COIStringCreate("Off", 0, 0, textType));
   LinkedListAdd(list, COIStringCreate("On", 0, 0, textType));
   MenuListComponentInit(&menu->fullscreenComponent, board, textType, textTypeGray, "Fullscreen", menu->frame->_x + padding, menu->frame->_y + padding + ySpaceBetweenComponents, list);
+  if (GLOBAL_PREFERENCES.fullscreen) {
+    MenuListComponentSetCurrentString(&menu->fullscreenComponent, 1);
+  } else {
+    MenuListComponentSetCurrentString(&menu->fullscreenComponent, 0);
+  }
+
 
   MenuVolumeComponentInit(&menu->musicComponent, board, textType, textTypeGray, "Music", menu->frame->_x + padding, menu->frame->_y + padding + (ySpaceBetweenComponents * 2));
 
@@ -357,6 +378,19 @@ void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible) {
     MenuStringComponentSetActive(&menu->cancelComponent, false);
     MenuStringComponentSetActive(&menu->applyComponent, false);
     menu->selectedComponent = COMPONENT_INDEX_RESOLUTION;
+    for (int i = 0; i < RESOLUTION_COUNT; i++) {
+      if (resolutions[i].width == GLOBAL_PREFERENCES.resolution.width && resolutions[i].height == GLOBAL_PREFERENCES.resolution.height) {
+        printf("BLAH\n");
+        MenuListComponentSetCurrentString(&menu->resolutionComponent, i);
+        break;
+      }
+    }
+
+    if (GLOBAL_PREFERENCES.fullscreen) {
+      MenuListComponentSetCurrentString(&menu->fullscreenComponent, 1);
+    } else {
+      MenuListComponentSetCurrentString(&menu->fullscreenComponent, 0);
+    }
   }
 }
 

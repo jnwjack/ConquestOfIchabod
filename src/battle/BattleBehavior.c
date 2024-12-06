@@ -453,13 +453,15 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   switch (action->type) {
   case ATTACK:
     printf("ATK mod: %f\n", action->attackModifier);
-    damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
+    // damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
+    int damageBase;
     // Trying new damage calculation
     if (aAtk >= tDef) {
       damageBase = aAtk * 2 - tDef;
     } else {
       damageBase = (aAtk * aAtk) / tDef;
     }
+    damageBase /= 3;
     damage = _randomDamage(damageBase);
     bool successfulHit = generateRandomBoolWeighted(hitRate);
     if (successfulHit && _critical()) {

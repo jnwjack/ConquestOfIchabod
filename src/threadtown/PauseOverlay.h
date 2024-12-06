@@ -7,7 +7,8 @@
 #define PAUSE_OVERLAY_ITEMS   0
 #define PAUSE_OVERLAY_WEAPONS 1
 #define PAUSE_OVERLAY_ARMOR   2
-#define PAUSE_OVERLAY_QUIT    3
+#define PAUSE_OVERLAY_OPTIONS 3
+#define PAUSE_OVERLAY_QUIT    4
 
 // Used as return values for equipped items in menus
 #define PAUSE_OVERLAY_WEAPON -1
@@ -79,6 +80,8 @@ typedef struct PauseOverlay {
   COIString* offHand;
 
   Item* selectedItem;
+
+  COIPreferencesMenu prefMenu;
   
   bool visible;
   bool dirty; // True when we need to rebuild the menus due to changed inventory
