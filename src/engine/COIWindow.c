@@ -40,6 +40,7 @@ void COIWindowReloadPreferences(COIWindow* window) {
   window->_factorW = (float)window->_width / WINDOW_BASE_WIDTH;
   // window->_screen = SDL_CreateWindow("Conquest of Izra", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window->_width, window->_height, 0);
   // window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
+  SDL_SetWindowFullscreen(window->_screen, 0);
   SDL_SetWindowSize(window->_screen, window->_width, window->_height);
   int res = SDL_SetWindowFullscreen(window->_screen, GLOBAL_PREFERENCES.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
 }

@@ -230,8 +230,6 @@ void actorMove(Actor* actor, int xOffset, int yOffset, COIBoard* board) {
   COISpriteSetSheetIndex(actor->sprite, actor->_spriteSheetRow, spriteSheetCol);
   COIBoardMoveSprite(board, actor->sprite, xOffset, yOffset);
   actor->_ticks++;
-
-
 }
 
 // Actor continues current movement until stepsLeft = 0, then switches to
