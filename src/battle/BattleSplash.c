@@ -80,9 +80,6 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
 }
 
 void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd) {
-  if (splash->box->_visible) {
-    printf("SHOULD BE VISIBLE!!!\n");
-  }
   if (cutToEnd && splash->stage < BSS_PROGRESS_BAR) {
     COIStringSetVisible(splash->result, true);
     COIStringSetVisible(splash->rewards, true);

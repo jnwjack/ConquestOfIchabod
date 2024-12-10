@@ -150,13 +150,19 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
   case TT_THICK_GRASS:
     {
       if (GLOBAL_TIME.day > 150) {
-        return ACTOR_FEARWOLF;
+        int randIndex = (generateRandomChar() % BROWN_GRASS_LATEST_ENEMY_COUNT);
+        return BROWN_GRASS_LATEST_ENEMY_TYPES[randIndex];
       } else if (GLOBAL_TIME.day > 75) {
-        int randVal = generateRandomChar() % 2;
-        if (randVal == 1) {
-          return ACTOR_FEARWOLF;
-        }
-        return ACTOR_BOOWOW;
+        int randIndex = (generateRandomChar() % BROWN_GRASS_LATER_ENEMY_COUNT);
+        return BROWN_GRASS_LATER_ENEMY_TYPES[randIndex];
+        // int randVal = generateRandomChar() % 2;
+        // if (randVal == 1) {
+        //   return ACTOR_FEARWOLF;
+        // }
+        // return ACTOR_BOOWOW;
+      } else if (GLOBAL_TIME.day > 10) {
+        int randIndex = (generateRandomChar() % BROWN_GRASS_ENEMY_COUNT);
+        return BROWN_GRASS_ENEMY_TYPES[randIndex];
       }
       return ACTOR_BOOWOW;
     }
@@ -183,9 +189,9 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
 unsigned long _xpYieldFromEnemyType(int enemyType) {
   switch (enemyType) {
   case ACTOR_SKELETON:
-    return 15;
-  case ACTOR_BOOWOW:
     return 25;
+  case ACTOR_BOOWOW:
+    return 15;
   case ACTOR_TENTACLE:
     return 50;
   case ACTOR_WIRE_MOTHER:
@@ -208,7 +214,7 @@ unsigned int _goldFromEnemyType(int enemyType) {
   case ACTOR_WIRE_MOTHER:
     return (unsigned int)generateRandomCharInRange(8, 15);
   case ACTOR_VOLCANETTE:
-    return (unsigned int)generateRandomCharInRange(15, 30);
+    return (unsigned int)generateRandomCharInRange(5, 15);
   default:
     return 0;
   }
@@ -834,6 +840,8 @@ static void _showSplash(BattleContext* context, BattleResult result, bool levelU
 
   if (result == BR_WIN) { 
     COISoundPlay(COI_SOUND_CELEBRATION);
+  } else if (result == BR_LOSS) {
+    COISoundPlay(COI_SOUND_DEFEAT);
   }
   context->splash = BattleSplashCreate(context->board,
 				       context->textType,

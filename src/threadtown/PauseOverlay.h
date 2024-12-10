@@ -94,6 +94,7 @@ PauseOverlay* PauseOverlayCreate(PlayerInfo* pInfo, COITextType* textType, COIBo
 void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board);
 
 void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible);
+void PauseOverlayToggleVisibility(PauseOverlay* overlay);
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event);
 void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox);
 void PauseOverlayBack(PauseOverlay* overlay);

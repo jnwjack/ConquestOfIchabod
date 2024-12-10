@@ -994,6 +994,14 @@ void PauseOverlaySetVisible(PauseOverlay* overlay, bool visible) {
   overlay->topRightMenu = overlay->baseMenu;
 }
 
+void PauseOverlayToggleVisibility(PauseOverlay* overlay) {
+  if (overlay->prefMenu.frame->_visible) {
+    COIPreferencesMenuProcessInput(&overlay->prefMenu, MOVING_PAUSE);
+  } else {
+    PauseOverlaySetVisible(overlay, !overlay->visible);
+  }
+}
+
 
 void PauseOverlayProcessInput(PauseOverlay* overlay, int event) {
   if (overlay->prefMenu.frame->_visible) {

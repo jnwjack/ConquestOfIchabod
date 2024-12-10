@@ -59,8 +59,8 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
 void gameOverDestroyBoard(GameOverContext* context) {
   COIBoardRemoveDynamicSprite(context->board, context->background, 0);
   for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
-    for (int i = 0; i < context->board->drawLayers[i].stringCount; i++) {
-      COIStringDestroy(context->board->drawLayers[i].strings[i]);
+    for (int j = 0; i < context->board->drawLayers[j].stringCount; j++) {
+      COIStringDestroy(context->board->drawLayers[i].strings[j]);
     }
   }
   COIBoardDestroy(context->board);

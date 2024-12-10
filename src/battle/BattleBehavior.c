@@ -112,8 +112,6 @@ static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBo
   if (action->noSpecialDamage) {
     damage = 0;
   } else if (action->index == SPECIAL_ID_BACKSTAB) {
-    printf("ACTOR AGI 2: %i\n", actorModifiedAgi(action->actor));
-    printf("TARGET AGI 2: %i\n", actorModifiedAgi(action->target));
     int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
     damage = _randomDamage(base);
   } else {
