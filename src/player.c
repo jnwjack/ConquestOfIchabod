@@ -10,7 +10,7 @@ static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_FIGHTER[] = { 1 };
 
 static unsigned int LEVELUP_TECHS_MAGE[] = { TECH_ID_FOCUS, TECH_ID_QUICKSTRIKE, TECH_ID_MAGIC_GUARD };
 static unsigned int LEVELUP_SPECIALS_MAGE[] = { SPECIAL_ID_ICE_SPEAR, SPECIAL_ID_HEAL, SPECIAL_ID_AVALANCHE, SPECIAL_ID_NEUTRALIZE, SPECIAL_ID_FIREBALL, SPECIAL_ID_CURSE, SPECIAL_ID_SILENCE };
-static unsigned int LEVELUP_TECHS_MIN_LEVELS_MAGE[] = { 1, 5, 5 };
+static unsigned int LEVELUP_TECHS_MIN_LEVELS_MAGE[] = { 1, 5, 1 };
 static unsigned int LEVELUP_SPECIALS_MIN_LEVELS_MAGE[] = { 1, 3, 5, 5, 7, 9, 9 };
 #define LEVELUP_NUM_TECHS_MAGE 3
 #define LEVELUP_NUM_SPECIALS_MAGE 7
@@ -427,7 +427,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 
 char* playerGetClass(PlayerInfo* pInfo) {
   // If we've worked at the shop enough, the class changes.
-  if (pInfo->shiftsWorked >= 20) {
+  if (pInfo->shiftsWorked >= CLERK_CLASS_CHANGE_DAYS) {
     return "Clerk";
   }
 

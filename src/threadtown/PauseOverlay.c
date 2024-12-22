@@ -794,6 +794,11 @@ void PauseOverlaySelect(PauseOverlay* overlay, TextBox* textBox) {
 
   if (overlay->prefMenu.frame->_visible) {
     COIPreferencesMenuProcessInput(&overlay->prefMenu, MOVING_SELECT);
+    // Did we close the preferences menu?
+    if (!overlay->prefMenu.frame->_visible) {
+      PauseOverlaySetVisible(overlay, false);
+      COIBoardQueueDraw(overlay->board);
+    }
     return;
   }
   

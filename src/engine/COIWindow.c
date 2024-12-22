@@ -3,10 +3,21 @@
 #include "COIPreferences.h"
 
 COIWindow* COI_GLOBAL_WINDOW = NULL;
+SDL_GameController* COI_GLOBAL_CONTROLLER = NULL;
+
+SDL_GameController* _findController() {
+  for (int i = 0; i < SDL_NumJoysticks(); i++) {
+      if (SDL_IsGameController(i)) {
+          return SDL_GameControllerOpen(i);
+      }
+  }
+
+  return NULL;
+}
 
 COIWindow* COIWindowCreate() {
   // Initialize SDL
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER);
   COISoundInit();
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
@@ -83,11 +94,23 @@ void COIWindowLoop(void* window_v, bool repeat) {
           window->_factorW = (float)window->_width / WINDOW_BASE_WIDTH;
         }
         break;
+      case SDL_CONTROLLERDEVICEADDED:
+        if (!COI_GLOBAL_CONTROLLER) {
+            COI_GLOBAL_CONTROLLER = SDL_GameControllerOpen(event.cdevice.which);
+        }
+        break;
+      case SDL_CONTROLLERDEVICEREMOVED:
+        if (COI_GLOBAL_CONTROLLER && event.cdevice.which == SDL_JoystickInstanceID(
+                SDL_GameControllerGetJoystick(COI_GLOBAL_CONTROLLER))) {
+            SDL_GameControllerClose(COI_GLOBAL_CONTROLLER);
+            COI_GLOBAL_CONTROLLER = _findController();
+        }
+        break;
       default:
-	if (window->_loop) {
-	  window->_loop(window->_currentBoard, &event, window->_currentBoard->context);
-	}
-	break;
+        if (window->_loop) {
+          window->_loop(window->_currentBoard, &event, window->_currentBoard->context);
+        }
+        break;
       }
     }
     
@@ -197,6 +220,7 @@ SDL_Renderer* COIWindowGetRenderer(COIWindow* window) {
 
 void COIWindowInit() {
   COI_GLOBAL_WINDOW = COIWindowCreate();
+  COI_GLOBAL_CONTROLLER = _findController();
 }
 
 

@@ -31,6 +31,8 @@ static void _init() {
   COIPreferencesInit();
   COIPreferencesWriteToFile();
   COIWindowInit();
+  COISoundUpdateEffectVolume();
+  COISoundUpdateMusicVolume();
   COIAssetLoaderInit();
 
   COIBoard* titleBoard = titleCreateBoard();

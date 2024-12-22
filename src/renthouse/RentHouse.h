@@ -33,6 +33,7 @@ typedef struct RentHouseContext {
   COITextType* textType;
   TextBox* textBox;
   RHStatusWindow statusWindow;
+  COISprite* bg;
 } RentHouseContext;
 
 COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard);

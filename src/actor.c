@@ -63,7 +63,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_SKELETON:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 29, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 39, 30, 15, 25, 0, 0);
+    return actorCreate(actorType, sprite, 34, 30, 15, 25, 0, 0);
   case ACTOR_MEAT_FLAYER:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 94, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
@@ -86,6 +86,11 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_LANDLORD:
   case ACTOR_CHAGGAI:
   case ACTOR_CHESTS_GUY:
+  case ACTOR_GEM_OF_TIME_GUY:
+  case ACTOR_CLASS_GUY:
+  case ACTOR_POTION_GUY:
+  case ACTOR_FLEE_GUY:
+  case ACTOR_MONSTER_COUNT_GUY:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 32, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     return actorCreate(actorType, sprite, 10, 5, 5, 3, 0, 0);

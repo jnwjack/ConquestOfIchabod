@@ -171,6 +171,8 @@ COIBoard* RentHouseCreateBoard(PlayerInfo* pInfo, COIBoard* outsideBoard) {
   context->outsideBoard = outsideBoard;
   context->pInfo = pInfo;
   context->textBox = TextBoxCreate(context->board, context->textType);
+  context->bg = COISpriteCreateFromAssetID(0, 0, 640, 480, COI_GLOBAL_LOADER, 97, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(context->board, context->bg, 0);
 
   // Create base menu: Heal, Sleep, Pay Rent, Exit
   COISprite* frame = COISpriteCreateFromAssetID(60, 40, 200, 190,
@@ -261,6 +263,8 @@ void RentHouseDestroyBoard(RentHouseContext* context) {
   COIMenuDestroyAndFreeComponents(context->baseMenu, context->board);
   COITextTypeDestroy(context->textType);
   TextBoxDestroy(context->textBox);
+  COIBoardRemoveDynamicSprite(context->board, context->bg, 0);
+  COISpriteDestroy(context->bg);
   
   _destroyString(context->board, context->statusWindow.price);
   _destroyString(context->board, context->statusWindow.daysLeft);

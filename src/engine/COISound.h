@@ -12,10 +12,13 @@ typedef enum COISoundID {
   COI_SOUND_DEFEAT,
   COI_SOUND_THREADTOWN,
   COI_SOUND_TITLE,
-  COI_SOUND_BATTLE
+  COI_SOUND_BATTLE,
+  COI_SOUND_SLUDGE
 } COISoundID;
 
 void COISoundPlay(COISoundID sound);
+void COISoundUpdateMusicVolume();
+void COISoundUpdateEffectVolume();
 void COISoundInit();
 
 #endif

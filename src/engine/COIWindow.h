@@ -43,4 +43,5 @@ void COIWindowInit();
 
 // Global Window
 extern COIWindow* COI_GLOBAL_WINDOW;
+extern SDL_GameController* COI_GLOBAL_CONTROLLER;
 #endif

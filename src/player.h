@@ -14,6 +14,8 @@
 #define SA_DAYS_OLDER 80
 #define SA_DAYS_OLDEST 150
 
+#define CLERK_CLASS_CHANGE_DAYS 20
+
 typedef enum RentStatus {
   RS_RENTING = 0,
   RS_NOT_RENTING,

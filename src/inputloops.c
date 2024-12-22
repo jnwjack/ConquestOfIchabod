@@ -4,32 +4,53 @@
 
 // Can extend this to support joystick, etc. later.
 static int _sdlEventToDirectionalInput(SDL_Event* event) {
-  switch (event->key.keysym.sym) {
-  case SDLK_UP:
-  case SDLK_w:
-    return MOVING_UP;
-  case SDLK_DOWN:
-  case SDLK_s:
-    return MOVING_DOWN;
-  case SDLK_LEFT:
-  case SDLK_a:
-    return MOVING_LEFT;
-  case SDLK_RIGHT:
-  case SDLK_d:
-    return MOVING_RIGHT;
-  case SDLK_z:
-  case SDLK_SPACE:
-    return MOVING_SELECT;
-  case SDLK_x:
-    return MOVING_DELETE;
-  case SDLK_ESCAPE:
-    return MOVING_PAUSE;
-#ifdef __COI_DEBUG__
-  case SDLK_r:
-    return MOVING_RELOAD;
-#endif
-  default:
-    return MOVING_NONE;
+  if (event->type == SDL_CONTROLLERBUTTONDOWN || event->type == SDL_CONTROLLERBUTTONUP) {
+    switch (event->cbutton.button) {    
+    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+      return MOVING_LEFT;
+    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+      return MOVING_RIGHT;
+    case SDL_CONTROLLER_BUTTON_DPAD_UP:
+      return MOVING_UP;
+    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+      return MOVING_DOWN;
+    case SDL_CONTROLLER_BUTTON_START:
+      return MOVING_PAUSE;
+    case SDL_CONTROLLER_BUTTON_B:
+      return MOVING_DELETE;
+    case SDL_CONTROLLER_BUTTON_A:
+      return MOVING_SELECT;
+    default:
+      return MOVING_NONE;
+    }
+  } else {
+    switch (event->key.keysym.sym) {
+    case SDLK_UP:
+    case SDLK_w:
+      return MOVING_UP;
+    case SDLK_DOWN:
+    case SDLK_s:
+      return MOVING_DOWN;
+    case SDLK_LEFT:
+    case SDLK_a:
+      return MOVING_LEFT;
+    case SDLK_RIGHT:
+    case SDLK_d:
+      return MOVING_RIGHT;
+    case SDLK_z:
+    case SDLK_SPACE:
+      return MOVING_SELECT;
+    case SDLK_x:
+      return MOVING_DELETE;
+    case SDLK_ESCAPE:
+      return MOVING_PAUSE;
+  #ifdef __COI_DEBUG__
+    case SDLK_r:
+      return MOVING_RELOAD;
+  #endif
+    default:
+      return MOVING_NONE;
+    }
   }
 }
 
@@ -64,6 +85,7 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
   case BR_LOSS:
     nextBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, board->loader, GAME_OVER_DEATH, battleContext->pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, nextBoard, gameOver);
+    COISoundPlay(COI_SOUND_SLUDGE);
     break;
   case BR_FLEE:
   case BR_WIN:
@@ -96,6 +118,7 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   bool selection = false;
   COIMenu* menu = battleContext->actionMenu;
   switch (event->type) {
+    case SDL_CONTROLLERBUTTONDOWN:
     case SDL_KEYDOWN:
       if (event->key.keysym.sym == SDLK_x && battleContext->menuFocus != LEVEL_UP) {
 	      battleHandleBack(battleContext);
@@ -154,7 +177,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 
   titleTick(titleContext);
 
-  if (event->type == SDL_KEYDOWN) {
+  if (event->type == SDL_KEYDOWN || event->type == SDL_CONTROLLERBUTTONDOWN) {
     titleProcessInput(titleContext, _sdlEventToDirectionalInput(event));
   }
 
@@ -198,6 +221,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   bool back = false;
   COIMenu* focusedMenu = armoryContext->confirmActive ? armoryContext->confirmMenu : armoryContext->currentMenu;
   switch (event->type) {
+  case SDL_CONTROLLERBUTTONDOWN:
   case SDL_KEYDOWN:
   {
     int move = _sdlEventToDirectionalInput(event);
@@ -327,6 +351,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 void gameOver(COIBoard* board, SDL_Event* event, void* context) {
   GameOverContext* gameOverContext = (GameOverContext*)context;
   switch (event->type) {
+  case SDL_CONTROLLERBUTTONDOWN:
   case SDL_KEYDOWN:
   {
     int input = _sdlEventToDirectionalInput(event);
@@ -351,8 +376,10 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     COIBoard* gameOverBoard;
     if (townContext->pInfo->working) {
       gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME_AND_JOB, townContext->pInfo);
+      COISoundPlay(COI_SOUND_SLUDGE);
     } else {
       gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME, townContext->pInfo);
+      COISoundPlay(COI_SOUND_SLUDGE);
     }
     COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOverBoard, gameOver);
     return;
@@ -372,6 +399,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   }
   
   switch (event->type) {
+  case SDL_CONTROLLERBUTTONDOWN:
   case SDL_KEYDOWN:
   {
     int input = _sdlEventToDirectionalInput(event);
@@ -395,6 +423,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     }
     break;
   }
+  case SDL_CONTROLLERBUTTONUP:
   case SDL_KEYUP:
   {
     int input = _sdlEventToDirectionalInput(event);
@@ -464,6 +493,7 @@ void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
 
   bool shouldExit = false;
   switch (event->type) {
+  case SDL_CONTROLLERBUTTONDOWN:
   case SDL_KEYDOWN:
   {
     int input = _sdlEventToDirectionalInput(event);

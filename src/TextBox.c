@@ -13,7 +13,7 @@ TextBox* TextBoxCreate(COIBoard* board, COITextType* textType) {
 					    COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   textBox->box->_autoHandle = false;
   textBox->box->_visible = false;
-  COIBoardAddDynamicSprite(textBox->board, textBox->box, 0);
+  COIBoardAddDynamicSprite(textBox->board, textBox->box, 1);
 
   return textBox;
 }
@@ -24,7 +24,7 @@ static void _destroyStrings(TextBox* textBox) {
   COIString* currentString = (COIString*)currentStringVoid;
   while (currentString != NULL) {
     LinkedListRemove(textBox->strings, currentStringVoid);
-    COIBoardRemoveString(textBox->board, currentString, 0);
+    COIBoardRemoveString(textBox->board, currentString, 1);
     COIStringDestroy(currentString);
     
     currentStringVoid = LinkedListNext(textBox->strings);
@@ -42,7 +42,7 @@ void TextBoxSetStrings(TextBox* textBox, char* firstString, ...) {
   while (currentRawString != NULL) {
     COIString* newString = COIStringCreate(currentRawString, 0, 0, textBox->textType);
     COIStringConfineToSprite(newString, textBox->box);
-    COIBoardAddString(textBox->board, newString, 0);
+    COIBoardAddString(textBox->board, newString, 1);
     COIStringSetVisible(newString, false);
     LinkedListAdd(textBox->strings, (void*)newString);
 

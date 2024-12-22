@@ -26,9 +26,11 @@
 #define ACTOR_MEAT_FLAYER 16
 #define ACTOR_PYROID 17
 #define ACTOR_CHESTS_GUY 18
-
-// Buff values
-#define ACTOR_BUFF_PARRYING 1
+#define ACTOR_GEM_OF_TIME_GUY 19
+#define ACTOR_CLASS_GUY 20
+#define ACTOR_POTION_GUY 21
+#define ACTOR_FLEE_GUY 22
+#define ACTOR_MONSTER_COUNT_GUY 23
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8

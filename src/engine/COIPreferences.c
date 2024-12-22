@@ -262,6 +262,7 @@ void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board) {
   menu->frame = COISpriteCreateFromAssetID(120, 90, width, height, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   menu->frame->_autoHandle = false;
   menu->frame->_visible = true;
+  menu->modifiedGraphics = false;
   COIBoardAddDynamicSprite(board, menu->frame, 1);
 
   LinkedList *list = LinkedListCreate();
@@ -332,19 +333,23 @@ static void _horizontalInputToComponent(COIPreferencesMenu* menu, unsigned int c
   switch (componentIndex) {
   case COMPONENT_INDEX_RESOLUTION:
     MenuListComponentNext(&menu->resolutionComponent, val);
+    menu->modifiedGraphics = true;
     break;
   case COMPONENT_INDEX_FULLSCREEN:
     MenuListComponentNext(&menu->fullscreenComponent, val);
+    menu->modifiedGraphics = true;
     break;
   case COMPONENT_INDEX_MUSIC:
     if (!(GLOBAL_PREFERENCES.musicVolume == 0 && val < 0) && !(GLOBAL_PREFERENCES.musicVolume == COI_SOUND_MAX_VOLUME && val > 0)) {
       GLOBAL_PREFERENCES.musicVolume += (val * (COI_SOUND_MAX_VOLUME / VOLUME_BARS_COUNT));
+      COISoundUpdateMusicVolume();
     }
     MenuVolumeComponentUpdateBarVisibility(&menu->musicComponent, GLOBAL_PREFERENCES.musicVolume);
     break;
   case COMPONENT_INDEX_EFFECT:
     if (!(GLOBAL_PREFERENCES.effectVolume == 0 && val < 0) && !(GLOBAL_PREFERENCES.effectVolume == COI_SOUND_MAX_VOLUME && val > 0)) {
       GLOBAL_PREFERENCES.effectVolume += (val * (COI_SOUND_MAX_VOLUME / VOLUME_BARS_COUNT));
+      COISoundUpdateEffectVolume();
     }
     MenuVolumeComponentUpdateBarVisibility(&menu->effectComponent, GLOBAL_PREFERENCES.effectVolume);
     break;
@@ -369,6 +374,7 @@ void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible) {
   if (visible) {
     menu->oldEffectValue = GLOBAL_PREFERENCES.effectVolume;
     menu->oldMusicValue = GLOBAL_PREFERENCES.musicVolume;
+    menu->modifiedGraphics = false;
     MenuListComponentSetActive(&menu->resolutionComponent, true);
     MenuListComponentSetActive(&menu->fullscreenComponent, false);
     MenuVolumeComponentSetActive(&menu->musicComponent, false);
@@ -380,7 +386,6 @@ void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible) {
     menu->selectedComponent = COMPONENT_INDEX_RESOLUTION;
     for (int i = 0; i < RESOLUTION_COUNT; i++) {
       if (resolutions[i].width == GLOBAL_PREFERENCES.resolution.width && resolutions[i].height == GLOBAL_PREFERENCES.resolution.height) {
-        printf("BLAH\n");
         MenuListComponentSetCurrentString(&menu->resolutionComponent, i);
         break;
       }
@@ -419,16 +424,22 @@ void COIPreferencesMenuProcessInput(COIPreferencesMenu* menu, int direction) {
       // Sound settings are already applied
 
       COIPreferencesWriteToFile();
-      COIWindowReloadPreferences(COI_GLOBAL_WINDOW);
+      if (menu->modifiedGraphics) {
+        COIWindowReloadPreferences(COI_GLOBAL_WINDOW);
+      }
     } else {
       GLOBAL_PREFERENCES.musicVolume = menu->oldMusicValue;
       GLOBAL_PREFERENCES.effectVolume = menu->oldEffectValue;
+      COISoundUpdateEffectVolume();
+      COISoundUpdateMusicVolume();
     }
     COIPreferencesMenuSetVisible(menu, false);
   } else if (direction == MOVING_DELETE || direction == MOVING_PAUSE) {
     COISoundPlay(COI_SOUND_INVALID);
     GLOBAL_PREFERENCES.musicVolume = menu->oldMusicValue;
     GLOBAL_PREFERENCES.effectVolume = menu->oldEffectValue;
+    COISoundUpdateEffectVolume();
+    COISoundUpdateMusicVolume();
 
     COIPreferencesMenuSetVisible(menu, false);
   }

@@ -74,6 +74,7 @@ typedef struct COIPreferencesMenu {
 
   unsigned int oldMusicValue;
   unsigned int oldEffectValue;
+  bool modifiedGraphics;
 } COIPreferencesMenu;
 
 void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board);

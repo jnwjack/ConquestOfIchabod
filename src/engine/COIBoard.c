@@ -65,6 +65,13 @@ int COIBoardBGColor(COIBoard* board, int index) {
   // Scale color based on phase of day.
   // pix_value_scaled = pix_value / (2^p)
   // where p = { 0, 1, 2, 3 } for each of { MORNING, DAY, EVENING, NIGHT }
+  if (GLOBAL_TIME.day > 163) {
+    return (board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase)) / 1.65;
+  } else if (GLOBAL_TIME.day > 114) {
+    return (board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase)) / 1.35;
+  } if (GLOBAL_TIME.day > 57) {
+    return (board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase)) / 1.15;
+  } 
   return board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase);
 
   // May want to do something more specific later, but this is fine for now.

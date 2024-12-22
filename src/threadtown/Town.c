@@ -174,9 +174,10 @@ static void _createSwordChest(TownContext* context) {
 static void _createNPCs(TownContext* context) {
   context->allActors = LinkedListCreate();
 
-  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 1600, 2080, 2016, 2976, 3872, 1568 };
-  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 4256, 2144, 2464, 3232, 928, 3392 };
-  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY, ACTOR_CHESTS_GUY };
+  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 1600, 2080, 2912, 2976, 3872, 1568, 2016, 1408, 672, 1696, 3840 };
+  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 4256, 2144, 1760, 3232, 928, 3392, 1888, 2240, 4096, 2368, 2112 };
+  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY, ACTOR_CHESTS_GUY,
+                                          ACTOR_MONSTER_COUNT_GUY, ACTOR_GEM_OF_TIME_GUY, ACTOR_CLASS_GUY, ACTOR_POTION_GUY, ACTOR_FLEE_GUY };
 
   for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
     context->npcs[i] = actorCreateOfType(actorIDs[i],
@@ -510,6 +511,64 @@ static void _talkToHavonvaleGuy(TownContext* context) {
       NULL);
 }
 
+static void _talkToMonsterCountGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "Be careful walking through the thick grass at night.",
+      "Monsters come out in larger numbers.",
+      NULL);
+}
+
+static void _talkToGemOfTimeGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "Want to take a break from your adventure for a while?",
+      "Stop by the general store to pick up a Gem of Time.",
+      NULL);
+}
+
+static void _talkToClassGuy(TownContext* context) {
+  if (GLOBAL_TIME.day >= CLERK_CLASS_CHANGE_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "Oh, you're a Clerk?",
+        "Yeah, me too.",
+        NULL);
+  } else {
+    // char* className = playerGetClass(context->pInfo);
+    if (context->pInfo->class == PLAYER_CLASS_FIGHTER) {
+      TextBoxSetStrings(context->textBox,
+          "Oh, you're a Fighter?",
+          "You must be pretty strong!",
+          "You can eventually become a Ranger, a Barbarian, a Blademaster, a Duelist, or a MageFist!",
+          NULL);
+    } else if (context->pInfo->class == PLAYER_CLASS_ROGUE) {
+      TextBoxSetStrings(context->textBox,
+          "Oh, you're a Rogue?",
+          "You're probably really nimble!",
+          "You can eventually become a Thief, a Swashbuckler, an Assassin, a Duelist, or a Spellsword!",
+          NULL);
+    } else if (context->pInfo->class == PLAYER_CLASS_WIZARD) {
+      TextBoxSetStrings(context->textBox,
+          "Oh, you're a Mage?",
+          "You've got to be really smart!",
+          "You can eventually become a Healer, an Enchanter, an Archmage, a MageFist, or a Spellsword!",
+          NULL);   
+    }
+  }
+}
+
+static void _talkToPotionGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "There's a potion shop through the forest. It's north of here.",
+      NULL);   
+}
+
+static void _talkToFleeGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "Here's a tip from my fighting days.",
+      "If you want to flee a fight, you're more likely to succeed if you're faster than your opponent.",
+      "Of course, I never needed to do that...",
+      NULL);
+}
+
 static void _talkToChest(TownContext* context) {
   TextBoxSetStrings(context->textBox,
       "Unbelievable!",
@@ -651,6 +710,21 @@ void townProcessSelectionInput(TownContext* context) {
         break;
       case ACTOR_HAVONVALE_GUY:
         _talkToHavonvaleGuy(context);
+        break;
+      case ACTOR_GEM_OF_TIME_GUY:
+        _talkToGemOfTimeGuy(context);
+        break;
+      case ACTOR_MONSTER_COUNT_GUY:
+        _talkToMonsterCountGuy(context);
+        break;
+      case ACTOR_CLASS_GUY:
+        _talkToClassGuy(context);
+        break;
+      case ACTOR_POTION_GUY:
+        _talkToPotionGuy(context);
+        break;
+      case ACTOR_FLEE_GUY:
+        _talkToFleeGuy(context);
         break;
       default:
 	      TextBoxSetStrings(context->textBox,

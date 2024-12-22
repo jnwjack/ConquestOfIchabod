@@ -34,6 +34,8 @@ AllyStatus* AllyStatusCreate(COIBoard* board, COIWindow* window, int fontSize) {
 void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
   COISprite* sprite = actor->sprite;
   int fs = status->textType->fontSize;
+
+  bool shouldUpdateStats = actor->hp != status->_hpVal || actor->tp != status->_tpVal || actor->sp != status->_spVal;
   
   if (!status->frame) {
     const int sideLength = 65;
@@ -49,7 +51,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
     COIBoardAddDynamicSprite(status->board, status->frame, 0);
   }
   
-  if (actor->hp != status->_hpVal) {
+  if (shouldUpdateStats) {
     _cleanupString(status->board, status->hp);
     
     char hpRaw[MAX_STRING_SIZE];
@@ -60,11 +62,11 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
 				 sprite->_y,
 				 status->textType);
     COIStringSetVisible(status->hp, true);
+    COIStringSetStringCenter(status->hp, status->frame->_x + status->frame->_width / 2, status->frame->_y + fs + COI_PADDING);
     COIBoardAddString(status->board, status->hp, 0);
 
     status->_hpVal = actor->hp;
-  }
-  if (actor->tp != status->_tpVal) {
+
     _cleanupString(status->board, status->tp);
 
     char tpRaw[MAX_STRING_SIZE];
@@ -75,11 +77,11 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
 				 sprite->_y + fs + COI_PADDING,
 				 status->textType);
     COIStringSetVisible(status->tp, true);
+    COIStringPositionBelowString(status->tp, status->hp, false);
     COIBoardAddString(status->board, status->tp, 0);    
 
     status->_tpVal = actor->tp;
-  }
-  if (actor->sp != status->_spVal) {
+
     _cleanupString(status->board, status->sp);
     
     char spRaw[MAX_STRING_SIZE];
@@ -90,6 +92,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
           sprite->_y + ((fs + COI_PADDING) * 2),
           status->textType);
     COIStringSetVisible(status->sp, true);
+    COIStringPositionBelowString(status->sp, status->tp, false);
     COIBoardAddString(status->board, status->sp, 0);
 
     status->_spVal = actor->sp;
