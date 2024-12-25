@@ -85,7 +85,7 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
   case BR_LOSS:
     nextBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, board->loader, GAME_OVER_DEATH, battleContext->pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, nextBoard, gameOver);
-    COISoundPlay(COI_SOUND_SLUDGE);
+    COISoundPlay(COI_SOUND_SLUDGE_NORMAL);
     break;
   case BR_FLEE:
   case BR_WIN:
@@ -376,11 +376,10 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     COIBoard* gameOverBoard;
     if (townContext->pInfo->working) {
       gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME_AND_JOB, townContext->pInfo);
-      COISoundPlay(COI_SOUND_SLUDGE);
     } else {
-      gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME, townContext->pInfo);
-      COISoundPlay(COI_SOUND_SLUDGE);
+      gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME, townContext->pInfo); 
     }
+    COISoundPlay(COI_SOUND_SLUDGE);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOverBoard, gameOver);
     return;
   }
@@ -393,7 +392,6 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
 					      townContext->terrain,
 					      townContext->pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, battleBoard, &battle);
-    COISoundPlay(COI_SOUND_BATTLE);
     townContext->willEnterBattle = false;
     return;
   }
@@ -450,6 +448,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo->inventory);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
+        COISoundPlay(COI_SOUND_FAIRY);
       }
       break;      
     case ARMORY_DOOR:
@@ -457,6 +456,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
+        COISoundPlay(COI_SOUND_FAIRY);
       }
       break;
     case POTION_SHOP_DOOR:
@@ -464,6 +464,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForPotionStore(board, townContext->pInfo->inventory);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
+        COISoundPlay(COI_SOUND_FAIRY);
       }
       break; 
     case RENTABLE_HOUSE_DOOR:
@@ -472,6 +473,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
         townContext->pauseOverlay->dirty = true;
         otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
+        COISoundPlay(COI_SOUND_FAIRY);
       }
       break;
     default:

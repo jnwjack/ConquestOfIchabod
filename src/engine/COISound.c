@@ -12,6 +12,8 @@ Mix_Music* titleMusic = NULL;
 Mix_Music* threadTownMusic = NULL;
 Mix_Music* battleMusic = NULL;
 Mix_Music* sludgeMusic = NULL;
+Mix_Music* fairyMusic = NULL;
+Mix_Music* sludgeNormalMusic = NULL;
 
 Mix_Chunk* _loadSound(const char* soundString) {
   char temp[100];
@@ -47,6 +49,8 @@ void COISoundInit() {
   titleMusic = _loadMusic("title.wav");
   battleMusic = _loadMusic("battle.wav");
   sludgeMusic = _loadMusic("sludge.wav");
+  fairyMusic = _loadMusic("fairy.wav");
+  sludgeNormalMusic = _loadMusic("sludge_normal.wav");
 }
 
 void COISoundPlay(COISoundID sound) {
@@ -72,17 +76,22 @@ void COISoundPlay(COISoundID sound) {
     Mix_PlayChannel(-1, defeat, 0);
     break;
   case COI_SOUND_THREADTOWN:
-    Mix_PlayMusic(threadTownMusic, 100);
+    Mix_PlayMusic(threadTownMusic, -1);
     break;
   case COI_SOUND_TITLE:
-    Mix_PlayMusic(titleMusic, 100);
+    Mix_PlayMusic(titleMusic, -1);
     break;
   case COI_SOUND_BATTLE:
-    Mix_PlayMusic(battleMusic, 100);
+    Mix_PlayMusic(battleMusic, -1);
     break;
   case COI_SOUND_SLUDGE:
-    Mix_PlayMusic(sludgeMusic, 100);
+    Mix_PlayMusic(sludgeMusic, -1);
     break;
+  case COI_SOUND_FAIRY:
+    Mix_PlayMusic(fairyMusic, -1);
+    break;
+  case COI_SOUND_SLUDGE_NORMAL:
+    Mix_PlayMusic(sludgeNormalMusic, -1);
   default:
     printf("Error: Invalid sound ID.\n");
   }
@@ -105,4 +114,6 @@ void COISoundShutdown() {
   Mix_FreeMusic(titleMusic);
   Mix_FreeMusic(battleMusic);
   Mix_FreeMusic(sludgeMusic);
+  Mix_FreeMusic(fairyMusic);
+  Mix_FreeMusic(sludgeNormalMusic);
 }

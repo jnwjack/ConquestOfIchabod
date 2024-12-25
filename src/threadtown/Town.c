@@ -880,6 +880,7 @@ void townMovePlayer(TownContext* context) {
     COITransitionInit(&COI_GLOBAL_WINDOW->transition,
 		      COI_TRANSITION_SNAKE,
 		      COI_GLOBAL_WINDOW);
+    COISoundPlay(COI_SOUND_BATTLE);
   }
 }
 
