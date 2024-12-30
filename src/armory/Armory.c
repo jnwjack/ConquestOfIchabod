@@ -1,5 +1,147 @@
 #include "Armory.h"
 
+// Return the price for an item for this shop
+static int _priceFromItemID(int item) {
+  switch (item) {
+  case ITEM_ID_RUSTY_SWORD:
+    return 105;
+  case ITEM_ID_RUSTY_BATTLEAXE:
+    return 275;
+  case ITEM_ID_SHABBY_BOW:
+    return 125;
+  case ITEM_ID_CRACKED_SHIELD:
+    return 85;
+  case ITEM_ID_STRENGTH_POTION:
+    return 25;
+  case ITEM_ID_DEF_SCROLL:
+    return 20;
+  case ITEM_ID_AGI_SCROLL:
+    return 15;
+  case ITEM_ID_BRONZE_HELM:
+    return 150;
+  case ITEM_ID_BRONZE_CHEST:
+    return 200;
+  case ITEM_ID_BRONZE_LEGS:
+    return 115;
+  case ITEM_ID_GEM_OF_PERMANENCE:
+    return 40;
+  case ITEM_ID_TAGNESSE:
+    return 700;
+  case ITEM_ID_KNIFE:
+    return 90;
+  case ITEM_ID_HEALING_POTION:
+    return 25;
+  case ITEM_ID_TP_POTION:
+    return 15;
+  case ITEM_ID_SP_POTION:
+    return 20;
+  case ITEM_ID_MOUNTAIN_JUICE:
+    return 60;
+  case ITEM_ID_LEATHER_ARMOR:
+    return 125;
+  case ITEM_ID_BOOTS:
+    return 100;
+  case ITEM_ID_SLEEP_IN:
+    return 3;
+  case ITEM_ID_READ_BOOK:
+    return 6;
+  case ITEM_ID_MAKE_FRIEND:
+    return 25;
+  case ITEM_ID_TAKE_WALK:
+    return 1;
+  case ITEM_ID_EXERCISE:
+    return 1;
+  case ITEM_ID_RUN_ERRANDS:
+    return 2;
+  case ITEM_ID_COOK:
+    return 1;
+  case ITEM_ID_GARDEN:
+    return 4;
+  case ITEM_ID_DATE:
+    return 40;
+  case ITEM_ID_NEW_HOBBY:
+    return 30;
+  default:
+    printf("Error: No valid text ID %i\n", item);
+    return -1;
+  }
+}
+
+
+static ArmoryContext* _armoryCreateContext(COIBoard* board,
+				    COIBoard* outsideBoard,
+				    COIWindow* window,
+				    PlayerInfo* pInfo,
+				    IntList* itemIDs,
+            bool isGag) {
+
+  ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
+
+  armoryContext->pInfo = pInfo;
+  armoryContext->isGag = isGag;
+  armoryContext->sellItems = NULL;
+  armoryContext->buyItems = NULL;
+
+  armoryContext->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
+  armoryContext->mainStrings[0] = COIStringCreate("Buy", 0, 0, armoryContext->textType);
+  armoryContext->mainStrings[1] = COIStringCreate("Sell", 0, 0, armoryContext->textType);
+  armoryContext->mainStrings[2] = COIStringCreate("Exit", 0, 0, armoryContext->textType);
+  
+  // First level menu for armory
+  COISprite* frame = COISpriteCreateFromAssetID(60, 40, 200, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COISprite* pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, frame, 0);
+  COIBoardAddDynamicSprite(board, pointer, 0);
+  COIMenu* menu = COIMenuCreate(frame, pointer);
+  COIMenuSetTexts(menu, armoryContext->mainStrings, 3);
+  COIMenuSetVisible(menu);
+  armoryContext->menu = menu;
+
+  // Fill item list for buy menu
+  frame = COISpriteCreateFromAssetID(280, 40, 350, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, frame, 0);
+  COIBoardAddDynamicSprite(board, pointer, 0);
+  armoryContext->buyMenu = COIMenuCreate(frame, pointer);
+  armoryPopulateBuy(armoryContext, itemIDs);
+  armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
+  COIMenuSetInvisible(armoryContext->buyMenu);
+  
+  // Fill item list for sell menu
+  armoryContext->sellMenu = COIMenuCreate(frame, pointer);
+  armoryContext->inventory = pInfo->inventory;
+  armoryPopulateSell(armoryContext);
+  COIMenuSetInvisible(armoryContext->sellMenu);
+
+  // Menu that asks for confirmation when buying/selling
+  frame = COISpriteCreateFromAssetID(280, 250, 100, 70, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COIBoardAddDynamicSprite(board, frame, 0);
+  COIBoardAddDynamicSprite(board, pointer, 0);
+  armoryContext->confirmMenu = COIMenuCreate(frame, pointer);
+  armoryContext->confirmStrings[0] = COIStringCreate("No", 0, 0, armoryContext->textType);
+  armoryContext->confirmStrings[1] = COIStringCreate("Yes", 0, 0, armoryContext->textType);
+  COIMenuSetTexts(armoryContext->confirmMenu, armoryContext->confirmStrings, 2);
+  COIMenuSetInvisible(armoryContext->confirmMenu);
+  armoryContext->confirmActive = false;
+
+  // Display money
+  if (armoryContext->isGag) {
+    frame = COISpriteCreateFromAssetID(60, 245, 285, 50, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  } else {
+    frame = COISpriteCreateFromAssetID(60, 245, 200, 50, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  }
+  COIBoardAddDynamicSprite(board, frame, 0);
+  armoryContext->moneyString = NULL;
+  armoryUpdateMoneyString(armoryContext);
+
+  armoryContext->outsideBoard = outsideBoard;
+  armoryContext->currentMenu = menu;
+  
+
+  return armoryContext;
+}
+
 void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock, bool sell, int slot) {
   item->itemID = itemID;
   if (item->string != NULL) {
@@ -60,8 +202,15 @@ void armoryUpdateMoneyString(ArmoryContext* context) {
   if (context->moneyString != NULL) {
     COIStringDestroy(context->moneyString);
   }
+
+  printf("WHAT: %i\n", context->pInfo->shiftsWorked);
+
   char buf[MAX_STRING_SIZE];
-  sprintf(buf, "Gold: %i", context->inventory->money);
+  if (context->isGag) {
+    sprintf(buf, "Hours Worked: %i", context->pInfo->shiftsWorked * 12);
+  } else {
+    sprintf(buf, "Gold: %i", context->inventory->money);
+  }
   // Hardcoded, but we can base it off the box's position in the future
   context->moneyString = COIStringCreate(buf, 70, 250 + COI_MENU_OFFSET_Y, context->textType);
 }
@@ -129,7 +278,7 @@ void armoryBuyItem(COIBoard* board) {
   ArmoryItem item = context->buyItems[context->buyMenu->_current];
   if (context->inventory->money >= item.price && inventoryAddItem(context->inventory, item.itemID)) {
     context->inventory->money -= item.price;
-    armoryPopulateSell(context);
+    armoryPopulateSell(context); // Because weve just added something to our inventory
     armoryUpdateMoneyString(context);
     COIMenuSetInvisible(context->sellMenu);
     COIMenuReset(context->buyMenu);
@@ -152,15 +301,16 @@ void armorySellItem(COIBoard* board) {
   bool successful;
   if (item.slot != ITEM_SLOT_NA) {
     // Item is equipped
-    printf("trying to remove equip item...\n");
     successful = inventoryRemoveEquippedItem(context->inventory, item.slot);
   } else {
     // Item is in backpack
     successful = inventoryRemoveBackpackItem(context->inventory, itemIndex);
   }
   if (successful) {
-    printf("removed equipped item!\n");
     context->inventory->money = MIN(MAX_MONEY, context->inventory->money + item.price);
+    for (int i = 0; i < context->sellMenu->_stringCount; i++) {
+      COIBoardRemoveString(board, context->sellMenu->_strings[i], 0);
+    }
     armoryPopulateSell(context);
     armoryUpdateMoneyString(context);
     COIMenuSetInvisible(context->buyMenu);
@@ -191,8 +341,9 @@ void armoryEnableConfirmMenu(ArmoryContext* context) {
 COIBoard* armoryCreateBoard(COIWindow* window,
 			    COIAssetLoader* loader,
 			    COIBoard* outsideBoard,
-			    Inventory* inventory,
-			    IntList* itemIDs) {
+			    PlayerInfo* pInfo,
+			    IntList* itemIDs,
+          bool isGag) {
   
   COIBoard* armoryBoard = COIBoardCreate(99, 91, 95, 255, 640, 480, loader);
 
@@ -200,9 +351,8 @@ COIBoard* armoryCreateBoard(COIWindow* window,
   COIBoardAddDynamicSprite(armoryBoard, background, 0);
 
   COILoop armoryLoop = &armory;
-  COIBoardLoadSpriteMap(armoryBoard, COIWindowGetRenderer(window), "src/armory/spritemap.dat");
 
-  ArmoryContext* context = _armoryCreateContext(armoryBoard, outsideBoard, window, inventory, itemIDs);
+  ArmoryContext* context = _armoryCreateContext(armoryBoard, outsideBoard, window, pInfo, itemIDs, isGag);
   COIBoardSetContext(armoryBoard, (void*)context);
 
   armoryUpdateBoardText(armoryBoard);
@@ -210,7 +360,41 @@ COIBoard* armoryCreateBoard(COIWindow* window,
   return armoryBoard;
 }
 
+COIBoard* _armoryCreateBoardForGag(COIBoard* outsideBoard, PlayerInfo* pInfo) {
+  Inventory* inventory = pInfo->inventory;
+  IntList itemIDs;
+
+  IntListInitialize(&itemIDs, 10);
+  IntListAdd(&itemIDs, ITEM_ID_SLEEP_IN);
+  IntListAdd(&itemIDs, ITEM_ID_READ_BOOK);
+  IntListAdd(&itemIDs, ITEM_ID_MAKE_FRIEND);
+  IntListAdd(&itemIDs, ITEM_ID_TAKE_WALK);
+  IntListAdd(&itemIDs, ITEM_ID_EXERCISE);
+  IntListAdd(&itemIDs, ITEM_ID_RUN_ERRANDS);
+  IntListAdd(&itemIDs, ITEM_ID_COOK);
+  IntListAdd(&itemIDs, ITEM_ID_GARDEN);
+  IntListAdd(&itemIDs, ITEM_ID_DATE);
+  IntListAdd(&itemIDs, ITEM_ID_NEW_HOBBY);
+
+  pInfo->armoryGagUsed = true;
+
+  return armoryCreateBoard(COI_GLOBAL_WINDOW,
+        COI_GLOBAL_LOADER,
+        outsideBoard,
+        pInfo,
+        &itemIDs,
+        true);
+}
+
+static bool _shouldDoGag(PlayerInfo* pInfo) {
+  return !pInfo->armoryGagUsed && pInfo->shiftsWorked >= CLERK_CLASS_CHANGE_SHIFTS_WORKED;
+}
+
 COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, PlayerInfo* pInfo) {
+  if (_shouldDoGag(pInfo)) {
+    return _armoryCreateBoardForGag(outsideBoard, pInfo);
+  }
+
   Inventory* inventory = pInfo->inventory;
   IntList itemIDs;
 
@@ -251,11 +435,16 @@ COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, PlayerInfo* p
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
 			   COI_GLOBAL_LOADER,
 			   outsideBoard,
-			   inventory,
-			   &itemIDs);
+			   pInfo,
+			   &itemIDs,
+         false);
 }
 
-COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inventory) {
+COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, PlayerInfo* pInfo) {
+  if (_shouldDoGag(pInfo)) {
+    return _armoryCreateBoardForGag(outsideBoard, pInfo);
+  }
+
   IntList itemIDs;
   IntListInitialize(&itemIDs, 4);
   IntListAdd(&itemIDs, ITEM_ID_HEALING_POTION);
@@ -266,11 +455,16 @@ COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inv
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
 			   COI_GLOBAL_LOADER,
 			   outsideBoard,
-			   inventory,
-			   &itemIDs);
+			   pInfo,
+			   &itemIDs,
+         false);
 }
 
-COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory) {
+COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, PlayerInfo* pInfo) {
+  if (_shouldDoGag(pInfo)) {
+    return _armoryCreateBoardForGag(outsideBoard, pInfo);
+  }
+
   IntList itemIDs;
   IntListInitialize(&itemIDs, 4);
   IntListAdd(&itemIDs, ITEM_ID_STRENGTH_POTION);
@@ -281,75 +475,9 @@ COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* in
   return armoryCreateBoard(COI_GLOBAL_WINDOW,
 			   COI_GLOBAL_LOADER,
 			   outsideBoard,
-			   inventory,
-			   &itemIDs);
-}
-
-ArmoryContext* _armoryCreateContext(COIBoard* board,
-				    COIBoard* outsideBoard,
-				    COIWindow* window,
-				    Inventory* inventory,
-				    IntList* itemIDs) {
-
-  ArmoryContext* armoryContext = malloc(sizeof(ArmoryContext));
-
-  armoryContext->sellItems = NULL;
-  armoryContext->buyItems = NULL;
-
-  armoryContext->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
-  armoryContext->mainStrings[0] = COIStringCreate("Buy", 0, 0, armoryContext->textType);
-  armoryContext->mainStrings[1] = COIStringCreate("Sell", 0, 0, armoryContext->textType);
-  armoryContext->mainStrings[2] = COIStringCreate("Exit", 0, 0, armoryContext->textType);
-  
-  // First level menu for armory
-  COISprite* frame = COISpriteCreateFromAssetID(60, 40, 200, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COISprite* pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame, 0);
-  COIBoardAddDynamicSprite(board, pointer, 0);
-  COIMenu* menu = COIMenuCreate(frame, pointer);
-  COIMenuSetTexts(menu, armoryContext->mainStrings, 3);
-  COIMenuSetVisible(menu);
-  armoryContext->menu = menu;
-
-  // Fill item list for buy menu
-  frame = COISpriteCreateFromAssetID(280, 40, 350, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame, 0);
-  COIBoardAddDynamicSprite(board, pointer, 0);
-  armoryContext->buyMenu = COIMenuCreate(frame, pointer);
-  armoryPopulateBuy(armoryContext, itemIDs);
-  armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
-  COIMenuSetInvisible(armoryContext->buyMenu);
-  
-  // Fill item list for sell menu
-  armoryContext->sellMenu = COIMenuCreate(frame, pointer);
-  armoryContext->inventory = inventory;
-  armoryPopulateSell(armoryContext);
-  COIMenuSetInvisible(armoryContext->sellMenu);
-
-  // Menu that asks for confirmation when buying/selling
-  frame = COISpriteCreateFromAssetID(280, 250, 100, 70, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame, 0);
-  COIBoardAddDynamicSprite(board, pointer, 0);
-  armoryContext->confirmMenu = COIMenuCreate(frame, pointer);
-  armoryContext->confirmStrings[0] = COIStringCreate("No", 0, 0, armoryContext->textType);
-  armoryContext->confirmStrings[1] = COIStringCreate("Yes", 0, 0, armoryContext->textType);
-  COIMenuSetTexts(armoryContext->confirmMenu, armoryContext->confirmStrings, 2);
-  COIMenuSetInvisible(armoryContext->confirmMenu);
-  armoryContext->confirmActive = false;
-
-  // Display money
-  frame = COISpriteCreateFromAssetID(60, 245, 200, 50, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  COIBoardAddDynamicSprite(board, frame, 0);
-  armoryContext->moneyString = NULL;
-  armoryUpdateMoneyString(armoryContext);
-
-  armoryContext->outsideBoard = outsideBoard;
-  armoryContext->currentMenu = menu;
-  
-
-  return armoryContext;
+			   pInfo,
+			   &itemIDs,
+         false);
 }
 
 void armoryDestroy(ArmoryContext* context) {
@@ -375,51 +503,4 @@ void armoryDestroy(ArmoryContext* context) {
   free(context);
 }
 
-//  ------------------------------------------------------------
 
-// Return the price for an item for this shop
-int _priceFromItemID(int item) {
-  switch (item) {
-  case ITEM_ID_RUSTY_SWORD:
-    return 105;
-  case ITEM_ID_RUSTY_BATTLEAXE:
-    return 275;
-  case ITEM_ID_SHABBY_BOW:
-    return 125;
-  case ITEM_ID_CRACKED_SHIELD:
-    return 85;
-  case ITEM_ID_STRENGTH_POTION:
-    return 25;
-  case ITEM_ID_DEF_SCROLL:
-    return 20;
-  case ITEM_ID_AGI_SCROLL:
-    return 15;
-  case ITEM_ID_BRONZE_HELM:
-    return 150;
-  case ITEM_ID_BRONZE_CHEST:
-    return 200;
-  case ITEM_ID_BRONZE_LEGS:
-    return 115;
-  case ITEM_ID_GEM_OF_PERMANENCE:
-    return 75;
-  case ITEM_ID_TAGNESSE:
-    return 700;
-  case ITEM_ID_KNIFE:
-    return 90;
-  case ITEM_ID_HEALING_POTION:
-    return 25;
-  case ITEM_ID_TP_POTION:
-    return 15;
-  case ITEM_ID_SP_POTION:
-    return 20;
-  case ITEM_ID_MOUNTAIN_JUICE:
-    return 60;
-  case ITEM_ID_LEATHER_ARMOR:
-    return 125;
-  case ITEM_ID_BOOTS:
-    return 100;
-  default:
-    printf("Error: No valid text ID %i\n", item);
-    return -1;
-  }
-}

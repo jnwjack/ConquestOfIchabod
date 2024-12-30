@@ -11,11 +11,6 @@
 #define PLAYER_CLASS_WIZARD 1
 #define PLAYER_CLASS_ROGUE 2
 
-#define SA_DAYS_OLDER 80
-#define SA_DAYS_OLDEST 150
-
-#define CLERK_CLASS_CHANGE_DAYS 20
-
 typedef enum RentStatus {
   RS_RENTING = 0,
   RS_NOT_RENTING,
@@ -59,6 +54,7 @@ typedef struct PlayerInfo {
   unsigned int shiftsWorked;
   TimeState lastXPGain;
   bool foundMythicalSword;
+  bool armoryGagUsed;
   
   Actor** party;
   int partySize;

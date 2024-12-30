@@ -169,6 +169,26 @@ char* ItemListStringFromItemID(int item) {
     return "Leather";
   case ITEM_ID_BOOTS:
     return "Boots";
+  case ITEM_ID_SLEEP_IN:
+    return "Sleep in";
+  case ITEM_ID_READ_BOOK:
+    return "Read a book";
+  case ITEM_ID_MAKE_FRIEND:
+    return "Make a friend";
+  case ITEM_ID_TAKE_WALK:
+    return "Take a walk";
+  case ITEM_ID_EXERCISE:
+    return "Exercise";
+  case ITEM_ID_RUN_ERRANDS:
+    return "Run errands";
+  case ITEM_ID_COOK:
+    return "Cook";
+  case ITEM_ID_GARDEN:
+    return "Garden";
+  case ITEM_ID_DATE:
+    return "Date someone";
+  case ITEM_ID_NEW_HOBBY:
+    return "Get a hobby";
   default:
     return "-";
   }

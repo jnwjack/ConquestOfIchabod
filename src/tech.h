@@ -49,7 +49,8 @@ void techRemoveFromList(TechList* list, Tech* tech);
 char* techNameFromID(int id);
 char* techDescFromID(int id);
 
-COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType, bool asterisk);
+COIString* techNameAsCOIStringWithCost(Tech* tech, int x, int y, COITextType* textType, bool asterisk);
+COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType);
 
 
 #endif

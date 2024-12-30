@@ -23,6 +23,8 @@ typedef struct BattleSplash {
   COIString* xp;
   COIString* levelUp;
 
+  LinkedList* additionalStrings;
+
   unsigned long _currentProgress;
   
   COISprite* box;
@@ -37,7 +39,10 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
 				 bool victorious,
 				 unsigned long gainedXP,
          bool levelUp,
-         unsigned int gold);
+         unsigned int gold,
+         Actor** enemies,
+         int numEnemies,
+         Inventory* inventory);
 void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd);
 bool BattleSplashFinished(BattleSplash* splash);
 void BattleSplashDestroy(BattleSplash* splash, COIBoard* board);

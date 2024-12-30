@@ -91,7 +91,10 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
   case BR_WIN:
     COISpriteSetPos(battleContext->allies[0]->sprite, battleContext->playerOutsideX, battleContext->playerOutsideY);
     TimeStateIncrement(1);
-    _changeBoardToThreadTown(battleContext->outside); // Breaks if we have another "overworld" board besides the town.
+
+    COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, battleContext->pInfo);
+    _changeBoardToThreadTown(townBoard); // Breaks if we have another "overworld" board besides the town.
+    townDestroyBoard((TownContext*)battleContext->outside->context);
     playerCheckForEviction(battleContext->pInfo);
     battleDestroyBoard(board);
     break;
@@ -293,7 +296,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
   }
 
   // Behavior for buy and sell menus
-  if (armoryContext->currentMenu != armoryContext->menu) {
+  if (armoryContext->currentMenu != armoryContext->menu && !armoryContext->isGag) {
     COISoundPlay(COI_SOUND_SELECT);
     armoryEnableConfirmMenu(armoryContext);
   }
@@ -308,7 +311,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
 
   // Sell
   if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 1) {
-    if (armoryContext->numSellItems > 0) {
+    if (armoryContext->numSellItems > 0 && !armoryContext->isGag) {
       COISoundPlay(COI_SOUND_SELECT);
       COIMenuSetVisible(armoryContext->sellMenu);
       armoryContext->currentMenu = armoryContext->sellMenu;
@@ -446,7 +449,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case SHOP_DOOR:
       player->movementDirection = MOVING_NONE;
       if (!townShopIsClosed()) {
-        otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo->inventory);
+        otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
         COISoundPlay(COI_SOUND_FAIRY);
       }
@@ -462,7 +465,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     case POTION_SHOP_DOOR:
       player->movementDirection = MOVING_NONE;
       if (!townShopIsClosed()) {
-        otherBoard = armoryCreateBoardForPotionStore(board, townContext->pInfo->inventory);
+        otherBoard = armoryCreateBoardForPotionStore(board, townContext->pInfo);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
         COISoundPlay(COI_SOUND_FAIRY);
       }
@@ -517,7 +520,9 @@ void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
   RentHouseTick(rhContext);
 
   if (shouldExit) {
-    _changeBoardToThreadTown(rhContext->outsideBoard);
+    COIBoard* townBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, rhContext->pInfo);
+    _changeBoardToThreadTown(townBoard);
+    townDestroyBoard((TownContext*)rhContext->outsideBoard->context);
     RentHouseDestroyBoard(rhContext);
   }
 }

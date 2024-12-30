@@ -160,12 +160,18 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
 
 Actor* actorCreatePlayer(COISprite* sprite) {
   // Process for random stat generation, maybe specific for each class?
-  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 24, 30, 21, 50, 25, 15);
+  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 24, 30, 24, 50, 25, 15);
   
   COISpriteSetSheetIndex(actor->sprite, 1, 2);
     
   return actor;
 }
+
+// Actor* actorCreateTEMPPlayer(COISprite* sprite) {
+//   Actor* actor = actorCreate(ACTOR_PLAYER, sprite, , 30, 24, 50, 25, 15);
+
+//   COISpriteSetSheetIndex(actor->sprite, 1, 2);
+// }
 
 
 void actorDestroy(Actor* actor) {

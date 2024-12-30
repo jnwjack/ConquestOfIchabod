@@ -107,14 +107,14 @@ void _encloseUpdate(COITransition* transition, COIWindow* window) {
 }
 
 void _encloseInit(COITransition* transition, COIWindow* window) {
-  int rectWidth = window->_width / 8;
+  int rectWidth = (window->_width / 8);
   for (int i = 0; i < 8; i+=2) {
     transition->rects[i].x = rectWidth * (i/2);
     transition->rects[i].y = 0;
     transition->rects[i].w = rectWidth;
     transition->rects[i].h = window->_height;
 
-    transition->rects[i+1].x = window->_width - 1 - rectWidth * ((i/2) + 1);
+    transition->rects[i+1].x = window->_width - rectWidth * ((i/2) + 1);
     transition->rects[i+1].y = 0;
     transition->rects[i+1].w = rectWidth;
     transition->rects[i+1].h = window->_height;

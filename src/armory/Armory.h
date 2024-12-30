@@ -32,10 +32,12 @@ typedef struct ArmoryContext {
   int numBuyItems;
   int numSellItems;
   Inventory* inventory; // Player inventory
+  PlayerInfo* pInfo;
   COITextType* textType;
   COIString* mainStrings[3];
   COIString* confirmStrings[2];
   COIString* moneyString;
+  bool isGag;
 } ArmoryContext;
 
 // Create board and associated context
@@ -43,11 +45,12 @@ typedef struct ArmoryContext {
 COIBoard* armoryCreateBoard(COIWindow* window,
 			    COIAssetLoader* loader,
 			    COIBoard* outsideBoard,
-			    Inventory* inventory,
-			    IntList* itemIDs);
+			    PlayerInfo* pInfo,
+			    IntList* itemIDs,
+          bool isGag);
 COIBoard* armoryCreateBoardForWeaponsStore(COIBoard* outsideBoard, PlayerInfo* pInfo);
-COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, Inventory* inventory);
-COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, Inventory* inventory);
+COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, PlayerInfo* pInfo);
+COIBoard* armoryCreateBoardForPotionStore(COIBoard* outsideBoard, PlayerInfo* pInfo);
 
 void armoryDestroy(ArmoryContext* context);
 
@@ -63,12 +66,5 @@ void armoryDisableConfirmMenu(ArmoryContext* context);
 void armoryEnableConfirmMenu(ArmoryContext* context);
 void armoryBuyItem(COIBoard* board);
 void armorySellItem(COIBoard* board);
-
-// Private functions
-// JNW: cleanup: remove private function declarations in header
-int _textIDFromItemID(int item);
-int _priceFromItemID(int item);
-ArmoryContext* _armoryCreateContext(COIBoard* board, COIBoard* outsideBoard, COIWindow* window, Inventory* inventory, IntList* itemIDs);
-char* _stringFromItemID(int item);
 
 #endif

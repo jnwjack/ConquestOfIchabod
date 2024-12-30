@@ -52,13 +52,34 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
 
   info->class = class;
   info->inventory = inventory;
+  info->armoryGagUsed = false;
   TimeStateCopyGlobalTime(&info->lastXPGain);
   info->party = malloc(sizeof(Actor*) * MAX_PARTY_SIZE);
   info->party[0] = actorCreatePlayer(sprite);
+
+  printf("HERawfefaffawfwE\n");
+
+  // TEMP
+  // info->party[0]->atk.base = 32;
+  // info->party[0]->def.base = 34;
+  // info->party[0]->agi.base = 34;
+  // info->level = 5;
+  // info->party[0]->hpMax = 79;
+  // info->party[0]->hp = 79;
+  // info->party[0]->tpMax = 45;
+  // info->party[0]->tp = 45;
+  // info->party[0]->spMax = 35;
+  // info->party[0]->sp = 35;
+  // info->inventory->money = 186;
+  // info->xpForLevelUp = 387;
+  // info->xp = 55;
+  // IntListAdd(&info->party[0]->specials, SPECIAL_ID_HEAL);
+  // IntListAdd(&info->party[0]->specials, SPECIAL_ID_ICE_SPEAR);
+
   info->partySize = 1;
   info->level = 1;
   info->xp = 0;
-  info->xpForLevelUp = 115;
+  info->xpForLevelUp = 100;
   info->renting = RS_NOT_RENTING;
   info->spriteAge = SA_YOUNG;
   info->working = false;
@@ -332,6 +353,7 @@ void playerEncode(PlayerInfo* info) {
   _encodeInt(info->party[0]->sprite->_y, temp, fp);
 
   _encodeInt((int)info->rentHouseBaldUsed, temp, fp);
+  _encodeInt((int)info->armoryGagUsed, temp, fp);
   _encodeInt((int)info->shiftsWorked, temp, fp);
 
   _encodeTimeState(&info->lastXPGain, temp, fp);
@@ -410,6 +432,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   COISpriteSetPos(info->party[0]->sprite, _decodeInt(&line, &len, fp, buf), _decodeInt(&line, &len, fp, buf));
 
   info->rentHouseBaldUsed = (bool)_decodeInt(&line, &len, fp, buf);
+  info->armoryGagUsed = (bool)_decodeInt(&line, &len, fp, buf);
   info->shiftsWorked = (unsigned int)_decodeInt(&line, &len, fp, buf);
 
   _decodeTimeState(&line, &len, fp, buf, &info->lastXPGain);
@@ -427,7 +450,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
 
 char* playerGetClass(PlayerInfo* pInfo) {
   // If we've worked at the shop enough, the class changes.
-  if (pInfo->shiftsWorked >= CLERK_CLASS_CHANGE_DAYS) {
+  if (pInfo->shiftsWorked >= CLERK_CLASS_CHANGE_SHIFTS_WORKED) {
     return "Clerk";
   }
 

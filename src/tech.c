@@ -55,7 +55,7 @@ TechList* techCreateList(int maxCount) {
 }
 //----------------------------------------------
 
-COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType, bool asterisk) {
+COIString* techNameAsCOIStringWithCost(Tech* tech, int x, int y, COITextType* textType, bool asterisk) {
   char name[MAX_NAME_SIZE];
   // Include asterisk at end? Used when indicating a tech is active
   if (asterisk) {
@@ -65,6 +65,10 @@ COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType, 
   }
   
   return COIStringCreate(name, x, y, textType);
+}
+
+COIString* techNameAsCOIString(Tech* tech, int x, int y, COITextType* textType) {  
+  return COIStringCreate(techNameFromID(tech->id), x, y, textType);
 }
 
 void techAddToList(TechList* list, int id) {

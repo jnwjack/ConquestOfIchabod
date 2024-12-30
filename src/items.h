@@ -39,6 +39,18 @@
 #define ITEM_ID_AGI_SCROLL 21
 #define ITEM_ID_LEATHER_ARMOR 22
 #define ITEM_ID_BOOTS 23
+
+// Gag items for armory
+#define ITEM_ID_SLEEP_IN 24
+#define ITEM_ID_READ_BOOK 25
+#define ITEM_ID_MAKE_FRIEND 26
+#define ITEM_ID_TAKE_WALK 27
+#define ITEM_ID_EXERCISE 28
+#define ITEM_ID_RUN_ERRANDS 29
+#define ITEM_ID_COOK 30
+#define ITEM_ID_GARDEN 31
+#define ITEM_ID_DATE 32
+#define ITEM_ID_NEW_HOBBY 33
 // ----------------------------
 
 typedef enum {

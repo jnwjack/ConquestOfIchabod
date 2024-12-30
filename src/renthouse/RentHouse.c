@@ -22,7 +22,7 @@ static void _heal(RentHouseContext* context) {
     snprintf(hpString, MAX_STRING_SIZE, "%i damage healed.", amountHealed);
     snprintf(tpString, MAX_STRING_SIZE, "%i TP restored.", regainedTP);
     snprintf(spString, MAX_STRING_SIZE, "%i SP restored.", regainedSP);
-    if (!context->pInfo->rentHouseBaldUsed && GLOBAL_TIME.day > 57) {
+    if (!context->pInfo->rentHouseBaldUsed && GLOBAL_TIME.day > RENTHOUSE_BALD_DAYS) {
       TextBoxSetStrings(context->textBox,
 		      "You tend to your wounds.",
 		      hpString,
@@ -75,7 +75,7 @@ static void _sleep(RentHouseContext* context) {
 }
 
 bool _tooEarlyForPayment(PlayerInfo* pInfo) {
-  return pInfo->nextRentDate - GLOBAL_TIME.day >= 30;
+  return pInfo->nextRentDate - GLOBAL_TIME.day >= RENT_INTERVAL;
 }
 
 static void _pay(RentHouseContext* context) {

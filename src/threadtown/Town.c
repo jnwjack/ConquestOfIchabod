@@ -1,7 +1,7 @@
 #include "Town.h"
 #include "../special.h"
 
-#define PAY_PER_SHIFT 85
+#define PAY_PER_SHIFT 120
 
 static int _testForCollision(TownContext* context, COISprite* actorSprite, int changeX, int changeY) {
   int collisionResult = COI_NO_COLLISION;;
@@ -199,7 +199,28 @@ static void _createNPCs(TownContext* context) {
 COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo* pInfo) {
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 5000, 5000, loader);
   
-  COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap.dat");
+  char fullFilename[MAX_STRING_SIZE];
+  char flattenedPathExtension[10];
+  if (pInfo->shiftsWorked >= GRASS_PATH_SHIFTS_WORKED) {
+    snprintf(flattenedPathExtension, 10, "_path");
+  } else {
+    snprintf(flattenedPathExtension, 10, "");
+  }
+
+  // The last corruption phase can block the player out if they're not in the right place
+  bool playerInTownCenter = pInfo->party[0]->sprite->_x >= 1504 && pInfo->party[0]->sprite->_y >= 3008 && pInfo->party[0]->sprite->_y <= 4288;
+  if (GLOBAL_TIME.day >= CORRUPTION_4_DAYS && playerInTownCenter) {
+    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_4%s.dat", flattenedPathExtension);
+  } else if (GLOBAL_TIME.day >= CORRUPTION_3_DAYS) {
+    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_3%s.dat", flattenedPathExtension);
+  } else if (GLOBAL_TIME.day >= CORRUPTION_2_DAYS) {
+    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_2%s.dat", flattenedPathExtension);
+  } else if (GLOBAL_TIME.day >= CORRUPTION_1_DAYS) {
+    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_1%s.dat", flattenedPathExtension);
+  } else {
+    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap%s.dat", flattenedPathExtension);
+  }
+  COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), fullFilename);
   TownContext* context = malloc(sizeof(TownContext));
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
@@ -278,7 +299,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
 
 // If we're not currently in motion, start moving in the provided direction.
 // Otherwise, just set which direction we want to move next.
-void _queueMovement(TownContext* context, Actor* actor, int direction, int speed) {
+static void _queueMovement(TownContext* context, Actor* actor, int direction, int speed) {
   if (actor->movementDirection == MOVING_NONE) {
     actor->_stepsLeft = COIBOARD_GRID_SIZE;
     actor->movementDirection = direction;
@@ -343,7 +364,11 @@ void townCheckForBattle(TownContext* context) {
   case TT_BROWN_GRASS:
   case TT_BROWN_GRASS_CORRUPT:
   case TT_THICK_GRASS:
+  #ifdef __COI_DEBUG__
+    context->willEnterBattle = generateRandomBoolWeighted(0);
+  #else
     context->willEnterBattle = generateRandomBoolWeighted(0.05);
+  #endif
     break;
   case TT_TENTACLE:
     context->willEnterBattle = true;
@@ -490,7 +515,7 @@ static void _talkToTagnesseGuy(TownContext* context) {
 }
 
 static void _talkToTreeGuy(TownContext* context) {
-  if (GLOBAL_TIME.day > 50) {
+  if (GLOBAL_TIME.day > TREE_GUY_CONVO_1_DAYS) {
     TextBoxSetStrings(context->textBox,
         "There's an interesting quirk about this tree.",
         "Every fruit tastes different!",
@@ -526,7 +551,7 @@ static void _talkToGemOfTimeGuy(TownContext* context) {
 }
 
 static void _talkToClassGuy(TownContext* context) {
-  if (GLOBAL_TIME.day >= CLERK_CLASS_CHANGE_DAYS) {
+  if (context->pInfo->shiftsWorked >= CLERK_CLASS_CHANGE_SHIFTS_WORKED) {
     TextBoxSetStrings(context->textBox,
         "Oh, you're a Clerk?",
         "Yeah, me too.",

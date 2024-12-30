@@ -37,12 +37,29 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
 }
 
 void COIBoardDestroy(COIBoard* board) {
+  printf("DESTROYING BOARD\n");
   if (board == NULL){
     return;
   }
   if (board->spriteGrid) {
+    for (int i = 0; i < board->spriteGridWidth * board->spriteGridHeight; i++) {
+      if  (board->spriteGrid[i]) {
+        COISprite* sprite = board->spriteGrid[i];
+        int xOrigin = (sprite->_x / COIBOARD_GRID_SIZE);
+        int yOrigin = (sprite->_y / COIBOARD_GRID_SIZE);
+        int yDeltaExtent = sprite->_height / COIBOARD_GRID_SIZE;
+        int xDeltaExtent = sprite->_width / COIBOARD_GRID_SIZE;
+        int temp = yOrigin * board->spriteGridWidth + xOrigin;
+        COISpriteDestroy(sprite);
+        for (int yDelta = 0; yDelta < yDeltaExtent; yDelta++) {
+          for (int xDelta = 0; xDelta < xDeltaExtent; xDelta++) {
+            int index = (yOrigin + yDelta) * board->spriteGridWidth + (xOrigin + xDelta);
+            board->spriteGrid[index] = NULL;
+          }
+        }
+      }
+    }
     free(board->spriteGrid);
-    printf("freed spritegrid\n");
   }
   if (board->persistentSprites != NULL) {
     for (int i = 0; i < board->perSpriteCount; i++) {
@@ -65,11 +82,11 @@ int COIBoardBGColor(COIBoard* board, int index) {
   // Scale color based on phase of day.
   // pix_value_scaled = pix_value / (2^p)
   // where p = { 0, 1, 2, 3 } for each of { MORNING, DAY, EVENING, NIGHT }
-  if (GLOBAL_TIME.day > 163) {
+  if (GLOBAL_TIME.day > BOARD_COLOR_CHANGE_3_DAYS) {
     return (board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase)) / 1.65;
-  } else if (GLOBAL_TIME.day > 114) {
+  } else if (GLOBAL_TIME.day > BOARD_COLOR_CHANGE_2_DAYS) {
     return (board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase)) / 1.35;
-  } if (GLOBAL_TIME.day > 57) {
+  } if (GLOBAL_TIME.day > BOARD_COLOR_CHANGE_1_DAYS) {
     return (board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase)) / 1.15;
   } 
   return board->_bgColor[index] / POW_INT(2, GLOBAL_TIME.phase);

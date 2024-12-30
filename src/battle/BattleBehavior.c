@@ -20,6 +20,18 @@ static bool _critical() {
   return generateRandomBoolWeighted(0.1);
 }
 
+static int _baseDamage(int aAtk, int tDef) {
+  int damageBase;
+  if (aAtk >= tDef) {
+      damageBase = aAtk * 2 - tDef;
+  } else {
+      damageBase = (aAtk * aAtk) / tDef;
+  }
+  damageBase /= 3;
+
+  return damageBase;
+}
+
 static int _randomDamage(int damage) {
   int randomSpread = generateRandomCharWithCenter(damage, MAX(1, damage / 10));
   printf("DAMAGE BASE: %i RANDOM SPREAD: %i\n", damage, randomSpread);
@@ -105,14 +117,16 @@ static Actor* _pickRandomAliveActor(Actor** actors, int numActors) {
   return aliveActors[selectedActor];
 }
 
-static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBoard* board, COISprite* box, COITextType* textType) {
+static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBoard* board, COISprite* box, COITextType* textType, int aAtk, int tDef) {
   Actor* t = action->target;
   int damage;
   char temp[MAX_STRING_SIZE];
   if (action->noSpecialDamage) {
     damage = 0;
   } else if (action->index == SPECIAL_ID_BACKSTAB) {
-    int base = actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
+    // Regular attack calculation + AGI diff
+    int base = _baseDamage(aAtk, tDef);
+    base += actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
     damage = _randomDamage(base);
   } else {
     damage = _randomDamage(specialStrength(action->index));
@@ -452,14 +466,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
   case ATTACK:
     printf("ATK mod: %f\n", action->attackModifier);
     // damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
-    int damageBase;
+    damageBase = _baseDamage(aAtk, tDef);
     // Trying new damage calculation
-    if (aAtk >= tDef) {
-      damageBase = aAtk * 2 - tDef;
-    } else {
-      damageBase = (aAtk * aAtk) / tDef;
-    }
-    damageBase /= 3;
+
     damage = _randomDamage(damageBase);
     bool successfulHit = generateRandomBoolWeighted(hitRate);
     if (successfulHit && _critical()) {
@@ -515,10 +524,10 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
         break;
       }
       if (damSpecialHitsTwice) {
-        _damagingSpecial(action, summary, board, box, textType);
+        _damagingSpecial(action, summary, board, box, textType, aAtk, tDef);
         ActionSummaryAddString(summary, "THE ATTACK REPEATS!", board, box, textType);
       }
-      _damagingSpecial(action, summary, board, box, textType);
+      _damagingSpecial(action, summary, board, box, textType, aAtk, tDef);
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
       if (battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {

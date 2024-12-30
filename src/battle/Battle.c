@@ -149,10 +149,10 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
   switch (terrain) {
   case TT_THICK_GRASS:
     {
-      if (GLOBAL_TIME.day > 150) {
+      if (GLOBAL_TIME.day > BATTLE_SET_2_DAYS) {
         int randIndex = (generateRandomChar() % BROWN_GRASS_LATEST_ENEMY_COUNT);
         return BROWN_GRASS_LATEST_ENEMY_TYPES[randIndex];
-      } else if (GLOBAL_TIME.day > 75) {
+      } else if (GLOBAL_TIME.day > BATTLE_SET_1_DAYS) {
         int randIndex = (generateRandomChar() % BROWN_GRASS_LATER_ENEMY_COUNT);
         return BROWN_GRASS_LATER_ENEMY_TYPES[randIndex];
         // int randVal = generateRandomChar() % 2;
@@ -160,7 +160,7 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
         //   return ACTOR_FEARWOLF;
         // }
         // return ACTOR_BOOWOW;
-      } else if (GLOBAL_TIME.day > 10) {
+      } else if (GLOBAL_TIME.day > BATTLE_GREEN_GRASS_EXPANDED_ENEMIES_DAYS) {
         int randIndex = (generateRandomChar() % BROWN_GRASS_ENEMY_COUNT);
         return BROWN_GRASS_ENEMY_TYPES[randIndex];
       }
@@ -168,10 +168,10 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
     }
   case TT_BROWN_GRASS:
     {
-      if (GLOBAL_TIME.day > 150) {
+      if (GLOBAL_TIME.day > BATTLE_SET_2_DAYS) {
         int randIndex = (generateRandomChar() % BROWN_GRASS_LATEST_ENEMY_COUNT);
         return BROWN_GRASS_LATEST_ENEMY_TYPES[randIndex];
-      } else if (GLOBAL_TIME.day > 75) {
+      } else if (GLOBAL_TIME.day > BATTLE_SET_1_DAYS) {
         int randIndex = (generateRandomChar() % BROWN_GRASS_LATER_ENEMY_COUNT);
         return BROWN_GRASS_LATER_ENEMY_TYPES[randIndex];
       }
@@ -189,15 +189,15 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
 unsigned long _xpYieldFromEnemyType(int enemyType) {
   switch (enemyType) {
   case ACTOR_SKELETON:
-    return 25;
+    return 45;
   case ACTOR_BOOWOW:
-    return 15;
+    return 30;
   case ACTOR_TENTACLE:
-    return 50;
+    return 75;
   case ACTOR_WIRE_MOTHER:
     return 35;
   case ACTOR_VOLCANETTE:
-    return 30;
+    return 40;
   default:
     return 0;
   }
@@ -299,6 +299,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
     context->gold += _goldFromEnemyType(enemyType);
     actorFaceRight(context->enemies[i]);
   }
+  // XP Bonus for fighting multiple enemies
+  context->xpYield += (MAX(0, context->numEnemies - 1) * 10);
   _positionEnemies(context->enemies, context->numEnemies);
   
   COIBoardSetPersistentSprites(board, _getPersistentSprites(context), context->numEnemies + context->numAllies);
@@ -325,7 +327,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   // Submenu
   //context->subMenu = COIMenuCreate(sprites[6], sprites[7]);
-  COISprite* subMenuFrame = COISpriteCreateFromAssetID(170, 320, 220, 150, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COISprite* subMenuFrame = COISpriteCreateFromAssetID(115, 320, 275, 150, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   COIBoardAddDynamicSprite(board, subMenuFrame, 0);
   COISprite* subMenuPointer = COISpriteCreateFromAssetID(100, 200, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
   COIBoardAddDynamicSprite(board, subMenuPointer, 0);
@@ -617,7 +619,7 @@ bool _tech(BattleContext* context) {
 
   TechList* tList = context->allies[context->turnIndex]->techList;
   for (int i = 0; i < tList->count; i++) {
-    COIString* string = techNameAsCOIString(tList->techs[i], 0, 0, context->textType, tList->techs[i]->active);
+    COIString* string = techNameAsCOIStringWithCost(tList->techs[i], 0, 0, context->textType, tList->techs[i]->active);
     COIStringSetVisible(string, true);
     COIBoardAddString(context->board, string, 0);
     COIMenuAddString(context->subMenu, string, tList->techs[i]->id);
@@ -686,7 +688,7 @@ void _techSelection(BattleContext* context) {
     tech->active = false;
     COIBoardRemoveString(context->board, tNames[selectedTech], 0);
     COIStringDestroy(tNames[selectedTech]);
-    tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
+    tNames[selectedTech] = techNameAsCOIStringWithCost(tech, 0, 0, context->textType, tech->active);
     COIBoardAddString(context->board, tNames[selectedTech], 0);
     COIMenuSetVisible(context->subMenu);
     _disableTechParticlesIfNecessary(context, context->turnIndex);
@@ -695,7 +697,7 @@ void _techSelection(BattleContext* context) {
     tech->active = true;
     COIBoardRemoveString(context->board, tNames[selectedTech], 0);
     COIStringDestroy(tNames[selectedTech]);
-    tNames[selectedTech] = techNameAsCOIString(tech, 0, 0, context->textType, tech->active);
+    tNames[selectedTech] = techNameAsCOIStringWithCost(tech, 0, 0, context->textType, tech->active);
     COIBoardAddString(context->board, tNames[selectedTech], 0);
     COIMenuSetVisible(context->subMenu);
     context->techParticles[context->turnIndex]->_visible = true;
@@ -836,7 +838,7 @@ bool _moveActorForward(BattleContext* context, Actor* actor) {
 }
 
 static void _showSplash(BattleContext* context, BattleResult result, bool levelUp) {
-  COISprite* splashBox = COISpriteCreateFromAssetID(205, 115, 240, 240, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
+  COISprite* splashBox = COISpriteCreateFromAssetID(185, 115, 260, 240, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
 
   if (result == BR_WIN) { 
     COISoundPlay(COI_SOUND_CELEBRATION);
@@ -849,7 +851,10 @@ static void _showSplash(BattleContext* context, BattleResult result, bool levelU
 				       result == BR_WIN,
 				       context->xpYield,
                levelUp,
-               context->gold);
+               context->gold,
+               context->enemies,
+               context->numEnemies,
+               context->pInfo->inventory);
 				    
 }
 

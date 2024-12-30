@@ -2,13 +2,25 @@
 #include "../special.h"
 
 // Ensure strings are where we want them inside the box
-void _positionElements(BattleSplash* splash) {
+static void _positionElements(BattleSplash* splash) {
   COIStringConfineToSprite(splash->result, splash->box);
   COIStringConfineToSprite(splash->rewards, splash->box);
   COIStringConfineToSprite(splash->xp, splash->box);
   // COIStringConfineToSprite(splash->levelUp, splash->box);
   COIStringPositionBelowString(splash->rewards, splash->result, true);
-  COIStringPositionBelowString(splash->xp, splash->rewards, true);
+
+  COIString* above = splash->rewards;
+  LinkedListResetCursor(splash->additionalStrings);
+  COIString* current = (COIString*)LinkedListNext(splash->additionalStrings);
+  while (current) {
+    COIStringConfineToSprite(current, splash->box);
+    COIStringPositionBelowString(current, above, true);
+    COIStringSetVisible(current, false);
+    above = current;
+    current = (COIString*)LinkedListNext(splash->additionalStrings);
+  }
+
+  COIStringPositionBelowString(splash->xp, above, true);
   // COIStringPositionBelowString(splash->levelUp, splash->xp, false);
 
   COIStringSetVisible(splash->result, false);
@@ -23,13 +35,91 @@ void _positionElements(BattleSplash* splash) {
   }
 }
 
+static bool _foundItem(int actorType) {
+  switch (actorType) {
+  case ACTOR_MEAT_FLAYER:
+  case ACTOR_SKELETON:
+    return generateRandomBoolWeighted(0.1);
+  case ACTOR_WIRE_MAIDEN:
+  case ACTOR_WIRE_MOTHER:
+    return generateRandomBoolWeighted(0.1);
+  case ACTOR_PYROID:
+  case ACTOR_VOLCANETTE:
+    return generateRandomBoolWeighted(0.1);
+  default:
+    return false;
+  }
+}
+
+static int _itemDropFromEnemyType(int actorType) {
+  switch (actorType) {
+  case ACTOR_MEAT_FLAYER:
+  case ACTOR_SKELETON:
+  {
+    int x = generateRandomCharInRange(0, 6);
+    switch (x) {
+    case 0:
+    case 1:
+    case 2:
+      return ITEM_ID_KNIFE;
+    case 3:
+    case 4:
+    case 5:
+      return ITEM_ID_CRACKED_SHIELD;
+    default:
+      return ITEM_ID_LEATHER_ARMOR;
+    }
+  }
+  case ACTOR_WIRE_MAIDEN:
+  case ACTOR_WIRE_MOTHER:
+  {
+    int x = generateRandomCharInRange(0, 9);
+    switch (x) {
+    case 0:
+    case 1:
+    case 2:
+      return ITEM_ID_SP_POTION;
+    case 3:
+    case 4:
+    case 5:
+      return ITEM_ID_TP_POTION;
+    case 6:
+    case 7:
+    case 8:
+      return ITEM_ID_HEALING_POTION;
+    default:
+      return ITEM_ID_MOUNTAIN_JUICE;
+    }
+  }
+  case ACTOR_PYROID:
+  case ACTOR_VOLCANETTE:
+  {
+    int x = generateRandomCharInRange(0, 2);
+    switch (x) {
+    case 0:
+      return ITEM_ID_AGI_SCROLL;
+    case 1:
+      return ITEM_ID_STRENGTH_POTION;
+    default:
+      return ITEM_ID_DEF_SCROLL;
+    }
+  }
+  default:
+    printf("Error: Trying to get item drop from invalid actor.\n");
+    return ITEM_ID_TP_POTION;
+  }
+}
+
 BattleSplash* BattleSplashCreate(COIBoard* board,
 				 COITextType* textType,
 				 COISprite* box,
 				 bool victorious,
 				 unsigned long gainedXP,
          bool levelUp,
-         unsigned int gold) {
+         unsigned int gold,
+         Actor** enemies,
+         int numEnemies,
+         Inventory* inventory) {
   BattleSplash* splash = malloc(sizeof(BattleSplash));
   splash->_currentProgress = 0;
   splash->_ticks = 0;
@@ -37,18 +127,41 @@ BattleSplash* BattleSplashCreate(COIBoard* board,
   COIBoardAddDynamicSprite(board, splash->box, 0);
   splash->box->_autoHandle = false;
   splash->box->_visible = true;
+  splash->additionalStrings = LinkedListCreate();
 
   if (victorious) {
     splash->result = COIStringCreate("Victory", 0, 0, textType);
     COIBoardAddString(board, splash->result, 0);
-    // Accept some list of items or something in the future
-    char temp[MAX_STRING_SIZE];
-    snprintf(temp, MAX_STRING_SIZE, "Found: %u Gold", gold);
-    splash->rewards = COIStringCreate(temp,
+
+    splash->rewards = COIStringCreate("Found:",
               0,
               0,
               textType);
     COIBoardAddString(board, splash->rewards, 0);
+
+    // Gold
+    char temp[MAX_STRING_SIZE];
+    snprintf(temp, MAX_STRING_SIZE, "%u Gold", gold);
+    COIString* goldString = COIStringCreate(temp,
+              0,
+              0,
+              textType);
+    COIBoardAddString(board, goldString, 0);
+    LinkedListAdd(splash->additionalStrings, (void*)goldString);
+
+    // Did we find items?
+    int MAX_ITEMS = 3;
+    int foundItems = 0;
+    for (int i = 0; i < numEnemies && foundItems < MAX_ITEMS; i++) {
+      if (_foundItem(enemies[i]->actorType)) {
+        int itemID = _itemDropFromEnemyType(enemies[i]->actorType);
+        COIString* string = COIStringCreate(ItemListStringFromItemID(itemID), 0, 0, textType);
+        COIBoardAddString(board, string, 0);
+        LinkedListAdd(splash->additionalStrings, (void*)string);
+        inventoryAddItem(inventory, itemID);
+        foundItems++;
+      }
+    }
 
     sprintf(temp, "Gained EXP: %lu", gainedXP); 
     splash->xp = COIStringCreate(temp, 0, 0, textType);
@@ -84,6 +197,12 @@ void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd) {
     COIStringSetVisible(splash->result, true);
     COIStringSetVisible(splash->rewards, true);
     COIStringSetVisible(splash->xp, true);
+    LinkedListResetCursor(splash->additionalStrings);
+    COIString* additionalString = (COIString*)LinkedListNext(splash->additionalStrings);
+    while (additionalString) {
+      COIStringSetVisible(additionalString, true);
+      additionalString = (COIString*)LinkedListNext(splash->additionalStrings);
+    }
     if (splash->levelUp) {
       COIStringSetVisible(splash->levelUp, true);
     }
@@ -101,23 +220,32 @@ void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd) {
       splash->_ticks = 0;
       COIStringSetVisible(splash->rewards, true);
       splash->stage = BSS_REWARDS;
+      LinkedListResetCursor(splash->additionalStrings);
     } else {
       splash->_ticks++;
     }
     break;
   case BSS_REWARDS:
+  {
     if (splash->_ticks > 100) {
       splash->_ticks = 0;
       COIStringSetVisible(splash->xp, true);
-      if (splash->levelUp) {
-        splash->stage = BSS_LEVELUP;
+
+      COIString* additionalString = (COIString*)LinkedListNext(splash->additionalStrings);      
+      if (additionalString) {
+        COIStringSetVisible(additionalString, true);
       } else {
-        splash->stage = BSS_PROGRESS_BAR;
+        if (splash->levelUp) {
+          splash->stage = BSS_LEVELUP;
+        } else {
+          splash->stage = BSS_PROGRESS_BAR;
+        }
       }
     } else {
       splash->_ticks++;
     }
     break;
+  }
   case BSS_LEVELUP:
     if (splash->_ticks > 100) {
       splash->_ticks = 0;
@@ -151,6 +279,14 @@ void BattleSplashDestroy(BattleSplash* splash, COIBoard* board) {
   COIStringDestroy(splash->rewards);
   COIBoardRemoveString(board, splash->xp, 0);
   COIStringDestroy(splash->xp);
+  LinkedListResetCursor(splash->additionalStrings);
+  COIString* current = (COIString*)LinkedListNext(splash->additionalStrings);
+  while (current) {
+    COIBoardRemoveString(board, current, 0);
+    COIStringDestroy(current);
+    current = (COIString*)LinkedListNext(splash->additionalStrings);
+  }
+  LinkedListDestroy(splash->additionalStrings);
   if (splash->levelUp) {
     COIBoardRemoveString(board, splash->levelUp, 0);
     COIStringDestroy(splash->levelUp);
@@ -351,7 +487,7 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
       splash->techSlots[indexInMenu - 1] = techs[i];
       printf("techs[%i]: %i\n", indexInMenu, techs[i]);
       Tech* tech = techCreate(techs[i]);
-      COIString* techName = techNameAsCOIString(tech, 0, 0, tt, false);
+      COIString* techName = techNameAsCOIString(tech, 0, 0, tt);
       COIStringSetVisible(techName, true);
       COIBoardAddString(board, techName, 0);
       COIMenuAddString(splash->menu, techName, LEVEL_UP_TECH);

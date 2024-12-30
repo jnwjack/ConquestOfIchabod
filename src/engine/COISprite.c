@@ -84,9 +84,6 @@ void COISpriteDestroy(COISprite* sprite) {
   if (sprite->_srcRect != NULL) {
     free(sprite->_srcRect);
   }
-  if (sprite->_extraCollision != NULL) {
-    free(sprite->_extraCollision);
-  }
   free(sprite);
 }
 
