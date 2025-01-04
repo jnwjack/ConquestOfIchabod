@@ -79,6 +79,11 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
       IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
       return actor;
     }
+  case ACTOR_PARTY_GUY:
+  case ACTOR_TIME_GUY:
+  case ACTOR_NOSTALGIC_GUY:
+  case ACTOR_TOWNS_GUY:
+  case ACTOR_ENCOURAGEMENT_GUY:
   case ACTOR_HAVONVALE_GUY:
   case ACTOR_TAGNESSE_GUY:
   case ACTOR_TREE_GUY:
@@ -130,8 +135,8 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 27, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 21, 21, 45, 20, 0, 75);
-      // IntListAdd(&actor->specials, SPECIAL_ID_FIREBALL);
+      Actor* actor = actorCreate(actorType, sprite, 21, 21, 40, 20, 0, 75);
+      IntListAdd(&actor->specials, SPECIAL_ID_FIRE_BOLT);
       IntListAdd(&actor->specials, SPECIAL_ID_ICE_SPEAR);
       IntListAdd(&actor->specials, SPECIAL_ID_SILENCE);
       return actor;

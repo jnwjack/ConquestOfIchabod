@@ -16,6 +16,7 @@ typedef enum COISoundID {
   COI_SOUND_SLUDGE,
   COI_SOUND_SLUDGE_NORMAL,
   COI_SOUND_FAIRY,
+  COI_SOUND_GEMSTONES,
 } COISoundID;
 
 void COISoundPlay(COISoundID sound);

@@ -55,9 +55,14 @@ static int _sdlEventToDirectionalInput(SDL_Event* event) {
 }
 
 static void _changeBoardToThreadTown(COIBoard* townBoard) {
-  COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);
-  COISoundPlay(COI_SOUND_THREADTOWN);
-  townApplyTimeChanges((TownContext*)townBoard->context);
+  COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);  
+  TownContext* townContext = (TownContext*)townBoard->context;
+  townApplyTimeChanges(townContext);
+  if (townContext->pInfo->party[0]->sprite->_x >= TOWN_MUSIC_X_TRIGGER || townContext->_creepy) {
+    COISoundPlay(COI_SOUND_FAIRY);
+  } else {
+    COISoundPlay(COI_SOUND_THREADTOWN);
+  }
 }
 
 bool handleMenuInput(COIMenu* menu, SDL_Event* event) {
@@ -129,7 +134,7 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
         if (battleContext->menuFocus == ACTION_MENU) {
           selection = COIMenuHandleInput(battleContext->actionMenu, _sdlEventToDirectionalInput(event), false);
         } else if (battleContext->menuFocus == SUB_MENU) {
-          selection = COIMenuHandleInput(battleContext->subMenu, _sdlEventToDirectionalInput(event), true);
+          selection = COIMenuHandleInput(battleContext->subMenu, _sdlEventToDirectionalInput(event), false);
         } else if (battleContext->menuFocus == LEVEL_UP) {
           selection = LevelUpSplashProcessInput(battleContext->levelUpSplash, _sdlEventToDirectionalInput(event));
         } else {
@@ -333,6 +338,7 @@ void armory(COIBoard* board, SDL_Event* event, void* context) {
     COIMenuSetInvisible(armoryContext->buyMenu);
     armoryContext->currentMenu = armoryContext->menu;
     _changeBoardToThreadTown(threadTownBoard);
+    townCheckForTiredMessage((TownContext*)threadTownBoard->context);
 
     armoryDestroy(armoryContext);
 
@@ -388,6 +394,14 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
   }
 
   if (townContext->willEnterBattle) {
+    // Handle running into tentacle in creepy spritemap
+    if (townContext->_creepy) {
+      COISpriteSetPos(townContext->pInfo->party[0]->sprite, 1504, 4288);
+      COIBoard* newTownBoard = townCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, townContext->pInfo);
+      _changeBoardToThreadTown(newTownBoard);
+      townDestroyBoard(townContext);
+      return;
+    }
     COIBoard* battleBoard = battleCreateBoard(COI_GLOBAL_WINDOW,
 					      board->loader,
 					      board,
@@ -451,7 +465,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
-        COISoundPlay(COI_SOUND_FAIRY);
+        COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break;      
     case ARMORY_DOOR:
@@ -459,7 +473,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
-        COISoundPlay(COI_SOUND_FAIRY);
+        COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break;
     case POTION_SHOP_DOOR:
@@ -467,7 +481,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForPotionStore(board, townContext->pInfo);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
-        COISoundPlay(COI_SOUND_FAIRY);
+        COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break; 
     case RENTABLE_HOUSE_DOOR:
@@ -476,7 +490,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
         townContext->pauseOverlay->dirty = true;
         otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
         COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
-        COISoundPlay(COI_SOUND_FAIRY);
+        COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break;
     default:

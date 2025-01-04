@@ -14,6 +14,7 @@ typedef struct TextBox {
 } TextBox;
 
 TextBox* TextBoxCreate(COIBoard* board, COITextType* textType);
+void TextBoxSetTicksPerChar(TextBox* textBox, int ticks);
 void TextBoxSetStrings(TextBox* textBox, char* firstString, ...);
 void TextBoxAnimate(TextBox* textBox);
 void TextBoxNextString(TextBox* textBox);

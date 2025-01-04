@@ -43,6 +43,8 @@ typedef struct COIString {
   int fontSize;
   bool visible;
 
+  int ticksPerChar;
+
   int index; // Used by COIBoard to identify position in COIString list
 }COIString;
 

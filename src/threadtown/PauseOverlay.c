@@ -158,7 +158,7 @@ static void _makeGoldLabelAndString(PauseOverlay* overlay) {
   _removeStringIfExists(overlay, overlay->gold);
 
   char temp[MAX_STRING_SIZE];
-  if (GLOBAL_TIME.day >= 100) {
+  if (GLOBAL_TIME.day >= PAUSE_OVERLAY_GOLD_DAYS) {
     overlay->goldLabel = COIStringCreate("Days:", 0, 0, overlay->textType);
     snprintf(temp, MAX_STRING_SIZE, "%lu", 300 - GLOBAL_TIME.day);
     overlay->gold = COIStringCreate(temp, 0, 0, overlay->textType);

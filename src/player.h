@@ -4,6 +4,7 @@
 #include "actor.h"
 #include "inventory.h"
 #include "constants.h"
+#include <time.h>
 
 #define MAX_PARTY_SIZE 4
 
@@ -51,6 +52,22 @@ typedef struct PlayerInfo {
 
   // Weird happenings
   bool rentHouseBaldUsed;
+  bool ominousMessage;
+  bool visitingMessage;
+  bool mockingMessage;
+  bool youFeelTired;
+  bool asNightFalls;
+  bool feltDifferent;
+  bool corruptionHasSpread;
+  bool welcomeHome;
+  bool breakFromWorking;
+  bool gottenFatter;
+  bool leavingThisPlace;
+  bool treeGuyCallout;
+  bool creepySpritemap;
+  bool agiReduced;
+  bool pathRevealed;
+
   unsigned int shiftsWorked;
   TimeState lastXPGain;
   bool foundMythicalSword;
@@ -64,6 +81,10 @@ typedef struct PlayerInfo {
   unsigned int level;
   unsigned long xp;
   unsigned long xpForLevelUp;
+
+  unsigned int hours;
+  unsigned int minutes;
+  time_t startTime;
 
   ClassProgression classProgression;
 } PlayerInfo;
@@ -99,5 +120,8 @@ void playerCheckForEviction(PlayerInfo* pInfo);
 SpriteAge playerSpriteAgeFromGlobalTime();
 int playerSpriteIndexFromSpriteAge(SpriteAge age);
 void playerUpdateClassProgressionFromTime(PlayerInfo* pInfo);
+int playerGetRandomStatIncrease();
+int playerGetRandomSPTPIncrease();
+int playerGetRandomHPIncrease();
 
 #endif

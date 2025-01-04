@@ -18,7 +18,7 @@ Tech* techCreate(int id) {
     tech->strength = 1.0;
     return tech;
   case TECH_ID_BRACE:
-    tech->cost = 1;
+    tech->cost = 4;
     tech->strength = 0.5;
     return tech;
   case TECH_ID_RAGE:

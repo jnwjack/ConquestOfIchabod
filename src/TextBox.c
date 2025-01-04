@@ -32,6 +32,16 @@ static void _destroyStrings(TextBox* textBox) {
   }
 }
 
+void TextBoxSetTicksPerChar(TextBox* textBox, int ticks) {
+  LinkedListResetCursor(textBox->strings);
+  COIString* current = (COIString*)LinkedListNext(textBox->strings);
+  while (current) {
+    current->ticksPerChar = ticks;
+    current = (COIString*)LinkedListNext(textBox->strings);
+  }
+  LinkedListResetCursor(textBox->strings);
+}
+
 void TextBoxSetStrings(TextBox* textBox, char* firstString, ...) {
   // Clean up previous strings if we need to
   _destroyStrings(textBox);

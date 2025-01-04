@@ -44,6 +44,8 @@ char* specialName(int id) {
     return "Backstab";
   case SPECIAL_ID_TIME_SKIP:
     return "Time Skip";
+  case SPECIAL_ID_FIRE_BOLT:
+    return "Fire Bolt";
   }
 
   return "ERROR";
@@ -76,6 +78,8 @@ int specialStrength(int id) {
     return 15;
   case SPECIAL_ID_ICE_SPEAR:
     return 18;
+  case SPECIAL_ID_FIRE_BOLT:
+    return 10;
   case SPECIAL_ID_HEAL:
     return 30;
   case SPECIAL_ID_MINOR_HEAL:
@@ -94,6 +98,7 @@ SpecialType specialType(int id) {
   case SPECIAL_ID_FIREBALL:
   case SPECIAL_ID_AVALANCHE:
   case SPECIAL_ID_BACKSTAB:
+  case SPECIAL_ID_FIRE_BOLT:
     return SPECIAL_DAMAGING;
   case SPECIAL_ID_HEAL:
   case SPECIAL_ID_MINOR_HEAL:
@@ -145,7 +150,7 @@ int specialCost(int id) {
   case SPECIAL_ID_CURSE:
     return 7;
   case SPECIAL_ID_PARRY:
-    return 10;
+    return 5;
   case SPECIAL_ID_BACKSTAB:
     return 6;
   case SPECIAL_ID_HASTE:

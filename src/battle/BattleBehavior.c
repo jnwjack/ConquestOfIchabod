@@ -126,6 +126,7 @@ static void _damagingSpecial(BattleAction* action, ActionSummary* summary, COIBo
   } else if (action->index == SPECIAL_ID_BACKSTAB) {
     // Regular attack calculation + AGI diff
     int base = _baseDamage(aAtk, tDef);
+    base = MAX(1, base * action->attackModifier);
     base += actorModifiedAgi(action->actor) - actorModifiedAgi(action->target);
     damage = _randomDamage(base);
   } else {
@@ -208,14 +209,13 @@ static void _debuffSpecial(BattleAction* action, ActionSummary* summary, COIBoar
 }
 
 ActionType battleBehaviorPickActionType(int actorType) {
-  // In future, can have different behavior for different actors.
   switch (actorType) {
   case ACTOR_TENTACLE:
     return (generateRandomBoolWeighted(0.5) ? SPECIAL : ATTACK);
   case ACTOR_WIRE_MOTHER:
     return (generateRandomBoolWeighted(0.85) ? SPECIAL : ATTACK);
   case ACTOR_VOLCANETTE:
-    return (generateRandomBoolWeighted(0.75) ? SPECIAL : ATTACK);
+    return (generateRandomBoolWeighted(0.5) ? SPECIAL : ATTACK);
   case ACTOR_BOOWOW:
     return (generateRandomBoolWeighted(0.25) ? SPECIAL : ATTACK);
   default:
@@ -467,6 +467,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     printf("ATK mod: %f\n", action->attackModifier);
     // damageBase = MAX(1, aAtk - tDef) * action->attackModifier;
     damageBase = _baseDamage(aAtk, tDef);
+    damageBase = MAX(1, damageBase * action->attackModifier);
     // Trying new damage calculation
 
     damage = _randomDamage(damageBase);
@@ -498,10 +499,10 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       sprintf(dmgString, "%i DAMAGE DEALT", damage);
       ActionSummaryAddString(summary, dmgString, board, box, textType);
       if (action->damageAttacker) {
-        a->hp = MAX(0, a->hp - damage / 2);
+        a->hp = MAX(0, a->hp - damage);
         snprintf(temp, MAX_STRING_SIZE, "%s COUNTERS!", tName);
         ActionSummaryAddString(summary, temp, board, box, textType);
-        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", damage / 2, aName);
+        snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", damage, aName);
         ActionSummaryAddString(summary, temp, board, box, textType);
       }
     } else {
@@ -553,7 +554,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
 	       aName, specialVerb(action->index), specialName(action->index), tName);
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      if (generateRandomBoolWeighted(hitRate)) {
+      if (action->noSpecialDamage) {
+        ActionSummaryAddString(summary, "INEFFECTIVE", board, box, textType);
+      } else if (generateRandomBoolWeighted(hitRate)) {
         _debuffSpecial(action, summary, board, box, textType, modifiers, t);
       } else {
         ActionSummaryAddString(summary, "THE ATTACK MISSES!", board, box, textType);
@@ -573,7 +576,12 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s ON %s",
 	       aName, specialVerb(action->index), specialName(action->index), tName);
       summary = ActionSummaryCreate(board, box, textType, temp, NULL);
-      _buffStat(&t->def);
+      if (actorIsDead(t)) {
+        ActionSummaryAddString(summary, "INEFFECTIVE", board, box, textType);
+      } else {
+        _buffStat(&t->def);
+        ActionSummaryAddString(summary, "DEFENSE INCREASED", board, box, textType);
+      }
     } else if (action->index == SPECIAL_ID_HOWL || action->index == SPECIAL_ID_HASTE) {
       snprintf(temp, MAX_STRING_SIZE, "%s %s %s",
 	       aName, specialVerb(action->index), specialName(action->index));

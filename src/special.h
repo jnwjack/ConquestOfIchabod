@@ -47,6 +47,7 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_BACKSTAB 14 // Deal damage based on AGI
 #define SPECIAL_ID_TIME_SKIP 21
 #define SPECIAL_ID_MINOR_HEAL 22
+#define SPECIAL_ID_FIRE_BOLT 23
 
 // These are for a gag and don't do anything
 #define SPECIAL_ID_DAYDREAM 15
@@ -55,6 +56,7 @@ Special* SPECIAL_FROM_ID(int id);
 #define SPECIAL_ID_STOCK_SHELVES 18
 #define SPECIAL_ID_CLEAN 19
 #define SPECIAL_ID_WATCH_CLOCK 20
+
 
 typedef enum {
   SPECIAL_DAMAGING,

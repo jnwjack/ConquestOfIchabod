@@ -76,6 +76,9 @@ void COIMenuDestroy(COIMenu* menu) {
   if (menu->_strings != NULL) {
     free(menu->_strings);
   }
+  if (menu->_values != NULL) {
+    free(menu->_values);
+  }
   free(menu);
 }
 

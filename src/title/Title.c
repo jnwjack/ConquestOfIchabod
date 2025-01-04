@@ -2,7 +2,7 @@
 
 static int slideAssetIDs[TITLE_NUM_INTRO_SLIDES] = { 51, 52, 53, 54, 55, 55 };
 
-static bool shouldSkipIntro = true;
+static bool shouldSkipIntro = false;
 
 void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
   strings[TITLE_STRING_NEW_GAME] = COIStringCreate("New", 290, 150, textType);
@@ -138,16 +138,17 @@ void titleDestroyBoard(TitleContext* context) {
   ClassSelectorDestroy(&context->cs, context->board);
   free(context);
   COIBoardDestroy(board);
+  shouldSkipIntro = true; // For next time
 }
 
 void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
   switch (slide) {
   case 0:
     TextBoxSetStrings(textBox,
-          "In the year 1032, the Kingdom of Rease triumphed over their enemies in the Ash War.    ",
-          "Rease enjoyed over 200 years of peace and prosperity.    ",
-          "The land obtained from their victory bolstered their economy.    ",
-          "All was well.    ",
+          "In the year 1032, the Kingdom of Rease triumphed over its enemies in the Ash War.    ",
+          "The land obtained Rease's victory provided the resources necessary for a new renaissance.    ",
+          "Rease enjoyed over 200 years of prosperity and innovation.    ",
+          "All was well.                    ",
           NULL);
     break;
   case 1:
@@ -164,14 +165,16 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
     break;
   case 3:
     TextBoxSetStrings(textBox,
-        "Izra's curse is powered by 10 cores scattered around Rease.    ",
-        "All 10 cores must be destroyed before the curse completely corrupts the world.    ",
+        "The King of Rease tasks his most adept mystics with determining the source of power for the horrid spell.    ",
+        "They find that Izra's curse is powered by ten corruption cores scattered around Rease.    ",
+        "All ten cores must be destroyed before the curse completely corrupts the world.    ",
+        "The King sends an open plea to all citizens, requesting their help in this matter.    ",
         NULL);
     break;
   case 4:
   {
     char first[MAX_STRING_SIZE];
-    snprintf(first, MAX_STRING_SIZE, "%s, a %s has risen to the challenge.    ", 
+    snprintf(first, MAX_STRING_SIZE, "%s, a young %s, has risen to the task.    ", 
             context->kb.name, 
             playerClassNameFromID(context->cs.currentClass));
     char second[MAX_STRING_SIZE];
@@ -185,13 +188,15 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
   }
   case 5:
     TextBoxSetStrings(textBox,
-      "All will be lost in 300 days. Go forth, young hero!    ",
+      "Go forth, young hero. And hurry!    ",
       "Time moves quicker than we think.                       ",
       NULL);
     break;
   default:
     printf("Error when generating intro text.\n");
   }
+
+  TextBoxSetTicksPerChar(textBox, 5);
 }
 
 void _displaySlide(TitleContext* context) {
@@ -230,6 +235,7 @@ void titleTick(TitleContext* context) {
     // Do nothing
   } else if (context->currentSlide > -1 &&
             context->currentSlide < TITLE_NUM_INTRO_SLIDES) {
+    printf("CURRENT SLIDE: %i\n", context->currentSlide);
     _displaySlide(context);
   } else {
     // Animate title
@@ -288,14 +294,8 @@ void _select(TitleContext* context) {
       _closeTitle(context);
       if (shouldSkipIntro) {
         context->currentSlide = 2;
-        // context->currentSlide = TITLE_NUM_INTRO_SLIDES - 1;
-        // context->textBox->box->_visible = false;
-        // context->creatingCharacter = true;
-        // context->slides[context->currentSlide]->_visible = true;
-        // ClassSelectorSetVisible(&context->cs, true);
       } else {
         context->currentSlide++;
-        shouldSkipIntro = true;
       }
       break;
     case TITLE_STRING_QUIT_GAME:

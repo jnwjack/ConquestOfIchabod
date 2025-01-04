@@ -52,6 +52,7 @@ COIString* COIStringCreate(char* string, int x, int y, COITextType* textType) {
   obj->x = x;
   obj->y = y;
   obj->yBottomLine = y; // Same as y until we request word wrapping
+  obj->ticksPerChar = TYPING_TICKS_PER_CHAR;
 
   // Store string as a linked list of COIChars
   COIChar* current = NULL;
@@ -230,7 +231,7 @@ bool COIStringAnimateTyping(COIString* string) {
   }
   string->visible = true; // Regardless of where we are in animation, we say the string is visible
   string->_typingAnimationTicks++;
-  if (string->_typingAnimationTicks >= TYPING_TICKS_PER_CHAR) {
+  if (string->_typingAnimationTicks >= string->ticksPerChar) {
     string->_typingAnimationHead->visible = true;
     string->_typingAnimationHead = string->_typingAnimationHead->next;
     string->_typingAnimationTicks = 0;

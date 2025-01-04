@@ -14,6 +14,7 @@ Mix_Music* battleMusic = NULL;
 Mix_Music* sludgeMusic = NULL;
 Mix_Music* fairyMusic = NULL;
 Mix_Music* sludgeNormalMusic = NULL;
+Mix_Music* gemstonesMusic = NULL;
 
 Mix_Chunk* _loadSound(const char* soundString) {
   char temp[100];
@@ -51,6 +52,7 @@ void COISoundInit() {
   sludgeMusic = _loadMusic("sludge.wav");
   fairyMusic = _loadMusic("fairy.wav");
   sludgeNormalMusic = _loadMusic("sludge_normal.wav");
+  gemstonesMusic = _loadMusic("gemstones.wav");
 }
 
 void COISoundPlay(COISoundID sound) {
@@ -92,6 +94,9 @@ void COISoundPlay(COISoundID sound) {
     break;
   case COI_SOUND_SLUDGE_NORMAL:
     Mix_PlayMusic(sludgeNormalMusic, -1);
+    break;
+  case COI_SOUND_GEMSTONES:
+    Mix_PlayMusic(gemstonesMusic, -1);
   default:
     printf("Error: Invalid sound ID.\n");
   }
@@ -116,4 +121,5 @@ void COISoundShutdown() {
   Mix_FreeMusic(sludgeMusic);
   Mix_FreeMusic(fairyMusic);
   Mix_FreeMusic(sludgeNormalMusic);
+  Mix_FreeMusic(gemstonesMusic);
 }

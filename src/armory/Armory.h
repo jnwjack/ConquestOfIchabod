@@ -5,7 +5,7 @@
 #include "../inputloops.h"
 
 // Can later replace this with charisma or something
-#define SELL_FACTOR 0.75
+#define SELL_FACTOR 0.4
 
 typedef struct ArmoryItem {
   int itemID;

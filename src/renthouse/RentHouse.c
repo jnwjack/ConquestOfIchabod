@@ -27,7 +27,7 @@ static void _heal(RentHouseContext* context) {
 		      "You tend to your wounds.",
 		      hpString,
 		      tpString,
-          "While treating your scalp, you notice that a bald spot is starting to form.",
+          "While treating your scalp, you notice that some of your hair is missing.",
 		      spString,
 		      NULL);
       context->pInfo->alreadyHealed = true;

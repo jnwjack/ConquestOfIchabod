@@ -31,6 +31,11 @@
 #define ACTOR_POTION_GUY 21
 #define ACTOR_FLEE_GUY 22
 #define ACTOR_MONSTER_COUNT_GUY 23
+#define ACTOR_ENCOURAGEMENT_GUY 24
+#define ACTOR_NOSTALGIC_GUY 25
+#define ACTOR_TOWNS_GUY 26
+#define ACTOR_TIME_GUY 27
+#define ACTOR_PARTY_GUY 28
 
 // How many ticks per animation frame when moving
 #define ACTOR_SPRITE_TICKS 8

@@ -388,13 +388,13 @@ static void _applyStatIncrease(PlayerInfo* pInfo) {
   Actor* actor = pInfo->party[0];
   switch (pInfo->class) {
   case PLAYER_CLASS_FIGHTER:
-    actor->atk.base += generateRandomCharInRange(1, 3);
-    actor->def.base += generateRandomCharInRange(1, 3);
+    actor->atk.base += playerGetRandomStatIncrease();
+    actor->def.base += playerGetRandomStatIncrease();
     break;
   case PLAYER_CLASS_WIZARD:
   {
-    int tpGain = generateRandomCharInRange(3, 6);
-    int spGain = generateRandomCharInRange(3, 6);
+    int tpGain = playerGetRandomSPTPIncrease();
+    int spGain = playerGetRandomSPTPIncrease();
     actor->tpMax += tpGain;
     actor->tp = MIN(actor->tpMax, actor->tp + tpGain);
     actor->spMax += spGain;
@@ -403,10 +403,10 @@ static void _applyStatIncrease(PlayerInfo* pInfo) {
   }
   case PLAYER_CLASS_ROGUE:
   {
-    int tpGain = generateRandomCharInRange(3, 6);
+    int tpGain = playerGetRandomSPTPIncrease();
     actor->tpMax += tpGain;
     actor->tp = MIN(actor->tpMax, actor->tp + tpGain);
-    actor->agi.base += generateRandomCharInRange(1, 3);
+    actor->agi.base += playerGetRandomStatIncrease();
     break;
   }
   default:
@@ -617,8 +617,20 @@ bool LevelUpSplashProcessSelection(LevelUpSplash* splash, PlayerInfo* pInfo) {
 
 void LevelUpSplashDestroy(LevelUpSplash* splash, COIBoard* board) {
   for (int i = 0; i < 3; i++) {
-
+    if (splash->costStrings[i]) {
+      COIBoardRemoveString(board, splash->costStrings[i], 0);
+      COIStringDestroy(splash->costStrings[i]);
+    }
+    if (splash->descStrings[i]) {
+      COIBoardRemoveString(board, splash->descStrings[i], 0);
+      COIStringDestroy(splash->descStrings[i]);
+    }
   }
+
+  COIMenuDestroyAndFreeComponents(splash->menu, board);
+  COIMenuDestroyAndFreeComponents(splash->confirmMenu, board);
+
+  COIBoardRemoveDynamicSprite(board, splash->descBox, 0);
 
   free(splash);
 }

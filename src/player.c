@@ -57,25 +57,6 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->party = malloc(sizeof(Actor*) * MAX_PARTY_SIZE);
   info->party[0] = actorCreatePlayer(sprite);
 
-  printf("HERawfefaffawfwE\n");
-
-  // TEMP
-  // info->party[0]->atk.base = 32;
-  // info->party[0]->def.base = 34;
-  // info->party[0]->agi.base = 34;
-  // info->level = 5;
-  // info->party[0]->hpMax = 79;
-  // info->party[0]->hp = 79;
-  // info->party[0]->tpMax = 45;
-  // info->party[0]->tp = 45;
-  // info->party[0]->spMax = 35;
-  // info->party[0]->sp = 35;
-  // info->inventory->money = 186;
-  // info->xpForLevelUp = 387;
-  // info->xp = 55;
-  // IntListAdd(&info->party[0]->specials, SPECIAL_ID_HEAL);
-  // IntListAdd(&info->party[0]->specials, SPECIAL_ID_ICE_SPEAR);
-
   info->partySize = 1;
   info->level = 1;
   info->xp = 0;
@@ -86,10 +67,26 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->alreadyHealed = false;
   info->rentHouseBaldUsed = false;
   info->foundMythicalSword = false;
+  info->ominousMessage = false;
+  info->mockingMessage = false;
+  info->visitingMessage = false;
+  info->feltDifferent = false;
+  info->asNightFalls = false;
+  info->gottenFatter = false;
+  info->leavingThisPlace = false;
+  info->youFeelTired = false;
+  info->treeGuyCallout = false;
+  info->creepySpritemap = false;
+  info->pathRevealed = false;
+  info->corruptionHasSpread = false;
+  info->agiReduced = false;
+  info->welcomeHome = false;
+  info->breakFromWorking = false;
   info->nextRentDate = RENT_INTERVAL;
   info->shiftsWorked = 0;
   info->classProgression.specialsIndex = 0;
   info->classProgression.techsIndex = 0;
+  info->startTime = time(NULL);
 
   // Should change based on class type
   if (info->class == PLAYER_CLASS_WIZARD) {
@@ -129,7 +126,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
 }
 
 unsigned long _getXPForLevel(unsigned long oldXP) {
-  return oldXP * 1.5;
+  return oldXP * 1.9;
 }
 
 void playerAddXP(PlayerInfo* info, unsigned long xp) {
@@ -139,20 +136,21 @@ void playerAddXP(PlayerInfo* info, unsigned long xp) {
     info->xp -= info->xpForLevelUp;
     info->xpForLevelUp = _getXPForLevel(info->xpForLevelUp);
     // Increase stats
-    info->party[0]->atk.base += generateRandomCharInRange(1, 3);
-    info->party[0]->def.base += generateRandomCharInRange(1, 3);
-    info->party[0]->agi.base += generateRandomCharInRange(1, 3);
-    int hpIncrease = generateRandomCharInRange(5, 15);
+    info->party[0]->atk.base += playerGetRandomStatIncrease();
+    info->party[0]->def.base += playerGetRandomStatIncrease();
+    info->party[0]->agi.base += playerGetRandomStatIncrease();
+    int hpIncrease = playerGetRandomHPIncrease();
     info->party[0]->hpMax += hpIncrease;
     info->party[0]->hp += hpIncrease;
-    int spIncrease = generateRandomCharInRange(3, 6);
+    int spIncrease = playerGetRandomSPTPIncrease();
     info->party[0]->spMax += spIncrease;
     info->party[0]->sp += spIncrease;
-    int tpIncrease = generateRandomCharInRange(3, 6);
+    int tpIncrease = playerGetRandomSPTPIncrease();
     info->party[0]->tpMax += tpIncrease;
     info->party[0]->tp += tpIncrease;
+
+    TimeStateCopyGlobalTime(&info->lastXPGain);
   }
-  TimeStateCopyGlobalTime(&info->lastXPGain);
 }
 
 int playerAdjustedATK(PlayerInfo* info) {
@@ -359,7 +357,31 @@ void playerEncode(PlayerInfo* info) {
   _encodeTimeState(&info->lastXPGain, temp, fp);
 
   _encodeInt((int)info->foundMythicalSword, temp, fp);
+  _encodeInt((int)info->ominousMessage, temp, fp);
+  _encodeInt((int)info->mockingMessage, temp, fp);
+  _encodeInt((int)info->visitingMessage, temp, fp);
+  _encodeInt((int)info->youFeelTired, temp, fp);
+  _encodeInt((int)info->asNightFalls, temp, fp);
+  _encodeInt((int)info->feltDifferent, temp, fp);
+  _encodeInt((int)info->corruptionHasSpread, temp, fp);
+  _encodeInt((int)info->welcomeHome, temp, fp);
+  _encodeInt((int)info->breakFromWorking, temp, fp);
+  _encodeInt((int)info->gottenFatter, temp, fp);
+  _encodeInt((int)info->leavingThisPlace, temp, fp);
+  _encodeInt((int)info->treeGuyCallout, temp, fp);
+  _encodeInt((int)info->creepySpritemap, temp, fp);
+  _encodeInt((int)info->agiReduced, temp, fp);
 
+  // Playtime
+  time_t endTime = time(NULL) - info->startTime;
+  time_t minutes = endTime / 60;
+  time_t hours = minutes / 60;
+  time_t minutesLeftOver = minutes - (hours * 60);
+
+  _encodeInt((int)hours + (int)info->hours, temp, fp);
+  _encodeInt((int)minutesLeftOver + (int)info->minutes, temp, fp);
+
+  _encodeInt((int)info->pathRevealed, temp, fp);
 
   fclose(fp);
 }
@@ -438,6 +460,25 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   _decodeTimeState(&line, &len, fp, buf, &info->lastXPGain);
 
   info->foundMythicalSword = (bool)_decodeInt(&line, &len, fp, buf);
+  info->ominousMessage = (bool)_decodeInt(&line, &len, fp, buf);
+  info->mockingMessage = (bool)_decodeInt(&line, &len, fp, buf);
+  info->visitingMessage = (bool)_decodeInt(&line, &len, fp, buf);
+  info->youFeelTired = (bool)_decodeInt(&line, &len, fp, buf);
+  info->asNightFalls = (bool)_decodeInt(&line, &len, fp, buf);
+  info->feltDifferent = (bool)_decodeInt(&line, &len, fp, buf);
+  info->corruptionHasSpread = (bool)_decodeInt(&line, &len, fp, buf);
+  info->welcomeHome = (bool)_decodeInt(&line, &len, fp, buf);
+  info->breakFromWorking = (bool)_decodeInt(&line, &len, fp, buf);
+  info->gottenFatter = (bool)_decodeInt(&line, &len, fp, buf);
+  info->leavingThisPlace = (bool)_decodeInt(&line, &len, fp, buf);
+  info->treeGuyCallout = (bool)_decodeInt(&line, &len, fp, buf);
+  info->creepySpritemap = (bool)_decodeInt(&line, &len, fp, buf);
+  info->agiReduced = (bool)_decodeInt(&line, &len, fp, buf);
+
+  info->hours = (unsigned int)_decodeInt(&line, &len, fp, buf);
+  info->minutes = (unsigned int)_decodeInt(&line, &len, fp, buf);
+
+  info->pathRevealed = (bool)_decodeInt(&line, &len, fp, buf);
 
   playerUpdateClassProgressionFromTime(info);
 
@@ -485,14 +526,14 @@ void playerLevelDown(PlayerInfo* pInfo) {
     Actor* player = pInfo->party[0];
 
     // Reduce ability scores
-    player->atk.base = MAX(1, player->atk.base - generateRandomCharInRange(1, 3));
-    player->def.base = MAX(1, player->def.base - generateRandomCharInRange(1, 3));
-    player->agi.base = MAX(1, player->agi.base - generateRandomCharInRange(1, 3));
-    player->hpMax = MAX(1, player->hpMax - generateRandomCharInRange(5, 15));
+    player->atk.base = MAX(1, player->atk.base - playerGetRandomStatIncrease());
+    player->def.base = MAX(1, player->def.base - playerGetRandomStatIncrease());
+    player->agi.base = MAX(1, player->agi.base - playerGetRandomStatIncrease());
+    player->hpMax = MAX(1, player->hpMax - playerGetRandomHPIncrease());
     player->hp = MIN(player->hp, player->hpMax);
-    player->spMax = MAX(1, player->spMax - generateRandomCharInRange(3, 6));
+    player->spMax = MAX(1, player->spMax - playerGetRandomSPTPIncrease());
     player->sp = MIN(player->sp, player->spMax);
-    player->tpMax = MAX(1, player->tpMax - generateRandomCharInRange(3, 6));
+    player->tpMax = MAX(1, player->tpMax - playerGetRandomSPTPIncrease());
     player->tp = MIN(player->tp, player->tpMax);
 
     // Remove an ability if we can
@@ -500,13 +541,22 @@ void playerLevelDown(PlayerInfo* pInfo) {
     // False when we have no abilities or when the only ability we have is the one ability given to us by a piece of armor (not learned from level-up)
     bool shouldRemoveAbility = !(totalAbilities == 0 || (totalAbilities == 1 && player->specials.length == 1 && player->specials.values[0] == SPECIAL_ID_TIME_SKIP));
     if (shouldRemoveAbility) {
-      int index = generateRandomCharInRange(0, totalAbilities - 1);
-      if (index < player->specials.length) {
-        // Remove from specials
-        IntListDelete(&player->specials, index);
-      } else {
-        // Remove from techs
-        techRemoveFromList(player->techList, player->techList->techs[index - player->specials.length]);
+      bool keepGoing = true;
+      while (keepGoing) {
+        int index = generateRandomCharInRange(0, totalAbilities - 1);
+        if (index < player->specials.length) {
+          // Remove from specials
+          if (player->specials.values[index] == SPECIAL_ID_TIME_SKIP) {
+            // Can't delete time skip. Try again.
+            continue;
+          }
+          IntListDelete(&player->specials, index);
+          keepGoing = false;
+        } else {
+          // Remove from techs
+          techRemoveFromList(player->techList, player->techList->techs[index - player->specials.length]);
+          keepGoing = false;
+        }
       }
     }
 
@@ -521,6 +571,18 @@ void playerUpdateClassProgressionFromTime(PlayerInfo* pInfo) {
     pInfo->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_CLERK;
     pInfo->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_CLERK;
   }
+}
+
+int playerGetRandomStatIncrease() {
+  return generateRandomCharInRange(1, 4);
+}
+
+int playerGetRandomSPTPIncrease() {
+  return generateRandomCharInRange(3, 8);
+}
+
+int playerGetRandomHPIncrease() {
+  return generateRandomCharInRange(5, 15);
 }
 
 void playerInfoDestroy(PlayerInfo* info) {

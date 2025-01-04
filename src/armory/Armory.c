@@ -4,11 +4,11 @@
 static int _priceFromItemID(int item) {
   switch (item) {
   case ITEM_ID_RUSTY_SWORD:
-    return 105;
+    return 210;
   case ITEM_ID_RUSTY_BATTLEAXE:
-    return 275;
+    return 415;
   case ITEM_ID_SHABBY_BOW:
-    return 125;
+    return 320;
   case ITEM_ID_CRACKED_SHIELD:
     return 85;
   case ITEM_ID_STRENGTH_POTION:
@@ -18,29 +18,29 @@ static int _priceFromItemID(int item) {
   case ITEM_ID_AGI_SCROLL:
     return 15;
   case ITEM_ID_BRONZE_HELM:
-    return 150;
+    return 300;
   case ITEM_ID_BRONZE_CHEST:
-    return 200;
+    return 430;
   case ITEM_ID_BRONZE_LEGS:
-    return 115;
+    return 210;
   case ITEM_ID_GEM_OF_PERMANENCE:
     return 40;
   case ITEM_ID_TAGNESSE:
-    return 700;
+    return 900;
   case ITEM_ID_KNIFE:
     return 90;
   case ITEM_ID_HEALING_POTION:
-    return 25;
-  case ITEM_ID_TP_POTION:
-    return 15;
-  case ITEM_ID_SP_POTION:
-    return 20;
-  case ITEM_ID_MOUNTAIN_JUICE:
     return 60;
-  case ITEM_ID_LEATHER_ARMOR:
-    return 125;
-  case ITEM_ID_BOOTS:
+  case ITEM_ID_TP_POTION:
+    return 45;
+  case ITEM_ID_SP_POTION:
+    return 50;
+  case ITEM_ID_MOUNTAIN_JUICE:
     return 100;
+  case ITEM_ID_LEATHER_ARMOR:
+    return 230;
+  case ITEM_ID_BOOTS:
+    return 200;
   case ITEM_ID_SLEEP_IN:
     return 3;
   case ITEM_ID_READ_BOOK:

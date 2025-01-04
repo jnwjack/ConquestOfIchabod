@@ -78,6 +78,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
 				 status->textType);
     COIStringSetVisible(status->tp, true);
     COIStringPositionBelowString(status->tp, status->hp, false);
+    COIStringSetStringCenter(status->tp, status->frame->_x + status->frame->_width / 2, status->frame->_y + (fs + COI_PADDING) * 2);
     COIBoardAddString(status->board, status->tp, 0);    
 
     status->_tpVal = actor->tp;
@@ -93,6 +94,7 @@ void AllyStatusUpdate(AllyStatus* status, Actor* actor, LinkedList* modifiers) {
           status->textType);
     COIStringSetVisible(status->sp, true);
     COIStringPositionBelowString(status->sp, status->tp, false);
+    COIStringSetStringCenter(status->sp, status->frame->_x + status->frame->_width / 2, status->frame->_y + (fs + COI_PADDING) * 3);
     COIBoardAddString(status->board, status->sp, 0);
 
     status->_spVal = actor->sp;

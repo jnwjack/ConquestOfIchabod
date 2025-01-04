@@ -174,10 +174,10 @@ static void _createSwordChest(TownContext* context) {
 static void _createNPCs(TownContext* context) {
   context->allActors = LinkedListCreate();
 
-  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 1664, 2240, 1600, 2080, 2912, 2976, 3872, 1568, 2016, 1408, 672, 1696, 3840 };
-  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 2176, 2048, 4256, 2144, 1760, 3232, 928, 3392, 1888, 2240, 4096, 2368, 2112 };
-  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_CHAGGAI, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY, ACTOR_CHESTS_GUY,
-                                          ACTOR_MONSTER_COUNT_GUY, ACTOR_GEM_OF_TIME_GUY, ACTOR_CLASS_GUY, ACTOR_POTION_GUY, ACTOR_FLEE_GUY };
+  int xPositions[TOWN_NUM_NPC_CITIZENS] = { 1408, 2304, 1568, 1600, 2080, 2016, 2976, 2080, 1568, 2912, 2048, 672, 1696, 3840, 1056 };
+  int yPositions[TOWN_NUM_NPC_CITIZENS] = { 1856, 4352, 3968, 4256, 2144, 1888, 3232, 1120, 3392, 1760, 2464, 4096, 2368, 2112, 4576 };
+  int actorIDs[TOWN_NUM_NPC_CITIZENS] = { ACTOR_TIME_GUY, ACTOR_TOWNS_GUY, ACTOR_ENCOURAGEMENT_GUY, ACTOR_LANDLORD, ACTOR_MERCHANT, ACTOR_TAGNESSE_GUY, ACTOR_TREE_GUY, ACTOR_HAVONVALE_GUY, ACTOR_CHESTS_GUY,
+                                          ACTOR_MONSTER_COUNT_GUY, ACTOR_GEM_OF_TIME_GUY, ACTOR_CLASS_GUY, ACTOR_POTION_GUY, ACTOR_FLEE_GUY, ACTOR_PARTY_GUY };
 
   for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
     context->npcs[i] = actorCreateOfType(actorIDs[i],
@@ -198,30 +198,50 @@ static void _createNPCs(TownContext* context) {
 
 COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo* pInfo) {
   COIBoard* board = COIBoardCreate(2, 132, 28, 255, 5000, 5000, loader);
-  
-  char fullFilename[MAX_STRING_SIZE];
-  char flattenedPathExtension[10];
-  if (pInfo->shiftsWorked >= GRASS_PATH_SHIFTS_WORKED) {
-    snprintf(flattenedPathExtension, 10, "_path");
-  } else {
-    snprintf(flattenedPathExtension, 10, "");
-  }
+  TownContext* context = malloc(sizeof(TownContext));
 
   // The last corruption phase can block the player out if they're not in the right place
   bool playerInTownCenter = pInfo->party[0]->sprite->_x >= 1504 && pInfo->party[0]->sprite->_y >= 3008 && pInfo->party[0]->sprite->_y <= 4288;
-  if (GLOBAL_TIME.day >= CORRUPTION_4_DAYS && playerInTownCenter) {
-    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_4%s.dat", flattenedPathExtension);
-  } else if (GLOBAL_TIME.day >= CORRUPTION_3_DAYS) {
-    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_3%s.dat", flattenedPathExtension);
-  } else if (GLOBAL_TIME.day >= CORRUPTION_2_DAYS) {
-    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_2%s.dat", flattenedPathExtension);
-  } else if (GLOBAL_TIME.day >= CORRUPTION_1_DAYS) {
-    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_1%s.dat", flattenedPathExtension);
+  COISprite* playerSprite = pInfo->party[0]->sprite;
+
+  // If we're right outside the rent house
+  if (!pInfo->creepySpritemap && GLOBAL_TIME.day >= CREEPY_SPRITEMAP_DAYS && playerSprite->_x == 1504 && playerSprite->_y == 4288) {
+    board->_bgColor[0] = 0;
+    board->_bgColor[1] = 0;
+    board->_bgColor[2] = 0;
+    COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), "src/threadtown/spritemap_creepy.dat");
+    context->_creepy = true;
+    COISpriteSetPos(pInfo->party[0]->sprite, 544, 1024);
+    pInfo->creepySpritemap = true;
   } else {
-    snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap%s.dat", flattenedPathExtension);
+    char fullFilename[MAX_STRING_SIZE];
+    char flattenedPathExtension[10];
+    COISprite* playerSprite = pInfo->party[0]->sprite;
+    bool outsideLowerGrassSection = playerSprite->_y <= 2944 || playerSprite->_y >= 3968;
+    if (pInfo->shiftsWorked >= GRASS_PATH_SHIFTS_WORKED) {
+      if (!pInfo->pathRevealed && !outsideLowerGrassSection) {
+        snprintf(flattenedPathExtension, 10, "");
+      } else {
+        snprintf(flattenedPathExtension, 10, "_path");
+        pInfo->pathRevealed = true;
+      }
+    } else {
+      snprintf(flattenedPathExtension, 10, "");
+    }
+    if (GLOBAL_TIME.day >= CORRUPTION_4_DAYS && playerInTownCenter) {
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_4%s.dat", flattenedPathExtension);
+    } else if (GLOBAL_TIME.day >= CORRUPTION_3_DAYS) {
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_3%s.dat", flattenedPathExtension);
+    } else if (GLOBAL_TIME.day >= CORRUPTION_2_DAYS) {
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_2%s.dat", flattenedPathExtension);
+    } else if (GLOBAL_TIME.day >= CORRUPTION_1_DAYS) {
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_1%s.dat", flattenedPathExtension);
+    } else {
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap%s.dat", flattenedPathExtension);
+    }
+    COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), fullFilename);
+    context->_creepy = false;
   }
-  COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), fullFilename);
-  TownContext* context = malloc(sizeof(TownContext));
   context->pInfo = pInfo;
   context->direction = MOVING_NONE;
   context->terrain = TT_SAFE;
@@ -272,6 +292,16 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
 
   context->textBox = TextBoxCreate(context->board, context->textType);
 
+  if (!pInfo->corruptionHasSpread && GLOBAL_TIME.day >= CORRUPTION_1_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "The corruption has spread.",
+        "A cold pang of anxiety spreads through your body.",
+        "You sense that some looming presence will soon make itself known in this town.",
+        "You need to act fast.",
+        NULL);
+    pInfo->corruptionHasSpread = true;
+  }
+
   // Gather animated tentacle sprites
   context->topTentacles = LinkedListCreate();
   int startingCol = 0;
@@ -283,15 +313,7 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
       startingCol = (startingCol + 1) % 3;
     }
   }
-  // for (int i = 0; i < board->_spriteCount; i++) {
-  //   if (board->_sprites[i]->_assetID == 21) {
-  //     COISpriteSetSheetIndex(board->_sprites[i], 0, startingCol);
-  //     LinkedListAdd(context->topTentacles,
-	// 	    (void*)board->_sprites[i]);
-  //     startingCol = (startingCol + 1) % 3;
-  //   }
-    
-  // }
+
   COIBoardSetContext(board, (void*)context);
 
   return board;
@@ -349,6 +371,7 @@ bool townContinueMovement(Actor* actor, COIBoard* board) {
       actor->_stepsLeft = COIBOARD_GRID_SIZE;
     }
     actor->movementDirection = actor->nextMovementDirection;
+
     return true;
   }
 
@@ -472,7 +495,8 @@ static void _talkToLandlord(TownContext* context) {
     }
   } else if (context->pInfo->renting == RS_NOT_RENTING) {
     TextBoxSetStrings(context->textBox,
-		      "I'm renting out a room. Interested?",
+		      "I'm renting out a room. Interested? It's 1400 for two weeks.",
+          "An adventurer needs a place to rest and recover, right?",
 		      NULL);
   } else {
     TextBoxSetStrings(context->textBox,
@@ -488,8 +512,8 @@ static void _talkToMerchant(TownContext* context) {
 		      NULL);
   } else {
     TextBoxSetStrings(context->textBox,
-		    "I have an opening for a clerk in my shop. Need a job?",
-		    NULL);
+          "I have an opening for a clerk in my shop. Need some extra cash?",
+          NULL);
   }
 }
 
@@ -514,8 +538,104 @@ static void _talkToTagnesseGuy(TownContext* context) {
   }
 }
 
+static void _talkToEncouragementGuy(TownContext* context) {
+  if (GLOBAL_TIME.day > ENCOURAGEMENT_TEXT_2_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "Jesus, you're still here?",
+        NULL);
+  } else if (GLOBAL_TIME.day > ENCOURAGEMENT_TEXT_1_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "I told you. Check out Havonvale. It's not here.",
+        NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+        "Huh, a 'corruption core'. Can't say I know what that is.",
+        "There's been a lot of commotion around Havonvale though.",
+        "Maybe you should check there?",
+        NULL);
+  }
+}
+
+static void _talkToNostalgicGuy(TownContext* context) {
+  if (GLOBAL_TIME.day >= NOSTALGIC_TEXT_1_DAYS) {
+    TextBoxSetStrings(context->textBox,
+      "Ah, to be a young adventurer. Remember those days?",
+    NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+      "Ah, to be a young adventurer. I remember those days.",
+      "Enjoy them!",
+      NULL);
+  }
+}
+
+static void _talkToTownsGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+    "This is Thread Town.",
+    "To the northeast, there's Havonvale.",
+    "If you head north from there, you'll find Denburg. It lies on the river.",
+    "Follow that river and you'll end up in Starshire, the capital city!",
+    NULL);
+}
+
+static void _talkToTimeGuy(TownContext* context) {
+  char temp[MAX_STRING_SIZE];
+  const char* daysString = GLOBAL_TIME.day == 1 ? "day" : "days";
+  snprintf(temp, MAX_STRING_SIZE, "You've been here %lu %s!", GLOBAL_TIME.day, daysString);
+  if (GLOBAL_TIME.day >= TIME_GUY_TEXT_1_DAYS) {
+    // Playtime
+    time_t endTime = time(NULL) - context->pInfo->startTime;
+    time_t minutes = endTime / 60;
+    time_t hours = minutes / 60;
+    time_t minutesLeftOver = minutes - (hours * 60);
+
+    unsigned int totalHours = (unsigned int)context->pInfo->hours + (unsigned int)hours;
+    unsigned int totalMinutes = (unsigned int)context->pInfo->minutes + (unsigned int)minutesLeftOver;
+
+    char tempRealTime[MAX_STRING_SIZE];
+    const char* hoursString = totalHours == 1 ? "hour" : "hours";
+    const char* minutesString = totalMinutes == 1 ? "minute" : "minutes";
+    snprintf(tempRealTime, MAX_STRING_SIZE, "Actually, I think it's been %u %s and %u %s.", totalHours, hoursString, totalMinutes, minutesString);
+    TextBoxSetStrings(context->textBox,
+      temp,
+      tempRealTime,
+      NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+      temp,
+      NULL);
+  }
+}
+
+static void _talkToPartyGuy(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+    "The more enemies you fight, the more dangerous a battle is.",
+    "If you want to succeed, you should find some people to join you.",
+    "You can have up to five members in your party.",
+    "A good party is balanced. Make sure to have a variety of roles.",
+    NULL);
+}
+
 static void _talkToTreeGuy(TownContext* context) {
-  if (GLOBAL_TIME.day > TREE_GUY_CONVO_1_DAYS) {
+  if (GLOBAL_TIME.day >= TREE_GUY_CONVO_3_DAYS && context->pInfo->renting != RS_NOT_RENTING) {
+    TextBoxSetStrings(context->textBox,
+        "I've been watching you walk up this path every day for a while.",
+        "I think you've given it your best shot.",
+        "Maybe it's time to settle down and figure out what else you want to do.",
+        "Time's finite, after all.",
+        "Not all branches have to bear fruit.",
+        NULL);
+  } else if (GLOBAL_TIME.day >= TREE_GUY_CONVO_2_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "It's funny how a town moves over time.",
+        "Different buildings go up. Other fall down. But there's always shops. Always homes.",
+        "People change faces and bodies but otherwise stay the same.",
+        "Overall, the town feels the same.",
+        "But I'm different. Older, wiser, I guess.",
+        "Definitely fatter. Heh.",
+        "The town stays suspended in time, but I keep moving forward.",
+        NULL);
+  } else if (GLOBAL_TIME.day >= TREE_GUY_CONVO_1_DAYS) {
     TextBoxSetStrings(context->textBox,
         "There's an interesting quirk about this tree.",
         "Every fruit tastes different!",
@@ -530,8 +650,20 @@ static void _talkToTreeGuy(TownContext* context) {
 }
 
 static void _talkToHavonvaleGuy(TownContext* context) {
+  if (GLOBAL_TIME.day >= HAVONVALE_TEXT_2_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "What do you mean you haven't gotten rid of them yet?",
+        "Just work harder.",
+        NULL);
+  } else if (GLOBAL_TIME.day >= HAVONVALE_TEXT_1_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "Have you tried taking out those monsters yet?",
+        "I tried myself. They're pretty strong.",
+        "Train hard first. I believe in you!",
+        NULL);
+  }
   TextBoxSetStrings(context->textBox,
-      "Havonvale lies past here.",
+      "Havonvale is down through here.",
       "There's a group of monsters blocking the way, though. I'd be careful.",
       NULL);
 }
@@ -544,10 +676,19 @@ static void _talkToMonsterCountGuy(TownContext* context) {
 }
 
 static void _talkToGemOfTimeGuy(TownContext* context) {
-  TextBoxSetStrings(context->textBox,
-      "Want to take a break from your adventure for a while?",
-      "Stop by the general store to pick up a Gem of Time.",
-      NULL);
+  if (!context->pInfo->breakFromWorking && context->pInfo->shiftsWorked >= BREAK_FROM_WORKING_SHIFTS_WORKED) {
+
+    context->pInfo->breakFromWorking = true;
+    TextBoxSetStrings(context->textBox,
+        "Want to take a break from working all the time?",
+        "Stop by the general store to pick up a Gem of Time.",
+        NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+        "Want to take a break from your adventure for a while?",
+        "Stop by the general store to pick up a Gem of Time.",
+        NULL);
+  }
 }
 
 static void _talkToClassGuy(TownContext* context) {
@@ -591,6 +732,28 @@ static void _talkToFleeGuy(TownContext* context) {
       "Here's a tip from my fighting days.",
       "If you want to flee a fight, you're more likely to succeed if you're faster than your opponent.",
       "Of course, I never needed to do that...",
+      NULL);
+}
+
+static void _ominousMessage(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "I think you made a mistake coming here.",
+      NULL);
+}
+
+static void _visitingMessage(TownContext* context) {
+  char temp[MAX_STRING_SIZE];
+  snprintf(temp, MAX_STRING_SIZE, "Huh, you've been here %lu days.", GLOBAL_TIME.day);
+  TextBoxSetStrings(context->textBox,
+      temp,
+      "I thought you were just passing through.",
+      NULL);
+}
+
+static void _mockingMessage(TownContext* context) {
+  TextBoxSetStrings(context->textBox,
+      "Hey pal!",
+      "How'd you enjoy your first couple weeks here?",
       NULL);
 }
 
@@ -675,7 +838,6 @@ static bool _npcCanMove(Actor* npc) {
 
 void townProcessDirectionalInput(TownContext* context, int direction) {
   if (context->pauseOverlay->visible) {
-    // COISoundPlay(COI_SOUND_BLIP);
     PauseOverlayProcessInput(context->pauseOverlay, direction);
     COIBoardQueueDraw(context->board);
   } else if (context->confirmMenu->_frame->_visible) {
@@ -687,6 +849,49 @@ void townProcessDirectionalInput(TownContext* context, int direction) {
   }
 }
 
+static bool _genericGagText(TownContext* context) {
+  bool talkingToPerson = context->talkingActorType != ACTOR_CHEST && context->talkingActorType != ACTOR_CHEST_OPEN;
+  if (context->pInfo->welcomeHome && talkingToPerson) {
+    TextBoxSetStrings(context->textBox,
+        "Welcome home.",
+        NULL); 
+    return true;
+  } else if (!context->pInfo->visitingMessage && GLOBAL_TIME.day >= LEAVING_THIS_PLACE_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "At one point, I planned on leaving this place.",
+        NULL); 
+    context->pInfo->leavingThisPlace = true;
+  } else if (!context->pInfo->visitingMessage && GLOBAL_TIME.day >= GOTTEN_FATTER_DAYS) {
+    TextBoxSetStrings(context->textBox,
+        "Woof. You've gotten fat.",
+        NULL); 
+    context->pInfo->gottenFatter = true;
+  } else if (!context->pInfo->visitingMessage && GLOBAL_TIME.day >= VISITING_MESSAGE_DAYS &&
+      talkingToPerson) {
+    _visitingMessage(context);
+    context->pInfo->visitingMessage = true;
+    return true;
+  } else if (!context->pInfo->feltDifferent && GLOBAL_TIME.day >= FELT_DIFFERENT_DAYS && talkingToPerson) {
+    TextBoxSetStrings(context->textBox,
+        "Have you felt...different, recently?",
+        NULL); 
+    context->pInfo->feltDifferent = true;
+    return true;
+  } else if (!context->pInfo->mockingMessage && GLOBAL_TIME.day >= MOCKING_MESSAGE_DAYS &&
+      talkingToPerson) {
+    _mockingMessage(context);
+    context->pInfo->mockingMessage = true;
+    return true;
+  } 
+  else if (!context->pInfo->ominousMessage && GLOBAL_TIME.day >= OMINOUS_MESSAGE_DAYS &&
+      talkingToPerson) {
+    _ominousMessage(context);
+    context->pInfo->ominousMessage = true;
+    return true;
+  }
+
+  return false;
+}
 
 void townProcessSelectionInput(TownContext* context) {
   Actor* player = context->pInfo->party[0];
@@ -708,54 +913,74 @@ void townProcessSelectionInput(TownContext* context) {
     if (talkingNPC != NULL) {
       actorMeetGaze(talkingNPC, player);
       context->talkingActorType = talkingNPC->actorType;
-      switch (context->talkingActorType) {
-      case ACTOR_LANDLORD:
-	      _talkToLandlord(context);
-	      break;
-      case ACTOR_CHESTS_GUY:
-        _talkToChestsGuy(context);
-        break;
-      case ACTOR_MERCHANT:
-	      _talkToMerchant(context);
-	      break;
-      case ACTOR_CHEST_OPEN:
-        TextBoxSetStrings(context->textBox,
-            "Unbelievable!",
-            "It's empty.",
-            NULL);
-        break;
-      case ACTOR_CHEST:
-        _talkToChest(context);
-        break;
-      case ACTOR_TAGNESSE_GUY:
-        _talkToTagnesseGuy(context);
-        break;
-      case ACTOR_TREE_GUY:
-        _talkToTreeGuy(context);
-        break;
-      case ACTOR_HAVONVALE_GUY:
-        _talkToHavonvaleGuy(context);
-        break;
-      case ACTOR_GEM_OF_TIME_GUY:
-        _talkToGemOfTimeGuy(context);
-        break;
-      case ACTOR_MONSTER_COUNT_GUY:
-        _talkToMonsterCountGuy(context);
-        break;
-      case ACTOR_CLASS_GUY:
-        _talkToClassGuy(context);
-        break;
-      case ACTOR_POTION_GUY:
-        _talkToPotionGuy(context);
-        break;
-      case ACTOR_FLEE_GUY:
-        _talkToFleeGuy(context);
-        break;
-      default:
-	      TextBoxSetStrings(context->textBox,
-			      "I saw something scary in the northeast.",
-			      "I'd take shelter if I were you.",
-			      NULL);
+      
+      if (_genericGagText(context)) {
+        context->talkingActorType = ACTOR_CHAGGAI;
+      } else {
+        switch (context->talkingActorType) {
+        case ACTOR_LANDLORD:
+          _talkToLandlord(context);
+          break;
+        case ACTOR_CHESTS_GUY:
+          _talkToChestsGuy(context);
+          break;
+        case ACTOR_MERCHANT:
+          _talkToMerchant(context);
+          break;
+        case ACTOR_CHEST_OPEN:
+          TextBoxSetStrings(context->textBox,
+              "Unbelievable!",
+              "It's empty.",
+              NULL);
+          break;
+        case ACTOR_CHEST:
+          _talkToChest(context);
+          break;
+        case ACTOR_TAGNESSE_GUY:
+          _talkToTagnesseGuy(context);
+          break;
+        case ACTOR_TREE_GUY:
+          _talkToTreeGuy(context);
+          break;
+        case ACTOR_HAVONVALE_GUY:
+          _talkToHavonvaleGuy(context);
+          break;
+        case ACTOR_GEM_OF_TIME_GUY:
+          _talkToGemOfTimeGuy(context);
+          break;
+        case ACTOR_MONSTER_COUNT_GUY:
+          _talkToMonsterCountGuy(context);
+          break;
+        case ACTOR_CLASS_GUY:
+          _talkToClassGuy(context);
+          break;
+        case ACTOR_POTION_GUY:
+          _talkToPotionGuy(context);
+          break;
+        case ACTOR_FLEE_GUY:
+          _talkToFleeGuy(context);
+          break;
+        case ACTOR_ENCOURAGEMENT_GUY:
+          _talkToEncouragementGuy(context);
+          break;
+        case ACTOR_TOWNS_GUY:
+          _talkToTownsGuy(context);
+          break;
+        case ACTOR_NOSTALGIC_GUY:
+          _talkToNostalgicGuy(context);
+          break;
+        case ACTOR_TIME_GUY:
+          _talkToTimeGuy(context);
+          break;
+        case ACTOR_PARTY_GUY:
+          _talkToPartyGuy(context);
+          break;
+        default:
+          TextBoxSetStrings(context->textBox,
+              "I saw something scary in the northeast.",
+              "I'd take shelter if I were you.",
+              NULL);
+        }
       }
       COIBoardQueueDraw(context->board);
     }
@@ -809,7 +1034,7 @@ void townTick(TownContext* context) {
     if (context->_npcTicks >= TOWN_NPC_MOVEMENT_TICKS) {
       for (int i = 0; i < TOWN_NUM_NPC_CITIZENS; i++) {
 	// 30% chance they move
-	if (_npcCanMove(context->npcs[i]) && generateRandomBoolWeighted(0.3)) {
+	if (_npcCanMove(context->npcs[i]) && generateRandomBoolWeighted(0.3) && !context->_creepy) {
 	  // If we do move, pick 1 of the 4 directions
     int movement = generateRandomDirectionalMovement();
 
@@ -862,12 +1087,18 @@ void townMovePlayer(TownContext* context) {
     if (playerCenterX <= board->_frameWidth / 2) {
       COIBoardShiftFrameX(board, -1 * TOWN_MOVE_SPEED);
     }
+    if (inNextGridCell && player->sprite->_x == TOWN_MUSIC_X_TRIGGER) {
+      COISoundPlay(COI_SOUND_THREADTOWN);
+    }
     break;
   case MOVING_RIGHT:
     inNextGridCell = townContinueMovement(player, context->board);
     playerCenterX = player->sprite->_x - board->_frameX + (player->sprite->_width / 2);
     if (playerCenterX >= board->_frameWidth / 2) {
       COIBoardShiftFrameX(board, TOWN_MOVE_SPEED);
+    }
+    if (inNextGridCell && player->sprite->_x == TOWN_MUSIC_X_TRIGGER) {
+      COISoundPlay(COI_SOUND_FAIRY);
     }
     break;
   case MOVING_UP:
@@ -892,6 +1123,17 @@ void townMovePlayer(TownContext* context) {
   printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
 #endif
 
+  // Position trigger for tree guy callout
+  if (!context->pInfo->treeGuyCallout && GLOBAL_TIME.day >= TREE_GUY_CONVO_3_DAYS && 
+      (player->sprite->_x >= 2688 && player->sprite->_x <= 2976 && player->sprite->_y <= 3392 && player->sprite->_y >= 3232)) {
+      TextBoxSetStrings(context->textBox,
+          "'Hey.'",
+          "The man by the tree calls out to you.",
+          NULL);
+      context->pInfo->treeGuyCallout = true;
+      player->movementDirection = MOVING_NONE;
+      return;
+  }
   
   if (inNextGridCell) {
     townCheckForBattle(context);
@@ -930,22 +1172,36 @@ void townApplyTimeChanges(TownContext* context) {
     COISpriteSetPos(context->npcs[4]->sprite, -50, -50);
   }
 
-  if (GLOBAL_TIME.day - context->pInfo->lastXPGain.day > 2 &&
+  if (GLOBAL_TIME.day - context->pInfo->lastXPGain.day > LAST_XP_GAIN_DAYS &&
       context->pInfo->level > 1) {
     int numAbilities = context->pInfo->party[0]->specials.length + context->pInfo->party[0]->techList->count;
     if (numAbilities > 0) { // We're going to lose an ability when we level down.
       TextBoxSetStrings(context->textBox,
-        "You have not gained experience in some time. Your skills are beginning to atrophy.",
+        "You have not increased your level in some time. Your skills are beginning to atrophy.",
         "You have lost a level.",
         "You have forgotten one of your abilities.",
         NULL);
     } else {
       TextBoxSetStrings(context->textBox,
-        "You have not gained experience for some time. Your skills are beginning to atrophy.",
+        "You have not increased your level in some time. Your skills are beginning to atrophy.",
         "You have lost a level.",
         NULL);
     }
     playerLevelDown(context->pInfo);
+    // Reflect this change in the pause overlay
+    PauseOverlayDestroy(context->pauseOverlay, context->board);
+    context->pauseOverlay = PauseOverlayCreate(context->pInfo, context->textType, context->board);
+  } else if (!context->pInfo->asNightFalls && GLOBAL_TIME.phase >= TS_EVENING) {
+      TextBoxSetStrings(context->textBox,
+        "As night falls, the air feels cold.",
+        "A miserable, forlorn aura fills the dark night sky.",
+        "Undoubtedly, Izra has infected this small town.",
+        NULL);
+      context->pInfo->asNightFalls = true;
+  }
+
+  if (GLOBAL_TIME.day >= WELCOME_HOME_DAYS) {
+    context->pInfo->welcomeHome = true;
   }
 
   // Change player's sprite
@@ -955,6 +1211,20 @@ void townApplyTimeChanges(TownContext* context) {
     actorChangeSprite(context->pInfo->party[0], playerSpriteIndexFromSpriteAge(context->pInfo->spriteAge));
     COISprite** perSprites = actorGetSpriteList(context->pInfo->party, context->pInfo->partySize);
     COIBoardSetPersistentSprites(context->board, perSprites, 1);
+  }
+
+  if (!context->pInfo->agiReduced && nextSpriteAge == SA_OLDEST) {
+    context->pInfo->party[0]->agi.base /= 2;
+    context->pInfo->agiReduced = true;
+  }
+}
+
+void townCheckForTiredMessage(TownContext* context) {
+  if (!context->pInfo->youFeelTired && GLOBAL_TIME.day >= TIRED_MESSAGE_DAYS) {
+    TextBoxSetStrings(context->textBox,
+            "For some reason, you feel incredibly tired.",
+            NULL);
+    context->pInfo->youFeelTired = true;
   }
 }
 

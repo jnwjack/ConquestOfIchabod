@@ -206,15 +206,15 @@ unsigned long _xpYieldFromEnemyType(int enemyType) {
 unsigned int _goldFromEnemyType(int enemyType) {
   switch (enemyType) {
   case ACTOR_SKELETON:
-    return (unsigned int)generateRandomCharInRange(3, 10);
+    return (unsigned int)generateRandomCharInRange(3, 7);
   case ACTOR_BOOWOW:
     return (unsigned int)generateRandomCharInRange(0, 5);
   case ACTOR_TENTACLE:
     return (unsigned int)generateRandomCharInRange(10, 20);
   case ACTOR_WIRE_MOTHER:
-    return (unsigned int)generateRandomCharInRange(8, 15);
+    return (unsigned int)generateRandomCharInRange(2, 6);
   case ACTOR_VOLCANETTE:
-    return (unsigned int)generateRandomCharInRange(5, 15);
+    return (unsigned int)generateRandomCharInRange(4, 8);
   default:
     return 0;
   }
@@ -659,13 +659,25 @@ void _specialSelection(BattleContext* context) {
   
   context->pointingAtEnemies = specialTargetsEnemies(special);
   context->targetedActorIndex = 0;
-  if (specialCost(special) <= ally->sp) {
+  
+  int cost = specialCost(special);
+  TechList* techList = context->allies[0]->techList;
+  for (int i = 0; i < techList->count; i++) {
+    Tech* tech = techList->techs[i];
+    if (tech->id == TECH_ID_FOCUS && tech->active) {
+      cost /= 2;
+    }
+  }
+  if (cost <= ally->sp) {
     _battleInitPointer(context);
     _adjustPointer(context);
     _toggleTargetNameVisibility(context, true);
     context->pointer->_visible = true;
     COIMenuSetInvisible(context->subMenu);
     context->menuFocus = ACTORS;
+    COISoundPlay(COI_SOUND_SELECT);
+  } else {
+    COISoundPlay(COI_SOUND_INVALID);
   }
 }
 

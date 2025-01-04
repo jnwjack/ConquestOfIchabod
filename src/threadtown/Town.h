@@ -9,12 +9,14 @@
 // After how many ticks should we check for battle?
 #define TOWN_BATTLE_TICKS 50
 #define TOWN_MOVE_SPEED 4
-#define TOWN_NUM_NPC_CITIZENS 14
+#define TOWN_NUM_NPC_CITIZENS 15
 
 // After this many ticks, chance for each NPC to move
 #define TOWN_NPC_MOVEMENT_TICKS 40
 
 #define TOWN_TENTACLE_MOVEMENT_TICKS 20
+
+#define TOWN_MUSIC_X_TRIGGER 4224
 
 typedef struct TownContext {
   PlayerInfo* pInfo;
@@ -36,6 +38,7 @@ typedef struct TownContext {
   LinkedList* topTentacles;
   COIMenu* confirmMenu;
   
+  bool _creepy;
   unsigned int _npcTicks;
 } TownContext;
 
@@ -55,5 +58,6 @@ void townProcessSelectionInput(TownContext* context);
 void townDestroyBoard(TownContext* context);
 void townApplyTimeChanges(TownContext* context);
 bool townShopIsClosed();
+void townCheckForTiredMessage(TownContext* context);
 
 #endif
