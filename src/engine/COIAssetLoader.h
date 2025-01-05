@@ -3,6 +3,7 @@
 
 #ifdef __WINDOWS__
 #define SDL_MAIN_HANDLED
+#include <string.h>
 #endif
 #include <SDL2/SDL.h>
 

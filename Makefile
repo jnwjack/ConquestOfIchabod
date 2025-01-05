@@ -15,16 +15,21 @@ WEB_OUTPUT = coi.html
 LIBS = -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 DEBUGFLAGS = -g3 -D__COI_DEBUG__=1
 NATIVE_FLAGS = -D__NATIVE__=1
-WINDOWS_CC = gcc
-WINDOWS_INCLUDE_BASE = C:\Users\jnw90\Projects\mingw-dev\include
-WINDOWS_LIB_BASE = C:\Users\jnw90\Projects\mingw-dev\lib
+# WINDOWS_CC = gcc
+# WINDOWS_INCLUDE_BASE = C:\Users\jnw90\Projects\mingw-dev\include
+# WINDOWS_LIB_BASE = C:\Users\jnw90\Projects\mingw-dev\lib
+WINDOWS_CC = C:\mingw32\bin\gcc.exe
+WINDOWS_INCLUDE_BASE = C:\Users\jnw90\Projects\testSDL\include
+WINDOWS_LIB_BASE = C:\Users\jnw90\Projects\testSDL\lib
 WINDOWS_FLAGS = -m32 -D__WINDOWS__=1
-WINDOWS_SRCS = src\main.c src\actor.c src\inputloops.c src\inventory.c src\items.c src\player.c src\special.c src\tech.c src\tests.c src\TextBox.c src\TimeState.c src\armory\Armory.c src\battle\Battle.c src\battle\BattleBehavior.c src\battle\BattleSplash.c src\battle\Status.c src\engine\COIAssetLoader.c src\engine\COIBoard.c src\engine\COIMenu.c src\engine\COISprite.c src\engine\COIString.c src\engine\COITextType.c src\engine\COITransition.c src\engine\COIWindow.c src\engine\util.c src\gameover\GameOver.c src\renthouse\RentHouse.c src\threadtown\PauseOverlay.c src\threadtown\Town.c src\title\Title.c
+WINDOWS_SRCS = src\main.c src\actor.c src\inputloops.c src\inventory.c src\items.c src\player.c src\special.c src\tech.c src\tests.c src\TextBox.c src\TimeState.c src\armory\Armory.c src\battle\Battle.c src\battle\BattleBehavior.c src\battle\BattleSplash.c src\battle\Status.c src\engine\COIAssetLoader.c src\engine\COIBoard.c src\engine\COIMenu.c src\engine\COISprite.c src\engine\COIString.c src\engine\COITextType.c src\engine\COITransition.c src\engine\COIWindow.c src\engine\util.c src\gameover\GameOver.c src\renthouse\RentHouse.c src\threadtown\PauseOverlay.c src\threadtown\Town.c src\title\Title.c src\engine\COISound.c src\engine\COIPreferences.c src\title\CharacterCreation.c
 
 # TOOLS
 SRCS_TOOLS = tools/cbb.c src/engine/util.c
 CFLAG_TOOLS = -g
 
+windows_debug:
+	$(WINDOWS_CC) $(WINDOWS_SRCS) $(DEBUGFLAGS) -I$(WINDOWS_INCLUDE_BASE) -L$(WINDOWS_LIB_BASE) -w -Wl,-subsystem,windows -lmingw32 $(LIBS) $(NATIVE_FLAGS) $(WINDOWS_FLAGS) -o $(OUTPUT)
 windows:
 	$(WINDOWS_CC) $(WINDOWS_SRCS) -I$(WINDOWS_INCLUDE_BASE) -L$(WINDOWS_LIB_BASE) -w -Wl,-subsystem,windows -lmingw32 $(LIBS) $(NATIVE_FLAGS) $(WINDOWS_FLAGS) -o $(OUTPUT)
 # the turtle command works on mac with emscripten 3.1.33
