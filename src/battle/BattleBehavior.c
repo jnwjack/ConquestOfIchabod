@@ -647,7 +647,6 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     summary = ActionSummaryCreate(board, box, textType, "Invalid action type", NULL);
   }
 
-
   // Check for death
   if (actorIsDead(a)) {
     a->sprite->_autoHandle = false;

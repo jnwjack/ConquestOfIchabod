@@ -759,6 +759,7 @@ void _selectAttackTarget(BattleContext* context) {
   action->index = -1; // Unused
   action->successfulFlee = false;
   action->numOtherTargets = 0;
+  action->numOtherTargetsKilled = 0;
 }
 
 void _selectFlee(BattleContext* context) {
@@ -776,6 +777,7 @@ void _selectFlee(BattleContext* context) {
   action->index = -1; // Unused
   action->successfulFlee = false;
   action->numOtherTargets = 0;
+  action->numOtherTargetsKilled = 0;
 }
 
 void _selectItemTarget(BattleContext* context) {
@@ -788,6 +790,7 @@ void _selectItemTarget(BattleContext* context) {
   action->index = items[COIMenuGetCurrentValue(context->subMenu)]->id;
   action->successfulFlee = false;
   action->numOtherTargets = 0;
+  action->numOtherTargetsKilled = 0;
 }
 
 void _selectSpecialTarget(BattleContext* context) {
@@ -995,7 +998,6 @@ void battleHandleActorSelect(BattleContext* context) {
     printf("Invalid actor selection in battle.\n");
     break;
   }
-  BattleAction* action = &context->actions[context->turnIndex];
   _changeTurn(context, 1);
 }
 

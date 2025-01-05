@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
+#ifdef __WINDOWS__
+size_t getline(char **lineptr, size_t *n, FILE *stream);
+#define printf(string,...) (0)
+#endif
 #define MIN(a,b) ((a > b) ? b : a)
 #define MAX(a,b) ((a > b) ? a : b)
 #define ABS_DIFF(a,b) ((a > b) ? a - b : b - a)
