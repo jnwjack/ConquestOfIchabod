@@ -19,6 +19,7 @@ typedef struct ArmoryItem {
 // there should be a armory object that holds current stock, prices, mappings to text object, etc.
 typedef struct ArmoryContext {
   COIBoard* outsideBoard; // Board to load when leaving shop
+  COIBoard* board;
   COIMenu* menu;
   // may want to wrap submenu in a "buymenu" object or something
   COIMenu* buyMenu;

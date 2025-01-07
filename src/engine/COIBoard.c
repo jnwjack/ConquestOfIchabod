@@ -296,6 +296,7 @@ bool COIBoardAddString(COIBoard* board, COIString* string, unsigned int layer) {
     board->drawLayers[layer].strings[board->drawLayers[layer].stringCount] = string;
     string->index = board->drawLayers[layer].stringCount;
     board->drawLayers[layer].stringCount++;
+
     return true;
   } else {
     printf("Can't add string. No such layer %u\n", layer);
@@ -312,11 +313,16 @@ void COIBoardRemoveString(COIBoard* board, COIString* string, unsigned int layer
     board->drawLayers[layer].strings[string->index] = NULL;
     int holeIndex = string->index;
 
-    // Shift all strings at a higher index down a position to fill hole
-    for (int i = holeIndex + 1; i < board->drawLayers[layer].stringCount; i++) {
-      board->drawLayers[layer].strings[i - 1] = board->drawLayers[layer].strings[i];
-      board->drawLayers[layer].strings[i - 1]->index = i - 1;
-      board->drawLayers[layer].strings[i] = NULL;
+    // Is this the last string in the list?
+    if (holeIndex == board->drawLayers[layer].stringCount - 1) {
+      board->drawLayers[layer].strings[holeIndex] = NULL;
+    } else {
+      // Shift all strings at a higher index down a position to fill hole
+      for (int i = holeIndex + 1; i < board->drawLayers[layer].stringCount; i++) {
+        board->drawLayers[layer].strings[i - 1] = board->drawLayers[layer].strings[i];
+        board->drawLayers[layer].strings[i - 1]->index = i - 1;
+        board->drawLayers[layer].strings[i] = NULL;
+      }
     }
 
     board->drawLayers[layer].stringCount -= 1;

@@ -81,6 +81,7 @@ static ArmoryContext* _armoryCreateContext(COIBoard* board,
   armoryContext->isGag = isGag;
   armoryContext->sellItems = NULL;
   armoryContext->buyItems = NULL;
+  armoryContext->board = board;
 
   armoryContext->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
   armoryContext->mainStrings[0] = COIStringCreate("Buy", 0, 0, armoryContext->textType);
@@ -145,6 +146,7 @@ static ArmoryContext* _armoryCreateContext(COIBoard* board,
 void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int stock, bool sell, int slot) {
   item->itemID = itemID;
   if (item->string != NULL) {
+    COIBoardRemoveString(context->board, item->string, 0);
     COIStringDestroy(item->string);
   }
   item->stock = stock;
@@ -159,6 +161,7 @@ void armorySetItem(ArmoryContext* context, ArmoryItem* item, int itemID, int sto
     sprintf(buf, "%i - %s", item->price, ItemListStringFromItemID(itemID));
   }
   item->string = COIStringCreate(buf, 0, 0, context->textType);
+  COIBoardAddString(context->board, item->string, 0);
 }
 
 // Update COIMenu text with items in ArmoryList
@@ -175,24 +178,27 @@ void armoryUpdateMenuText(COIMenu* menu, ArmoryItem* items, int numItems) {
 // Send strings to board so the board can draw them
 void armoryUpdateBoardText(COIBoard* board) {
   ArmoryContext* context = (ArmoryContext*)board->context;
-  COIString* strings[6 + context->numBuyItems + context->numSellItems];
+  // COIString* strings[6 + context->numBuyItems + context->numSellItems];
   for (int i = 0; i < 3; i++) {
-    strings[i] = context->mainStrings[i];
+    // strings[i] = context->mainStrings[i];
+    COIBoardAddString(board, context->mainStrings[i], 0);
   }
   for (int i = 0; i < 2; i++) {
-    strings[3+i] = context->confirmStrings[i];
+    // strings[3+i] = context->confirmStrings[i];
+    COIBoardAddString(board, context->confirmStrings[i], 0);
   }
   for (int i = 0; i < context->numBuyItems; i++) {
-    strings[5+i] = context->buyItems[i].string;
+    // strings[5+i] = context->buyItems[i].string;
+    COIBoardAddString(board, context->buyItems[i].string, 0);
   }
   for (int i = 0; i < context->numSellItems; i++) {
-    strings[5+context->numBuyItems+i] = context->sellItems[i].string;
+    // strings[5+context->numBuyItems+i] = context->sellItems[i].string;
+    COIBoardAddString(board, context->sellItems[i].string, 0);
   }
-  strings[5+context->numBuyItems+context->numSellItems] = context->moneyString;
 
-  for (int i = 0; i < 6 + context->numBuyItems + context->numSellItems; i++) {
-    COIBoardAddString(board, strings[i], 0);
-  }
+  printf("string count: %i\n", board->drawLayers[0].stringCount);
+  // strings[5+context->numBuyItems+context->numSellItems] = context->moneyString;
+
   
   // COIBoardSetStrings(board, strings, 6 + context->numBuyItems + context->numSellItems);
 }
@@ -200,19 +206,19 @@ void armoryUpdateBoardText(COIBoard* board) {
 // Read money value from Inventory and update COIString
 void armoryUpdateMoneyString(ArmoryContext* context) {
   if (context->moneyString != NULL) {
+    COIBoardRemoveString(context->board, context->moneyString, 0);
     COIStringDestroy(context->moneyString);
   }
 
-  printf("WHAT: %i\n", context->pInfo->shiftsWorked);
-
   char buf[MAX_STRING_SIZE];
   if (context->isGag) {
-    sprintf(buf, "Hours Worked: %i", context->pInfo->shiftsWorked * 12);
+    sprintf(buf, "Hours Worked: %u", context->pInfo->shiftsWorked * 12);
   } else {
     sprintf(buf, "Gold: %i", context->inventory->money);
   }
   // Hardcoded, but we can base it off the box's position in the future
   context->moneyString = COIStringCreate(buf, 70, 250 + COI_MENU_OFFSET_Y, context->textType);
+  COIBoardAddString(context->board, context->moneyString, 0);
 }
 
 // Initalize the "sell" menu items from items in the player's inventory
@@ -220,6 +226,10 @@ void armoryPopulateSell(ArmoryContext* context) {
   Inventory* inventory = context->inventory;
 
   if(context->sellItems != NULL) {
+    for (int i = 0; i < context->numSellItems; i++) {
+      COIBoardRemoveString(context->board, context->sellItems[i].string, 0);
+      COIStringDestroy(context->sellItems[i].string);
+    }
     free(context->sellItems);
   }
   context->numSellItems = inventory->numBackpackItems + inventory->numEquippedItems;
@@ -278,12 +288,12 @@ void armoryBuyItem(COIBoard* board) {
   ArmoryItem item = context->buyItems[context->buyMenu->_current];
   if (context->inventory->money >= item.price && inventoryAddItem(context->inventory, item.itemID)) {
     context->inventory->money -= item.price;
-    armoryPopulateSell(context); // Because weve just added something to our inventory
+    armoryPopulateSell(context); // Because we've just added something to our inventory
     armoryUpdateMoneyString(context);
     COIMenuSetInvisible(context->sellMenu);
     COIMenuReset(context->buyMenu);
     COIMenuSetVisible(context->buyMenu);
-    armoryUpdateBoardText(board);
+    // armoryUpdateBoardText(board);
 
     // Mark down that we need to update our pause menu
     TownContext* townContext = (TownContext*)context->outsideBoard->context;
@@ -316,7 +326,7 @@ void armorySellItem(COIBoard* board) {
     COIMenuSetInvisible(context->buyMenu);
     COIMenuReset(context->sellMenu);
     COIMenuSetVisible(context->sellMenu);
-    armoryUpdateBoardText(board);
+    // armoryUpdateBoardText(board);
 
     // Mark down that we need to update our pause menu
     TownContext* townContext = (TownContext*)context->outsideBoard->context;
@@ -483,16 +493,22 @@ COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, PlayerInfo* p
 void armoryDestroy(ArmoryContext* context) {
   if (context->buyItems != NULL) {
     for (int i = 0; i < context->numBuyItems; i++) {
+      COIBoardRemoveString(context->board, context->buyItems[i].string, 0);
       COIStringDestroy(context->buyItems[i].string);
     }
     free(context->buyItems);
   }
   if (context->sellItems != NULL) {
     for (int i = 0; i < context->numSellItems; i++) {
+      COIBoardRemoveString(context->board, context->sellItems[i].string, 0);
       COIStringDestroy(context->sellItems[i].string);
     }
     free(context->sellItems);
   }
+  COIBoardRemoveString(context->board, context->mainStrings[0], 0);
+  COIBoardRemoveString(context->board, context->mainStrings[1], 0);
+  COIBoardRemoveString(context->board, context->mainStrings[2], 0);
+  COIBoardRemoveString(context->board, context->moneyString, 0);
   COIStringDestroy(context->mainStrings[0]);
   COIStringDestroy(context->mainStrings[1]);
   COIStringDestroy(context->mainStrings[2]);
