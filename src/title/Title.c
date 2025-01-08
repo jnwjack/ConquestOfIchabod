@@ -146,7 +146,7 @@ void _setTextBox(TitleContext* context, TextBox* textBox, char slide) {
   case 0:
     TextBoxSetStrings(textBox,
           "In the year 1032, the Kingdom of Rease triumphed over its enemies in the Ash War.    ",
-          "The land obtained Rease's victory provided the resources necessary for a new renaissance.    ",
+          "The land obtained from Rease's victory provided the resources necessary for a new renaissance.    ",
           "Rease enjoyed over 200 years of prosperity and innovation.    ",
           "All was well.                    ",
           NULL);
