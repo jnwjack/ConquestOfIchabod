@@ -451,7 +451,9 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
     IntListAdd(&info->party[0]->specials, _decodeInt(&line, &len, fp, buf));
   }
 
-  COISpriteSetPos(info->party[0]->sprite, _decodeInt(&line, &len, fp, buf), _decodeInt(&line, &len, fp, buf));
+  int x = _decodeInt(&line, &len, fp, buf);
+  int y = _decodeInt(&line, &len, fp, buf);
+  COISpriteSetPos(info->party[0]->sprite, x, y);
 
   info->rentHouseBaldUsed = (bool)_decodeInt(&line, &len, fp, buf);
   info->armoryGagUsed = (bool)_decodeInt(&line, &len, fp, buf);
