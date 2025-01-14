@@ -34,7 +34,7 @@ Inventory* createEmptyInventory(ItemList* items) {
   inventory->numBackpackItems = 0;
   inventory->numEquippedItems = 0;
 
-  inventory->money = 2000;
+  inventory->money = 0;
 
   return inventory;
 }
