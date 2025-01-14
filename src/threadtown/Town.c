@@ -661,11 +661,12 @@ static void _talkToHavonvaleGuy(TownContext* context) {
         "I tried myself. They're pretty strong.",
         "Train hard first. I believe in you!",
         NULL);
+  } else {
+    TextBoxSetStrings(context->textBox,
+        "Havonvale is down through here.",
+        "There's a group of monsters blocking the way, though. I'd be careful.",
+        NULL);
   }
-  TextBoxSetStrings(context->textBox,
-      "Havonvale is down through here.",
-      "There's a group of monsters blocking the way, though. I'd be careful.",
-      NULL);
 }
 
 static void _talkToMonsterCountGuy(TownContext* context) {

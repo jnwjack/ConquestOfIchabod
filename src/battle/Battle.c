@@ -147,6 +147,7 @@ static int _numEnemiesFromTerrain(Terrain terrain) {
 
 static int _enemyTypeFromTerrain(Terrain terrain) {
   switch (terrain) {
+  case TT_THICK_GRASS_CORRUPT:
   case TT_THICK_GRASS:
     {
       if (GLOBAL_TIME.day > BATTLE_SET_2_DAYS) {
@@ -166,6 +167,7 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
       }
       return ACTOR_BOOWOW;
     }
+  case TT_BROWN_GRASS_CORRUPT:
   case TT_BROWN_GRASS:
     {
       if (GLOBAL_TIME.day > BATTLE_SET_2_DAYS) {
