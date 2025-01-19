@@ -34,7 +34,7 @@ Tech* techCreate(int id) {
     tech->strength = 1.0;
     return tech;
   case TECH_ID_FADE:
-    tech->cost = 5;
+    tech->cost = 3;
     tech->strength = 1.0;
     return tech;
   case TECH_ID_MAGIC_GUARD:
@@ -110,7 +110,7 @@ char* techNameFromID(int id) {
   case TECH_ID_FADE:
     return "Fade";
   case TECH_ID_MAGIC_GUARD:
-    return "Magic Guard";
+    return "M. Guard";
   }
 
   return "ERROR";

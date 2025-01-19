@@ -141,9 +141,10 @@ int specialCost(int id) {
   case SPECIAL_ID_FIREBALL:
   case SPECIAL_ID_AVALANCHE:
     return 8;
+  case SPECIAL_ID_NEUTRALIZE:
+    return 2;
   case SPECIAL_ID_DRAIN_SPIRIT:
   case SPECIAL_ID_ICE_SPEAR:
-  case SPECIAL_ID_NEUTRALIZE:
     return 4;
   case SPECIAL_ID_HEAL:
   case SPECIAL_ID_MINOR_HEAL:
@@ -164,6 +165,8 @@ int specialCost(int id) {
     return 1;
   case SPECIAL_ID_TIME_SKIP:
     return 0;
+  case SPECIAL_ID_SILENCE:
+    return 6;
   default:
     printf("Invalid special id for cost.\n");
     return 0;

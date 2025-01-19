@@ -116,7 +116,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
       Actor* actor = actorCreate(actorType, sprite, 15, 30, 6, 25, 0, 75);
-      IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
+      IntListAdd(&actor->specials, SPECIAL_ID_MINOR_HEAL);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       return actor;
@@ -126,7 +126,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
       Actor* actor = actorCreate(actorType, sprite, 30, 54, 21, 30, 0, 75);
-      IntListAdd(&actor->specials, SPECIAL_ID_MINOR_HEAL);
+      IntListAdd(&actor->specials, SPECIAL_ID_HEAL);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       return actor;
@@ -161,6 +161,22 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     printf("Invalid actor type when creating actor\n");
     return NULL;
   }
+}
+
+Actor* actorCreateTestPlayer(COISprite* sprite) {
+  // Process for random stat generation, maybe specific for each class?
+  Actor* actor = actorCreate(ACTOR_PLAYER, sprite, 999, 999, 999, 999, 25, 15);
+  for (int i = 0; i < 21; i++) {
+    IntListAdd(&actor->specials, i);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    techAddToList(actor->techList, i);
+  }
+  
+  COISpriteSetSheetIndex(actor->sprite, 1, 2);
+    
+  return actor;
 }
 
 Actor* actorCreatePlayer(COISprite* sprite) {

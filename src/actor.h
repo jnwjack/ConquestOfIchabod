@@ -86,6 +86,7 @@ Actor* actorCreate(int actorType, COISprite* sprite,
 		   int atk, int def, int agi, int hp, int tp, int sp);
 Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, COIWindow* window);
 Actor* actorCreatePlayer(COISprite* sprite);
+Actor* actorCreateTestPlayer(COISprite* sprite);
 void actorDestroy(Actor* actor);
 
 // Create list of COISprites from list of actors

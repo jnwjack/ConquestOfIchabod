@@ -102,6 +102,20 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
     townDestroyBoard((TownContext*)battleContext->outside->context);
     playerCheckForEviction(battleContext->pInfo);
     battleDestroyBoard(board);
+
+    // Message that appears when player beats the tentacles, which (hopefully) they shouldn't be able to do.
+    TownContext* townContext = (TownContext*)townBoard->context;
+    if (result == BR_WIN && townContext->pInfo->party[0]->sprite->_x >= TOWN_MUSIC_X_TRIGGER) {
+      TextBoxSetStrings(townContext->textBox, 
+          "Hi there. You've beaten Conquest of Izra.",
+          "I wasn't expecting you to win that last battle. The game is supposed to be unwinnable.",
+          "If you're reading this, I might've balanced the game poorly.",
+          "Or, you modified the game files.",
+          "In either case, thanks for dedicating so much time to looking at this project.",
+          "If you feel so inclined, I'd like to hear how you beat it so I can do some rebalancing.",
+          "My name's Jack and I can be reached at jnw900@gmail.com. Thank you.",
+          NULL);
+    }       
     break;
   default:
     board->_shouldDraw = true;

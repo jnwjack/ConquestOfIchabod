@@ -490,6 +490,17 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
         snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", parryDamage, aName);
         ActionSummaryAddString(summary, temp, board, box, textType);
 
+        // Bad way to do this. Hacky. But I just want to be done with this thing.
+        for (int i = 0; i < t->techList->count; i++) {
+          if (t->techList->techs[i]->id == TECH_ID_QUICKSTRIKE) {
+            if (t->techList->techs[i]->active) {
+              a->hp = MAX(0, a->hp - parryDamage);
+              ActionSummaryAddString(summary, "THE ATTACK REPEATS!", board, box, textType);
+              ActionSummaryAddString(summary, temp, board, box, textType);
+            }
+            break;
+          }
+        }
         // Action fails
         break;
       }
@@ -532,7 +543,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     } else if (spType == SPECIAL_HEALING) {
       int amountHealed = MIN(specialStrength(action->index), t->hpMax - t->hp);
       if (battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
-        t->hp = MAX(0, a->hp - amountHealed);
+        t->hp = MAX(0, a->hp - specialStrength(action->index));
         snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
         summary = ActionSummaryCreate(board, box, textType, temp, NULL);
         snprintf(temp, MAX_STRING_SIZE, "%i DAMAGE DEALT TO %s", amountHealed, aName);
@@ -654,7 +665,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     snprintf(temp, MAX_STRING_SIZE, "%s DIES", aName);
     ActionSummaryAddString(summary, temp, board, box, textType);
   }
-  if (actorIsDead(t)) {
+  if (actorIsDead(t) && !(action->type == SPECIAL && action->index == SPECIAL_ID_REINFORCE)) {
     t->sprite->_autoHandle = false;
     t->sprite->_visible = false;
     snprintf(temp, MAX_STRING_SIZE, "%s DIES", tName);
