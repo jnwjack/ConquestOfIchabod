@@ -254,6 +254,7 @@ void BattleSplashAnimate(BattleSplash* splash, bool cutToEnd) {
     } else {
       splash->_ticks++;
     }
+    break;
   case BSS_PROGRESS_BAR:
     if (splash->_ticks > 200) {
       splash->_ticks = 0;
