@@ -5,7 +5,7 @@
 void _snakeUpdate(COITransition* transition, COIWindow* window) {
   transition->currentTick++;
   int stepSize = 40;
-  int ticksPerSquare = 5;
+  int ticksPerSquare = 3;
   int furthestRect = transition->currentTick / ticksPerSquare;
   // Speed up transition as we get further along.
   if (furthestRect > 48 / 2) {
@@ -29,8 +29,8 @@ void _snakeUpdate(COITransition* transition, COIWindow* window) {
     SDL_RenderFillRect(renderer, &transition->rects[currentRect]);
   }
 
-  // 240 = 8 * 6 * 5
-  if (transition->currentTick >= 240) {
+  // 144 = 8 * 6 * 3
+  if (transition->currentTick >= 144) {
     transition->complete = true;
   }
 

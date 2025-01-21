@@ -752,7 +752,7 @@ ActionSummary* ActionSummaryCreate(COIBoard* board, COISprite* box, COITextType*
 
 void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString) {
   // Can't skip past last string
-  if (summary->currentString == 0 || summary->currentString + 1 >= summary->numStrings) {
+  if (summary->currentString >= summary->numStrings) {
     skipToNextString = false;
   }
   
@@ -767,17 +767,6 @@ void ActionSummaryAdvance(ActionSummary* summary, bool skipToNextString) {
     } else {
       COIStringSetVisible(summary->currentStringObj, true);
     }
-    /*
-    if (summary->currentString >= summary->numStrings) {
-      summary->finished = true;
-      } else {
-      summary->currentStringObj = (COIString*)LinkedListNext(summary->strings);
-      if (summary->currentStringObj == NULL) {
-	printf("bad: %i\n", summary->currentString);
-      }
-      COIStringSetVisible(summary->currentStringObj, true);
-    }
-    */
   }
 }
 
