@@ -278,8 +278,7 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   context->numEnemies = _numEnemiesFromTerrain(terrain);
 
   // Actions
-  context->actions = malloc(sizeof(BattleAction) *
-			    (context->numAllies + context->numEnemies));
+  context->actions = calloc((context->numAllies + context->numEnemies), sizeof(BattleAction));
 
   // Keep a list of all strings we have that we can pass to the COIBoard
   context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
@@ -1192,7 +1191,6 @@ void battleDestroyBoard(COIBoard* board) {
   for (int i = 0; i < BATTLE_NUM_ACTIONS; i++) {
     COIStringDestroy(context->actionStrings[i]);
   }
-  context->actionMenu->_strings = NULL;
   for (int i = 0; i < context->numEnemies; i++) {
     actorDestroy(context->enemies[i]);
     COIStringDestroy(context->enemyNames[i]);
