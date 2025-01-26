@@ -213,7 +213,27 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 
     // Test inventory
     Inventory* inventory = createEmptyInventory(itemList);
-
+    #ifdef __COI_DEBUG__
+    inventoryAddItem(inventory, ITEM_ID_HEALING_POTION);
+    inventoryAddItem(inventory, ITEM_ID_HEALING_POTION);
+    inventoryAddItem(inventory, ITEM_ID_HEALING_POTION);
+    inventoryAddItem(inventory, ITEM_ID_HEALING_POTION);
+    inventoryAddItem(inventory, ITEM_ID_AGI_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_AGI_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_AGI_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_GEM_OF_PERMANENCE);
+    inventoryAddItem(inventory, ITEM_ID_AGI_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_DEF_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_DEF_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_DEF_SCROLL);
+    inventoryAddItem(inventory, ITEM_ID_STRENGTH_POTION);
+    inventoryAddItem(inventory, ITEM_ID_STRENGTH_POTION);
+    inventoryAddItem(inventory, ITEM_ID_STRENGTH_POTION);
+    inventoryAddItem(inventory, ITEM_ID_KNIFE);
+    inventoryAddItem(inventory, ITEM_ID_KNIFE);
+    inventoryAddItem(inventory, ITEM_ID_KNIFE);
+    #endif
+    
     // Initialize player data
     COISprite* playerSprite = COISpriteCreateFromAssetID(3552, 3232, 32, 32, COI_GLOBAL_LOADER, 1, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
     PlayerInfo* pInfo = playerInfoCreate(titleContext->kb.name, playerSprite, inventory, titleContext->cs.currentClass); // jnw cleanup: leaks
@@ -239,134 +259,50 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
 void armory(COIBoard* board, SDL_Event* event, void* context) {
   ArmoryContext* armoryContext = (ArmoryContext*)context;
 
-  bool selection = false;
-  bool back = false;
-  COIMenu* focusedMenu = armoryContext->confirmActive ? armoryContext->confirmMenu : armoryContext->currentMenu;
   switch (event->type) {
   case SDL_CONTROLLERBUTTONDOWN:
   case SDL_KEYDOWN:
   {
+    board->_shouldDraw = true;
     int move = _sdlEventToDirectionalInput(event);
     switch (move) {
     case MOVING_UP:
-      // COISoundPlay(COI_SOUND_BLIP);
-      COIMenuIncrement(focusedMenu, -1);
-      COIMenuSetVisible(focusedMenu);
-      break;
     case MOVING_DOWN:
-      // COISoundPlay(COI_SOUND_BLIP);
-      COIMenuIncrement(focusedMenu, 1);
-      COIMenuSetVisible(focusedMenu);
-	    break;
+      armoryProcessDirectionalInput(armoryContext, move);
+      break;
     case MOVING_SELECT:
-	    selection = true;
-	    break;
+      if (armorySelect(armoryContext)) {
+        COIBoard* threadTownBoard = armoryContext->outsideBoard;
+        COIWindow* window = COI_GLOBAL_WINDOW;
+
+        // Reset menus and pointer
+        _changeBoardToThreadTown(threadTownBoard);
+        townCheckForTiredMessage((TownContext*)threadTownBoard->context);
+
+        armoryDestroy(armoryContext);
+
+        // Destroy dynamic sprites
+        for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
+          LinkedListResetCursor(board->drawLayers[i].dynamicSprites);
+          COISprite* sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
+          while (sprite) {
+            COIBoardRemoveDynamicSprite(board, sprite, i);
+            COISpriteDestroy(sprite);
+            sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
+          }
+        }
+        COIBoardDestroy(board);
+        return;
+      }
+      break;
     case MOVING_DELETE:
-      COISoundPlay(COI_SOUND_SELECT);
-	    back = true;
-	    break;
+      armoryBack(armoryContext);
+      break;
+    default:
+      return;
     }
-    break;
   }
   default:
-    return;
-  }
-
-  board->_shouldDraw = true;
-
-  // Return to first menu
-  if (back && armoryContext->currentMenu != armoryContext->menu) {
-    if (armoryContext->confirmActive) {
-      armoryDisableConfirmMenu(armoryContext);
-    } else {
-      COIMenuSetInvisible(armoryContext->currentMenu);
-      COIMenuReset(armoryContext->currentMenu);
-      armoryContext->currentMenu = armoryContext->menu;
-    }
-    return;
-  }
-
-  if (!selection) {
-    return;
-  }
-
-  // If confirm menu active
-  if (armoryContext->confirmActive) {
-    switch (armoryContext->confirmMenu->_current) {
-    case 0:
-      armoryDisableConfirmMenu(armoryContext);
-      break;
-    case 1:
-      if (armoryContext->currentMenu == armoryContext->buyMenu) {
-        COISoundPlay(COI_SOUND_SELECT);
-	      armoryBuyItem(board);
-      } else {
-        COISoundPlay(COI_SOUND_SELECT);
-	      armorySellItem(board);
-        if (armoryContext->numSellItems == 0) {
-          COIMenuSetInvisible(armoryContext->currentMenu);
-          COIMenuReset(armoryContext->currentMenu);
-          armoryContext->currentMenu = armoryContext->menu;
-        }
-      }
-      break;
-    }
-    return;
-  }
-
-  // Behavior for buy and sell menus
-  if (armoryContext->currentMenu != armoryContext->menu && !armoryContext->isGag) {
-    COISoundPlay(COI_SOUND_SELECT);
-    armoryEnableConfirmMenu(armoryContext);
-  }
-
-  // Buy
-  if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 0) {
-    COISoundPlay(COI_SOUND_SELECT);
-    COIMenuSetVisible(armoryContext->buyMenu);
-    armoryContext->currentMenu = armoryContext->buyMenu;
-    COIMenuIncrement(armoryContext->currentMenu, 0);
-  }
-
-  // Sell
-  if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 1) {
-    if (armoryContext->numSellItems > 0 && !armoryContext->isGag) {
-      COISoundPlay(COI_SOUND_SELECT);
-      COIMenuSetVisible(armoryContext->sellMenu);
-      armoryContext->currentMenu = armoryContext->sellMenu;
-      COIMenuIncrement(armoryContext->currentMenu, 0);
-    } else {
-      COISoundPlay(COI_SOUND_INVALID);
-    }
-  }
-  
-  // Exit
-  if (armoryContext->currentMenu == armoryContext->menu && armoryContext->currentMenu->_current == 2) {
-    COISoundPlay(COI_SOUND_SELECT);
-    COIBoard* threadTownBoard = armoryContext->outsideBoard;
-    COIWindow* window = COI_GLOBAL_WINDOW;
-
-    // Reset menus and pointer
-    COIMenuReset(armoryContext->buyMenu);
-    COIMenuReset(armoryContext->menu);
-    COIMenuSetInvisible(armoryContext->buyMenu);
-    armoryContext->currentMenu = armoryContext->menu;
-    _changeBoardToThreadTown(threadTownBoard);
-    townCheckForTiredMessage((TownContext*)threadTownBoard->context);
-
-    armoryDestroy(armoryContext);
-
-    // Destroy dynamic sprites
-    for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
-      LinkedListResetCursor(board->drawLayers[i].dynamicSprites);
-      COISprite* sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
-      while (sprite) {
-        COIBoardRemoveDynamicSprite(board, sprite, i);
-        COISpriteDestroy(sprite);
-        sprite = (COISprite*)LinkedListNext(board->drawLayers[i].dynamicSprites);
-      }
-    }
-    COIBoardDestroy(board);
     return;
   }
 }

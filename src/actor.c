@@ -72,7 +72,7 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 54, 30, 24, 45, 10, 30);
+      Actor* actor = actorCreate(actorType, sprite, 71, 55, 53, 45, 10, 30);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       IntListAdd(&actor->specials, SPECIAL_ID_REINFORCE);
@@ -173,7 +173,7 @@ Actor* actorCreateTestPlayer(COISprite* sprite) {
   for (int i = 0; i < 8; i++) {
     techAddToList(actor->techList, i);
   }
-  
+
   COISpriteSetSheetIndex(actor->sprite, 1, 2);
     
   return actor;

@@ -2,7 +2,11 @@
 
 static int slideAssetIDs[TITLE_NUM_INTRO_SLIDES] = { 51, 52, 53, 54, 55, 55 };
 
+#ifdef __COI_DEBUG__
+static bool shouldSkipIntro = true;
+#else
 static bool shouldSkipIntro = false;
+#endif
 
 void _makeStrings(COIBoard* board, COIString** strings, COITextType* textType) {
   strings[TITLE_STRING_NEW_GAME] = COIStringCreate("New", 290, 150, textType);

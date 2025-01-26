@@ -627,6 +627,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     inventoryRemoveBackpackItemFirstInstance(pInfo->inventory,
         ItemListGetItem(pInfo->inventory->items, action->index));
     if (item->id == ITEM_ID_HEALING_POTION && battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
+      printf("DRANK POTION WHILE CURSED\n");
       t->hp = MAX(0, t->hp - item->strength);
       snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
       ActionSummaryAddString(summary, temp, board, box, textType);

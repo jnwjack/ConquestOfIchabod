@@ -55,12 +55,16 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   info->armoryGagUsed = false;
   TimeStateCopyGlobalTime(&info->lastXPGain);
   info->party = malloc(sizeof(Actor*) * MAX_PARTY_SIZE);
+  #ifdef __COI_DEBUG__
+  info->party[0] = actorCreateTestPlayer(sprite);
+  #else
   info->party[0] = actorCreatePlayer(sprite);
+  #endif
 
   info->partySize = 1;
   info->level = 1;
   info->xp = 0;
-  info->xpForLevelUp = 100;
+  info->xpForLevelUp = 180;
   info->renting = RS_NOT_RENTING;
   info->spriteAge = SA_YOUNG;
   info->working = false;
