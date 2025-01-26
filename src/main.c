@@ -29,7 +29,11 @@ EM_BOOL one_iter(double time, void* userData) {
 static void _init() {
   // Create data directory if it doesn't exist
   char* dataDir = getDataDir();
+  #ifdef __WINDOWS__
+  mkdir(dataDir);
+  #else
   mkdir(dataDir, 0777);
+  #endif
   SDL_free(dataDir);
   // Initialize global window and asset loader
   if (COIPreferenecesPrefDataExists()) {
