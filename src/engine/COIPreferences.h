@@ -80,6 +80,7 @@ typedef struct COIPreferencesMenu {
 void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board);
 void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible);
 void COIPreferencesMenuProcessInput(COIPreferencesMenu* menu, int direction);
+bool COIPreferenecesPrefDataExists();
 
 extern COIPreferences GLOBAL_PREFERENCES;
 

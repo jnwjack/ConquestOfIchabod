@@ -232,3 +232,23 @@ void scaleRect(float factorW, float factorH, SDL_Rect* src, SDL_Rect* dst) {
   }
 }
 
+char* getDataDir() {
+  return SDL_GetPrefPath(DATA_DIR_ORG, DATA_DIR_PROGRAM);
+}
+
+char* getSaveFileLocation() {
+  char* dataDir = getDataDir();
+  char* filename = malloc(sizeof(char) * 200);
+  snprintf(filename, 200, "%s%s", dataDir, "save.dat");
+  SDL_free(dataDir);
+  return filename;
+}
+
+char* getPreferencesFileLocation() {
+  char* dataDir = getDataDir();
+  char* filename = malloc(sizeof(char) * 200);
+  snprintf(filename, 200, "%s%s", dataDir, "preferences.dat");
+  SDL_free(dataDir);
+  return filename;
+}
+

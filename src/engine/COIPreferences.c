@@ -42,7 +42,8 @@ static void CircleListInit(CircleList* circleList, LinkedList* baseList) {
 }
 
 void COIPreferencesInit() {
-  FILE* fp = fopen("src/engine/etc/preferences.dat", "r");
+  char* prefFilename = getPreferencesFileLocation();
+  FILE* fp = fopen(prefFilename, "r");
 
   char* line = NULL;
   size_t len = 0;
@@ -62,13 +63,15 @@ void COIPreferencesInit() {
   GLOBAL_PREFERENCES.musicVolume = SDL_atoi(line);
 
   fclose(fp);
+  free(prefFilename);
   if (line) {
     free(line);
   }
 }
 
 void COIPreferencesWriteToFile() {
-  FILE* fp = fopen("src/engine/etc/preferences.dat", "w");
+  char* prefFilename = getPreferencesFileLocation();
+  FILE* fp = fopen(prefFilename, "w");
 
   fprintf(fp, "%u\n", GLOBAL_PREFERENCES.resolution.width);
   fprintf(fp, "%u\n", GLOBAL_PREFERENCES.resolution.height);
@@ -77,6 +80,7 @@ void COIPreferencesWriteToFile() {
   fprintf(fp, "%u\n", GLOBAL_PREFERENCES.musicVolume);
 
   fclose(fp);
+  free(prefFilename);
 }
 
 static void MenuListComponentInit(MenuListComponent* component, COIBoard* board, COITextType* textType, COITextType* textTypeGray, char* label, int x, int y, LinkedList* list) {
@@ -445,3 +449,13 @@ void COIPreferencesMenuProcessInput(COIPreferencesMenu* menu, int direction) {
   }
 }
 
+bool COIPreferenecesPrefDataExists() {
+  char* filename = getPreferencesFileLocation();
+  FILE* fp = fopen(filename, "r");
+  if (fp == NULL) {
+    return false;
+  }
+  fclose(fp);
+  free(filename);
+  return true;
+}

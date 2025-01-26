@@ -204,7 +204,7 @@ void title(COIBoard* board, SDL_Event* event, void* context) {
   }
 
   TitleNextBoard nextBoard = titleGetNextBoard(titleContext);
-  if (nextBoard == TITLE_NEW_GAME) {
+  if (nextBoard == TITLE_NEW_GAME) {    
     GLOBAL_TIME.day = 0;
     GLOBAL_TIME.val = 0;
     GLOBAL_TIME.phase = TS_MORNING;

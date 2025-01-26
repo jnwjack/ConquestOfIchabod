@@ -295,7 +295,8 @@ void _decodeStat(char** line, size_t* len, FILE* fp, char* buf, Stat* stat) {
 }
 
 void playerEncode(PlayerInfo* info) {
-  FILE* fp = fopen("src/engine/etc/save.dat", "w");
+  char* saveFilename = getSaveFileLocation();
+  FILE* fp = fopen(saveFilename, "w");
 
   _encodeString(info->name, fp);
 
@@ -388,19 +389,23 @@ void playerEncode(PlayerInfo* info) {
   _encodeInt((int)info->pathRevealed, temp, fp);
 
   fclose(fp);
+  free(saveFilename);
 }
 
 bool playerSaveExists() {
-  FILE* fp = fopen("src/engine/etc/save.dat", "r");
+  char* filename = getSaveFileLocation();
+  FILE* fp = fopen(filename, "r");
   if (fp == NULL) {
     return false;
   }
   fclose(fp);
+  free(filename);
   return true;
 }
 
 PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* inventory) {
-  FILE* fp = fopen("src/engine/etc/save.dat", "r");
+  char* saveFilename = getSaveFileLocation();
+  FILE* fp = fopen(saveFilename, "r");
 
   char* line = NULL;
   char buf[MAX_STRING_SIZE];
@@ -489,6 +494,7 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   playerUpdateClassProgressionFromTime(info);
 
   fclose(fp);
+  free(saveFilename);
 
   // info->spriteAge = playerSpriteAgeFromGlobalTime();
 

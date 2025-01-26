@@ -12,11 +12,11 @@ static int _priceFromItemID(int item) {
   case ITEM_ID_CRACKED_SHIELD:
     return 85;
   case ITEM_ID_STRENGTH_POTION:
-    return 25;
+    return 40;
   case ITEM_ID_DEF_SCROLL:
-    return 20;
+    return 35;
   case ITEM_ID_AGI_SCROLL:
-    return 15;
+    return 30;
   case ITEM_ID_BRONZE_HELM:
     return 300;
   case ITEM_ID_BRONZE_CHEST:
@@ -415,7 +415,7 @@ COIBoard* armoryCreateBoardForGeneralStore(COIBoard* outsideBoard, PlayerInfo* p
   IntListAdd(&itemIDs, ITEM_ID_STRENGTH_POTION);
   IntListAdd(&itemIDs, ITEM_ID_DEF_SCROLL);
   IntListAdd(&itemIDs, ITEM_ID_AGI_SCROLL);
-  IntListAdd(&itemIDs, ITEM_ID_GEM_OF_PERMANENCE);
+  IntListAdd(&itemIDs, ITEM_ID_GEM_OF_PERMANENCE);  
 
   return _createBoard(COI_GLOBAL_WINDOW,
 			   COI_GLOBAL_LOADER,
@@ -463,14 +463,14 @@ bool armorySelect(ArmoryContext* context) {
         COIMenuSetVisible(context->buyMenu);
         context->currentMenu = context->buyMenu;
       } else if (COIMenuGetCurrentValue(context->currentMenu) == 1) {
-        if (context->numSellItems > 0) {
+        if (context->numSellItems > 0 && !context->isGag) {
           COIMenuSetVisible(context->sellMenu);
           context->currentMenu = context->sellMenu;
         }
       } else {
         return true;
       }
-    } else {
+    } else if (!context->isGag) {
       armoryEnableConfirmMenu(context);
     }
   }

@@ -5,6 +5,7 @@
 #include "tests.h"
 #include "player.h"
 #include "threadtown/Town.h"
+#include <sys/stat.h>
 
 #if !defined(__NATIVE__)
 #include <emscripten.h>
@@ -26,9 +27,20 @@ EM_BOOL one_iter(double time, void* userData) {
 
 
 static void _init() {
-  
+  // Create data directory if it doesn't exist
+  char* dataDir = getDataDir();
+  mkdir(dataDir, 0777);
+  SDL_free(dataDir);
   // Initialize global window and asset loader
-  COIPreferencesInit();
+  if (COIPreferenecesPrefDataExists()) {
+    COIPreferencesInit();
+  } else {
+    GLOBAL_PREFERENCES.resolution.width = 640;
+    GLOBAL_PREFERENCES.resolution.height = 480;
+    GLOBAL_PREFERENCES.fullscreen = false;
+    GLOBAL_PREFERENCES.effectVolume = 32;
+    GLOBAL_PREFERENCES.musicVolume = 32;
+  }
   COIPreferencesWriteToFile();
   COIWindowInit();
   COISoundUpdateEffectVolume();

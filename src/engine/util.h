@@ -6,6 +6,9 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
+#define DATA_DIR_ORG "jnw"
+#define DATA_DIR_PROGRAM "coi"
+
 #ifdef __WINDOWS__
 size_t getline(char **lineptr, size_t *n, FILE *stream);
 #define printf(string,...) (0)
@@ -68,5 +71,8 @@ int generateRandomDirectionalMovement();
 int generateRandomCharWithCenter(int center, int rangeSize);
 bool inputIsDirection(int input);
 void scaleRect(float factorW, float factorH, SDL_Rect* src, SDL_Rect* dst);
+char* getDataDir();
+char* getSaveFileLocation();
+char* getPreferencesFileLocation();
 
 #endif

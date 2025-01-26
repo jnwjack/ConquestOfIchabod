@@ -480,22 +480,22 @@ static void _talkToLandlord(TownContext* context) {
     unsigned long daysLeft = context->pInfo->nextRentDate - GLOBAL_TIME.day;
     if (daysLeft == 1) {
       TextBoxSetStrings(context->textBox,
-        "Rent's due tomorrow.",
+        "Payment's due tomorrow.",
         NULL);
     } else if (daysLeft == 0) {
       TextBoxSetStrings(context->textBox,
-        "Rent's due today.",
+        "Payment's due today.",
         NULL);
     } else {
       char temp[MAX_STRING_SIZE];
-      snprintf(temp, MAX_STRING_SIZE, "Rent's due in %lu days.", context->pInfo->nextRentDate - GLOBAL_TIME.day);
+      snprintf(temp, MAX_STRING_SIZE, "Payment's due in %lu days.", context->pInfo->nextRentDate - GLOBAL_TIME.day);
       TextBoxSetStrings(context->textBox,
             temp,
             NULL);
     }
   } else if (context->pInfo->renting == RS_NOT_RENTING) {
     TextBoxSetStrings(context->textBox,
-		      "I'm renting out a room. Interested? It's 1400 for two weeks.",
+		      "I've got a spare room in my place. Interested? It's 1400 for two weeks.",
           "An adventurer needs a place to rest and recover, right?",
 		      NULL);
   } else {
