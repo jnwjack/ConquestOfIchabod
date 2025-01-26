@@ -212,10 +212,13 @@ ActionType battleBehaviorPickActionType(int actorType) {
   switch (actorType) {
   case ACTOR_TENTACLE:
     return (generateRandomBoolWeighted(0.5) ? SPECIAL : ATTACK);
+  case ACTOR_WIRE_MAIDEN:
   case ACTOR_WIRE_MOTHER:
     return (generateRandomBoolWeighted(0.85) ? SPECIAL : ATTACK);
+  case ACTOR_PYROID:
   case ACTOR_VOLCANETTE:
     return (generateRandomBoolWeighted(0.5) ? SPECIAL : ATTACK);
+  case ACTOR_FEARWOLF:
   case ACTOR_BOOWOW:
     return (generateRandomBoolWeighted(0.25) ? SPECIAL : ATTACK);
   default:
@@ -627,7 +630,6 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     inventoryRemoveBackpackItemFirstInstance(pInfo->inventory,
         ItemListGetItem(pInfo->inventory->items, action->index));
     if (item->id == ITEM_ID_HEALING_POTION && battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
-      printf("DRANK POTION WHILE CURSED\n");
       t->hp = MAX(0, t->hp - item->strength);
       snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
       ActionSummaryAddString(summary, temp, board, box, textType);

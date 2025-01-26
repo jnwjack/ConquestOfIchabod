@@ -191,7 +191,7 @@ static int _enemyTypeFromTerrain(Terrain terrain) {
 unsigned long _xpYieldFromEnemyType(int enemyType) {
   switch (enemyType) {
   case ACTOR_SKELETON:
-    return 45;
+    return 35;
   case ACTOR_BOOWOW:
     return 30;
   case ACTOR_TENTACLE:
@@ -200,6 +200,14 @@ unsigned long _xpYieldFromEnemyType(int enemyType) {
     return 35;
   case ACTOR_VOLCANETTE:
     return 40;
+  case ACTOR_FEARWOLF:
+    return 50;
+  case ACTOR_MEAT_FLAYER:
+    return 55;
+  case ACTOR_WIRE_MAIDEN:
+    return 55;
+  case ACTOR_PYROID:
+    return 60;
   default:
     return 0;
   }
@@ -207,14 +215,18 @@ unsigned long _xpYieldFromEnemyType(int enemyType) {
 
 unsigned int _goldFromEnemyType(int enemyType) {
   switch (enemyType) {
+  case ACTOR_MEAT_FLAYER:
   case ACTOR_SKELETON:
     return (unsigned int)generateRandomCharInRange(3, 7);
+  case ACTOR_FEARWOLF:
   case ACTOR_BOOWOW:
     return (unsigned int)generateRandomCharInRange(0, 5);
   case ACTOR_TENTACLE:
     return (unsigned int)generateRandomCharInRange(10, 20);
+  case ACTOR_WIRE_MAIDEN:
   case ACTOR_WIRE_MOTHER:
     return (unsigned int)generateRandomCharInRange(2, 6);
+  case ACTOR_PYROID:
   case ACTOR_VOLCANETTE:
     return (unsigned int)generateRandomCharInRange(4, 8);
   default:
