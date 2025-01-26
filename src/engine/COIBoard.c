@@ -37,7 +37,6 @@ COIBoard* COIBoardCreate(int r, int g, int b, int a, int w, int h, COIAssetLoade
 }
 
 void COIBoardDestroy(COIBoard* board) {
-  printf("DESTROYING BOARD\n");
   if (board == NULL){
     return;
   }

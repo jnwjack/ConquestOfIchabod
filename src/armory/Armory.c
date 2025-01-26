@@ -103,15 +103,10 @@ static void _populateBuy(ArmoryContext* context, IntList* itemIDs) {
   context->numBuyItems = itemIDs->length;
 
   for (int i = 0; i < context->numBuyItems; i++) {
-    printf("buyitem\n");
     _setItem(context, &context->buyItems[i], itemIDs->values[i], 1, false, ITEM_SLOT_NA);
-    printf("buyitem a\n");
     COIString* string = _getItemString(context, &context->buyItems[i]);
-    printf("buyitem b\n");
     COIBoardAddString(context->board, string, 0);
-    printf("buyitem c\n");
     COIMenuAddString(context->buyMenu, string, i);
-    printf("buyitem d\n");
   }
 }
 
@@ -129,25 +124,7 @@ void _populateSell(ArmoryContext* context) {
   COIBoardAddDynamicSprite(context->board, pointer, 0);
   context->sellMenu = COIMenuCreateWithCapacity(frame, pointer, ARMORY_MAX_SELL_ITEMS);
 
-  // for (int i = 0; i < context->numSellItems; i++) {
-  //   // printf("DESTROYING FIRST CHAR: %i\n", context->sellItems[i].string->fontSize);
-  //   COIMenuRemoveString(context->sellMenu, i, context->board);
-  //   context->sellItems[i].string = NULL;
-  // }
-
-  // for (int i = 0; i < 15; i++) {
-  //   char temp[MAX_STRING_SIZE];
-  //   snprintf(temp, MAX_STRING_SIZE, "Heyo - %i", i);
-  //   COIString* string = COIStringCreate(temp, 0, 0, context->textType);
-  //   COIBoardAddString(context->board, string, 0);
-  //   COIMenuAddString(context->sellMenu, string, i);
-  // }
-
-  // context->numSellItems = 15;
-  // return;
-
   context->numSellItems = inventory->numBackpackItems + inventory->numEquippedItems;
-  printf("NUM SELL: %i\n", context->numSellItems);
   for (int i = 0; i < inventory->numBackpackItems; i++) {
     _setItem(context, &context->sellItems[i], inventory->backpack[i]->id, 1, true, ITEM_SLOT_NA);
     COIString* string = _getItemString(context, &context->sellItems[i]);
@@ -239,28 +216,12 @@ COIBoard* _createBoard(COIWindow* window,
   COIMenuSetVisible(menu);
   armoryContext->menu = menu;
 
-  printf("HA 1\n");
-
   // Fill item list for buy menu
-  // frame = COISpriteCreateFromAssetID(280, 40, 350, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  // pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  // COIBoardAddDynamicSprite(armoryBoard, frame, 0);
-  // COIBoardAddDynamicSprite(armoryBoard, pointer, 0);
   armoryContext->buyMenu = NULL;
-  // armoryContext->buyMenu = COIMenuCreateWithCapacity(frame, pointer, ARMORY_MAX_BUY_ITEMS);
-  printf("HA 2\n");
   _populateBuy(armoryContext, itemIDs);
-  printf("HA 3\n");
-  // armoryUpdateMenuText(armoryContext->buyMenu, armoryContext->buyItems, armoryContext->numBuyItems);
   COIMenuSetInvisible(armoryContext->buyMenu);
 
   // Fill item list for sell menu
-  // frame = COISpriteCreateFromAssetID(280, 40, 350, 190, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  // pointer = COISpriteCreateFromAssetID(0, 0, 32, 32, COI_GLOBAL_LOADER, 6, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
-  // COIBoardAddDynamicSprite(armoryBoard, frame, 0);
-  // COIBoardAddDynamicSprite(armoryBoard, pointer, 0);
-  // armoryContext->sellMenu = COIMenuCreateWithCapacity(frame, pointer, ARMORY_MAX_SELL_ITEMS);
-
   armoryContext->sellMenu = NULL;
   armoryContext->inventory = pInfo->inventory;
   _populateSell(armoryContext);
