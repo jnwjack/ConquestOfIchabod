@@ -67,12 +67,12 @@ Actor* actorCreateOfType(int actorType, int x, int y, COIAssetLoader* loader, CO
   case ACTOR_MEAT_FLAYER:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 94, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
-    return actorCreate(actorType, sprite, 75, 51, 36, 25, 0, 0);
+    return actorCreate(actorType, sprite, 65, 51, 36, 25, 0, 0);
   case ACTOR_TENTACLE:
     sprite = COISpriteCreateFromAssetID(x, y, 32, 32, loader, 30, COIWindowGetRenderer(window));
     COISpriteSetSheetIndex(sprite, 2, 2);
     {
-      Actor* actor = actorCreate(actorType, sprite, 71, 55, 53, 45, 10, 30);
+      Actor* actor = actorCreate(actorType, sprite, 67, 55, 53, 45, 10, 30);
       IntListAdd(&actor->specials, SPECIAL_ID_CURSE);
       IntListAdd(&actor->specials, SPECIAL_ID_DRAIN_SPIRIT);
       IntListAdd(&actor->specials, SPECIAL_ID_REINFORCE);

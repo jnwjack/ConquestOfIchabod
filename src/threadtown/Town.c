@@ -388,7 +388,7 @@ void townCheckForBattle(TownContext* context) {
   case TT_BROWN_GRASS_CORRUPT:
   case TT_THICK_GRASS:
   #ifdef __COI_DEBUG__
-    context->willEnterBattle = generateRandomBoolWeighted(0);
+    context->willEnterBattle = generateRandomBoolWeighted(0.05);
   #else
     context->willEnterBattle = generateRandomBoolWeighted(0.05);
   #endif
