@@ -12,6 +12,8 @@
 #define PLAYER_CLASS_WIZARD 1
 #define PLAYER_CLASS_ROGUE 2
 
+#define PLAYER_XP_FACTOR 1.9f
+
 typedef enum RentStatus {
   RS_RENTING = 0,
   RS_NOT_RENTING,

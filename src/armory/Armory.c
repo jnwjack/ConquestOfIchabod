@@ -137,7 +137,7 @@ void _populateSell(ArmoryContext* context) {
   for (int i = 0; i < inventory->numEquippedItems; i++) {
     int sellItemIndex = inventory->numBackpackItems + i;
     _setItem(context, &context->sellItems[sellItemIndex], equipped[i]->id, 1, true, equipped[i]->slot);
-    COIString* string = _getItemString(context, &context->sellItems[i]);
+    COIString* string = _getItemString(context, &context->sellItems[sellItemIndex]);
     COIBoardAddString(context->board, string, 0);
     COIMenuAddString(context->sellMenu, string, i);
   }

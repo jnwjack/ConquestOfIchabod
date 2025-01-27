@@ -130,7 +130,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
 }
 
 unsigned long _getXPForLevel(unsigned long oldXP) {
-  return oldXP * 1.9;
+  return oldXP * PLAYER_XP_FACTOR;
 }
 
 void playerAddXP(PlayerInfo* info, unsigned long xp) {
@@ -534,6 +534,12 @@ void playerCheckForEviction(PlayerInfo* pInfo) {
 void playerLevelDown(PlayerInfo* pInfo) {
   if (pInfo->level > 1) {
     pInfo->level--;
+    unsigned long possibleXPForLevel = pInfo->xpForLevelUp / PLAYER_XP_FACTOR;
+    if (possibleXPForLevel > pInfo->xp + 50) {
+      pInfo->xpForLevelUp = possibleXPForLevel;
+    } else {
+      pInfo->xpForLevelUp = pInfo->xp + 50;
+    }
 
     Actor* player = pInfo->party[0];
 
@@ -578,7 +584,7 @@ void playerLevelDown(PlayerInfo* pInfo) {
 }
 
 void playerUpdateClassProgressionFromTime(PlayerInfo* pInfo) {
-  if (pInfo->shiftsWorked >= 30) {
+  if (pInfo->shiftsWorked >= CLERK_CLASS_CHANGE_SHIFTS_WORKED) {
     pInfo->classProgression.specials = LEVELUP_SPECIALS_CLERK;
     pInfo->classProgression.numSpecials = LEVELUP_NUM_SPECIALS_CLERK;
     pInfo->classProgression.specialsLevels = LEVELUP_SPECIALS_MIN_LEVELS_CLERK;
