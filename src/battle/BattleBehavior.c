@@ -629,7 +629,7 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
     inventoryRemoveBackpackItemFirstInstance(pInfo->inventory,
         ItemListGetItem(pInfo->inventory->items, action->index));
-    if (item->id == ITEM_ID_HEALING_POTION && battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
+    if ((item->id == ITEM_ID_HEALING_POTION || item->id == ITEM_ID_MOUNTAIN_JUICE) && battleBehaviorCheckForModifiers(t, MT_CURSED, modifiers)) {
       t->hp = MAX(0, t->hp - item->strength);
       snprintf(temp, MAX_STRING_SIZE, "%s IS CURSED!", tName);
       ActionSummaryAddString(summary, temp, board, box, textType);
