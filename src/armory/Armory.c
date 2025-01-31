@@ -257,6 +257,8 @@ COIBoard* _createBoard(COIWindow* window,
 
   COIBoardSetContext(armoryBoard, (void*)armoryContext);
 
+  IntListDestroy(itemIDs);
+
   return armoryBoard;
 }
 

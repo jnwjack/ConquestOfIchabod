@@ -81,6 +81,7 @@ void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board);
 void COIPreferencesMenuSetVisible(COIPreferencesMenu* menu, bool visible);
 void COIPreferencesMenuProcessInput(COIPreferencesMenu* menu, int direction);
 bool COIPreferenecesPrefDataExists();
+void COIPreferencesMenuDeinit(COIPreferencesMenu* menu, COIBoard* board);
 
 extern COIPreferences GLOBAL_PREFERENCES;
 

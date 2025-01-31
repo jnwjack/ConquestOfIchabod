@@ -35,6 +35,7 @@ COIMenu* COIMenuCreate(COISprite* frame, COISprite* pointer);
 COIMenu* COIMenuCreateWithCapacity(COISprite* frame, COISprite* pointer, int capacity);
 void COIMenuDestroy(COIMenu* menu);
 void COIMenuFreeComponents(COIMenu* menu, COIBoard* board);
+void COIMenuDestroyAndFreeSprites(COIMenu* menu, COIBoard* board);
 void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board);
 
 void COIMenuSetVisible(COIMenu* menu);

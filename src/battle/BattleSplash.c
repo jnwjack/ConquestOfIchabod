@@ -383,6 +383,9 @@ static void _getAbilityIndices(int* specialIndices, int* techIndices, PlayerInfo
     techIndices[techCount] = tl.values[trueIndex - sl.length];
     techCount++;
   }
+
+  IntListDestroy(&sl);
+  IntListDestroy(&tl);
 }
 
 static void _applyStatIncrease(PlayerInfo* pInfo) {
@@ -504,6 +507,7 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
       COIBoardAddString(board, splash->descStrings[indexInMenu], 0);
       COIBoardAddString(board, splash->costStrings[indexInMenu], 0);
       indexInMenu++;
+      techDestroy(tech);
     }
   }
   

@@ -845,6 +845,7 @@ static void _destroyConfirmMenus(PauseOverlay* overlay) {
 
 
 void PauseOverlayDestroy(PauseOverlay* overlay, COIBoard* board) {
+  COIPreferencesMenuDeinit(&overlay->prefMenu, board);
   // Stat Window
   COIBoardRemoveString(board, overlay->name, 0);
   COIStringDestroy(overlay->name);

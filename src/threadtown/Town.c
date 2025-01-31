@@ -149,7 +149,7 @@ static void _createSwordChest(TownContext* context) {
   if (context->swordChest) {
     LinkedListRemove(context->allActors, (void*)context->swordChest);
     COIBoardRemoveDynamicSprite(context->board, context->swordChest->sprite, 0);
-    COISpriteDestroy(context->swordChest->sprite);
+    // COISpriteDestroy(context->swordChest->sprite);
     actorDestroy(context->swordChest);
   }
 
@@ -220,24 +220,24 @@ COIBoard* townCreateBoard(COIWindow* window, COIAssetLoader* loader, PlayerInfo*
     bool outsideLowerGrassSection = playerSprite->_y <= 2944 || playerSprite->_y >= 3968;
     if (pInfo->shiftsWorked >= GRASS_PATH_SHIFTS_WORKED) {
       if (!pInfo->pathRevealed && !outsideLowerGrassSection) {
-        snprintf(flattenedPathExtension, 10, "");
+        snprintf(flattenedPathExtension, 10, ".dat");
       } else {
-        snprintf(flattenedPathExtension, 10, "_path");
+        snprintf(flattenedPathExtension, 10, "_path.dat");
         pInfo->pathRevealed = true;
       }
     } else {
-      snprintf(flattenedPathExtension, 10, "");
+      snprintf(flattenedPathExtension, 10, ".dat");
     }
     if (GLOBAL_TIME.day >= CORRUPTION_4_DAYS && playerInTownCenter) {
-      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_4%s.dat", flattenedPathExtension);
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_4%s", flattenedPathExtension);
     } else if (GLOBAL_TIME.day >= CORRUPTION_3_DAYS) {
-      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_3%s.dat", flattenedPathExtension);
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_3%s", flattenedPathExtension);
     } else if (GLOBAL_TIME.day >= CORRUPTION_2_DAYS) {
-      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_2%s.dat", flattenedPathExtension);
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_2%s", flattenedPathExtension);
     } else if (GLOBAL_TIME.day >= CORRUPTION_1_DAYS) {
-      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_1%s.dat", flattenedPathExtension);
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap_corrupt_1%s", flattenedPathExtension);
     } else {
-      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap%s.dat", flattenedPathExtension);
+      snprintf(fullFilename, MAX_STRING_SIZE, "src/threadtown/spritemap%s", flattenedPathExtension);
     }
     COIBoardLoadSpriteMap(board, COIWindowGetRenderer(window), fullFilename);
     context->_creepy = false;
@@ -1120,10 +1120,6 @@ void townMovePlayer(TownContext* context) {
     break;
   }
 
-#ifdef __COI_DEBUG__
-  printf("coords: x = %i, y = %i\n", player->sprite->_x, player->sprite->_y);
-#endif
-
   // Position trigger for tree guy callout
   if (!context->pInfo->treeGuyCallout && GLOBAL_TIME.day >= TREE_GUY_CONVO_3_DAYS && 
       (player->sprite->_x >= 2688 && player->sprite->_x <= 2976 && player->sprite->_y <= 3392 && player->sprite->_y >= 3232)) {
@@ -1242,7 +1238,7 @@ void townDestroyBoard(TownContext* context) {
   Actor* currentActor = LinkedListNext(context->allActors);
   while (currentActor) {
     COIBoardRemoveDynamicSprite(context->board, currentActor->sprite, 0);
-    COISpriteDestroy(currentActor->sprite);
+    // COISpriteDestroy(currentActor->sprite);
     actorDestroy(currentActor);
     currentActor = LinkedListNext(context->allActors);
   }

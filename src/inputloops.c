@@ -91,6 +91,7 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
     nextBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, board->loader, GAME_OVER_DEATH, battleContext->pInfo);
     COIWindowSetBoard(COI_GLOBAL_WINDOW, nextBoard, gameOver);
     COISoundPlay(COI_SOUND_SLUDGE_NORMAL);
+    battleDestroyBoard(board);
     break;
   case BR_FLEE:
   case BR_WIN:
@@ -129,8 +130,11 @@ void battle(COIBoard* board, SDL_Event* event, void* context) {
   // Behavior when not accepting user input
   BattleResult result = BR_CONTINUE;
   if (!battleContext->controlEnabled) {
-    // Can speed up animations by inputting a selection
-    bool selection = _sdlEventToDirectionalInput(event) == MOVING_SELECT;
+    bool selection = false;
+    if (event->type == SDL_CONTROLLERBUTTONDOWN || event->type == SDL_KEYDOWN) {
+      // Can speed up animations by inputting a selection
+      selection = _sdlEventToDirectionalInput(event) == MOVING_SELECT;
+    }
     result = battleAdvanceScene(battleContext, selection);
     _processBattleResult(board, battleContext, result);
     return;

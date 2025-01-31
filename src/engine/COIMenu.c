@@ -48,10 +48,22 @@ void COIMenuFreeComponents(COIMenu* menu, COIBoard* board) {
   menu->_stringCount = 0;
 }
 
+void COIMenuDestroyAndFreeSprites(COIMenu* menu, COIBoard* board) {
+  if (menu == NULL) {
+    return;
+  }
+  COISprite* frame = menu->_frame;
+  COIBoardRemoveDynamicSprite(board, frame, 0);
+  COISpriteDestroy(frame);
+  COISprite* pointer = menu->_pointer;
+  COIBoardRemoveDynamicSprite(board, pointer, 0);
+  COISpriteDestroy(pointer);
+  COIMenuDestroy(menu);
+}
+
 // Like COIMenuDestroy but also destroy sprites and strings in menu.
 // Assumes sprites are dynamic sprites.
 void COIMenuDestroyAndFreeComponents(COIMenu* menu, COIBoard* board) {
-  printf("DESTORY AND FREE\n");
   if (menu == NULL) {
     return;
   }

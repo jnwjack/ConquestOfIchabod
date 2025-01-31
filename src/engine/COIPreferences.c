@@ -459,3 +459,82 @@ bool COIPreferenecesPrefDataExists() {
   free(filename);
   return true;
 }
+
+static void CircleListDeinit(CircleList* circleList, COIBoard* board) {
+  CircleListNode* node = circleList->current;
+  CircleListNode* next = NULL;
+  CircleListNode* prev = NULL;
+
+  // Point previous node's "next" to the current node's "next".
+  // Then, free the current node. Move onto the next.
+  // Eventually, the current node's "next" will point to itself. At this point, we're done.
+  while (node && node->next != node) {
+    next = node->next;
+    prev = node->prev;
+    free(node);
+    prev->next = next;
+    next->prev = prev;
+    node = next;
+  }
+
+  if (node) {
+    free(node);
+  }
+
+  // Free the underlying linked list
+  LinkedListResetCursor(circleList->list);
+  COIString* string = (COIString*)LinkedListNext(circleList->list);
+  while (string) {
+    COIBoardRemoveString(board, string, 1);
+    COIStringDestroy(string);
+    string = (COIString*)LinkedListNext(circleList->list);
+  }
+  LinkedListDestroy(circleList->list);
+}
+
+static void MenuListComponentDeinit(MenuListComponent* component, COIBoard* board) {
+  COIBoardRemoveString(board, component->label, 1);
+  COIStringDestroy(component->label);
+  COIBoardRemoveString(board, component->labelGray, 1);
+  COIStringDestroy(component->labelGray);
+
+  COIBoardRemoveDynamicSprite(board, component->leftArrow, 1);
+  COIBoardRemoveDynamicSprite(board, component->rightArrow, 1);
+  COISpriteDestroy(component->leftArrow);
+  COISpriteDestroy(component->rightArrow);
+
+  CircleListDeinit(&component->circleList, board);
+}
+
+static void MenuVolumeComponentDeinit(MenuVolumeComponent* component, COIBoard* board) {
+  COIBoardRemoveString(board, component->label, 1);
+  COIStringDestroy(component->label);
+  COIBoardRemoveString(board, component->labelGray, 1);
+  COIStringDestroy(component->labelGray);
+
+  COIBoardRemoveDynamicSprite(board, component->leftArrow, 1);
+  COIBoardRemoveDynamicSprite(board, component->rightArrow, 1);
+  COISpriteDestroy(component->leftArrow);
+  COISpriteDestroy(component->rightArrow);
+}
+
+static void MenuStringComponentDeinit(MenuStringComponent* component, COIBoard* board) {
+  COIBoardRemoveString(board, component->label, 1);
+  COIStringDestroy(component->label);
+  COIBoardRemoveString(board, component->labelGray, 1);
+  COIStringDestroy(component->labelGray);
+}
+
+void COIPreferencesMenuDeinit(COIPreferencesMenu* menu, COIBoard* board) {
+  COIBoardRemoveDynamicSprite(board, menu->frame, 1);
+  COISpriteDestroy(menu->frame);
+
+  MenuListComponentDeinit(&menu->resolutionComponent, board);
+  MenuListComponentDeinit(&menu->fullscreenComponent, board);
+
+  MenuVolumeComponentDeinit(&menu->effectComponent, board);
+  MenuVolumeComponentDeinit(&menu->musicComponent, board);
+
+  MenuStringComponentDeinit(&menu->applyComponent, board);
+  MenuStringComponentDeinit(&menu->cancelComponent, board);
+}

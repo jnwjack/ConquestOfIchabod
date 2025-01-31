@@ -24,11 +24,11 @@ static void _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
   
   COIString** allStrings = malloc(sizeof(COIString*) * context->numStrings);
   
-  context->actionStrings[0] = COIStringCreate("Attack", 0, 0, context->textType);
-  context->actionStrings[1] = COIStringCreate("Tech", 0, 0, context->textType);
-  context->actionStrings[2] = COIStringCreate("Special", 0, 0, context->textType);
-  context->actionStrings[3] = COIStringCreate("Item", 0, 0, context->textType);
-  context->actionStrings[4] = COIStringCreate("Flee", 0, 0, context->textType);
+  context->actionStrings[0] = COIStringCreate("Attack\0", 0, 0, context->textType);
+  context->actionStrings[1] = COIStringCreate("Tech\0", 0, 0, context->textType);
+  context->actionStrings[2] = COIStringCreate("Special\0", 0, 0, context->textType);
+  context->actionStrings[3] = COIStringCreate("Item\0", 0, 0, context->textType);
+  context->actionStrings[4] = COIStringCreate("Flee\0", 0, 0, context->textType);
   for (int i = 0; i < BATTLE_NUM_ACTIONS; i++) {
     allStrings[i] = context->actionStrings[i];
   }
@@ -61,6 +61,8 @@ static void _makeStrings(BattleContext* context, PlayerInfo* pInfo, COIBoard* bo
   for (int i = 0; i < context->numStrings; i++) {
     COIBoardAddString(board, allStrings[i], 0);
   }
+
+  free(allStrings);
 
   // COIBoardSetStrings(board, allStrings, context->numStrings);
 }
@@ -278,6 +280,8 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
   _centerActorsInBox(context->allies, context->numAllies, aBox);
   aBox->_autoHandle = false;
   aBox->_visible = false;
+  COIBoardRemoveDynamicSprite(board, aBox, 0);
+  COISpriteDestroy(aBox);
   context->allyStatuses = malloc(sizeof(AllyStatus*) * context->numAllies);
 
   context->descBox = COISpriteCreateFromAssetID(320, 350, 300, 100, COI_GLOBAL_LOADER, 5, COIWindowGetRenderer(COI_GLOBAL_WINDOW));
@@ -294,7 +298,6 @@ COIBoard* battleCreateBoard(COIWindow* window, COIAssetLoader* loader,
 
   // Keep a list of all strings we have that we can pass to the COIBoard
   context->numStrings = BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies;
-  COIString** allStrings = malloc(sizeof(COIString*) * (BATTLE_NUM_ACTIONS + context->numEnemies + context->numAllies));
 
   context->textType = COITextTypeCreate(16, 255, 255, 255, COIWindowGetRenderer(window));
 
@@ -1198,15 +1201,24 @@ BattleResult battleAdvanceScene(BattleContext* context, bool selection) {
 
 void battleDestroyBoard(COIBoard* board) {
   BattleContext* context = (BattleContext*)board->context;
-  COIMenuDestroy(context->actionMenu);
+  COIMenuDestroyAndFreeSprites(context->actionMenu, board);
+  COIMenuDestroyAndFreeSprites(context->subMenu, board);
   COITextTypeDestroy(context->textType);
   for (int i = 0; i < BATTLE_NUM_ACTIONS; i++) {
+    COIBoardRemoveString(board, context->actionStrings[i], 0);
     COIStringDestroy(context->actionStrings[i]);
   }
   for (int i = 0; i < context->numEnemies; i++) {
     actorDestroy(context->enemies[i]);
+    COIBoardRemoveString(board, context->enemyNames[i], 0);
     COIStringDestroy(context->enemyNames[i]);
   }
+  free(context->enemyNames);
+  for (int i = 0; i < context->numAllies; i++) {
+    COIBoardRemoveString(board, context->allyNames[i], 0);
+    COIStringDestroy(context->allyNames[i]);
+  }
+  free(context->allyNames);
   // LinkedListResetCursor(board->dynamicSprites);
   // COISprite* sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
   // while (sprite) {
@@ -1215,14 +1227,27 @@ void battleDestroyBoard(COIBoard* board) {
   //   sprite = (COISprite*)LinkedListNext(board->dynamicSprites);
   // }
   for (int i = 0; i < context->numAllies; i++) {
-    // COIBoardRemoveDynamicSprite(board, context->techParticles[i]);
-    // COISpriteDestroy(context->techParticles[i]);
+    COIBoardRemoveDynamicSprite(board, context->techParticles[i], 0);
+    COISpriteDestroy(context->techParticles[i]);
     AllyStatusDestroy(context->allyStatuses[i]);
   }
   if (context->levelUpSplash) {
     LevelUpSplashDestroy(context->levelUpSplash, board);
   }
   battleBehaviorsDestroyModifiers(context->modifiers);
+
+  COIBoardRemoveDynamicSprite(board, context->descBox, 0);
+  COISpriteDestroy(context->descBox);
+  COIBoardRemoveDynamicSprite(board, context->pointer, 0);
+  COISpriteDestroy(context->pointer);
+  COIBoardRemoveDynamicSprite(board, context->nameBox, 0);
+  COISpriteDestroy(context->nameBox);
+
+  // for (int i = 0; i < context->numAllies; i++) {
+  //   AllyStatusDestroy(context->allyStatuses[i]);
+  //   COIBoardRemoveDynamicSprite(board, context->techParticles[i], 0);
+  //   COISpriteDestroy(context->techParticles[i]);
+  // }
   free(context->techParticles);
   free(context->allyStatuses);
   free(context->enemies);

@@ -106,7 +106,8 @@ void COISoundUpdateMusicVolume() {
   Mix_VolumeMusic(GLOBAL_PREFERENCES.musicVolume);
 }
 void COISoundUpdateEffectVolume() {
-  Mix_MasterVolume(GLOBAL_PREFERENCES.effectVolume);  
+  // Mix_MasterVolume(GLOBAL_PREFERENCES.effectVolume);
+  Mix_Volume(-1, GLOBAL_PREFERENCES.effectVolume);
 }
 
 void COISoundShutdown() {

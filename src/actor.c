@@ -196,6 +196,9 @@ Actor* actorCreatePlayer(COISprite* sprite) {
 
 
 void actorDestroy(Actor* actor) {
+  COISpriteDestroy(actor->sprite);
+  IntListDestroy(&actor->specials);
+  techDestroyList(actor->techList);
   free(actor);
 }
 

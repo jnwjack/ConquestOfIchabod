@@ -140,6 +140,7 @@ void titleDestroyBoard(TitleContext* context) {
   TextBoxDestroy(context->textBox);
   KeyboardDestroy(&context->kb, context->board);
   ClassSelectorDestroy(&context->cs, context->board);
+  COIPreferencesMenuDeinit(&context->prefMenu, board);
   free(context);
   COIBoardDestroy(board);
   shouldSkipIntro = true; // For next time
