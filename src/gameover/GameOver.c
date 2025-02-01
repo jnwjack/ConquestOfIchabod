@@ -14,6 +14,7 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
   {
     COITextType* deathType = COITextTypeCreate(24, 0, 0, 0, COIWindowGetRenderer(window));
     COIString* nameString = COIStringCreate(pInfo->name, 250, 360, deathType);
+    COITextTypeDestroy(deathType);
     COIBoardAddString(board, nameString, 0);
 
     context->background = COISpriteCreateFromAssetID(0, 0, 640, 480, loader, 56, COIWindowGetRenderer(window));
@@ -58,10 +59,12 @@ COIBoard* gameOverCreateBoard(COIWindow* window, COIAssetLoader* loader, GameOve
 
 void gameOverDestroyBoard(GameOverContext* context) {
   COIBoardRemoveDynamicSprite(context->board, context->background, 0);
+  COISpriteDestroy(context->background);
   for (int i = 0; i < COIBOARD_NUM_DRAW_LAYERS; i++) {
-    for (int j = 0; i < context->board->drawLayers[j].stringCount; j++) {
+    for (int j = 0; j < context->board->drawLayers[i].stringCount; j++) {
       COIStringDestroy(context->board->drawLayers[i].strings[j]);
     }
   }
   COIBoardDestroy(context->board);
+  free(context);
 }

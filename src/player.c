@@ -498,6 +498,9 @@ PlayerInfo* playerDecode(ItemList* items, COISprite* playerSprite, Inventory* in
   playerUpdateClassProgressionFromTime(info);
 
   fclose(fp);
+  if (line) {
+    free(line);
+  }
   free(saveFilename);
 
   // info->spriteAge = playerSpriteAgeFromGlobalTime();

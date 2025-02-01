@@ -15,7 +15,12 @@
 #include "TimeState.h"
 #include <stdbool.h>
 
-
+void threadTownCallback(COIBoard* board, void* context);
+void titleCallback(COIBoard* board, void* context);
+void armoryCallback(COIBoard* board, void* context);
+void battleCallback(COIBoard* board, void* context);
+void rentHouseCallback(COIBoard* board, void* context);
+void gameOverCallback(COIBoard* board, void* context);
 
 void threadTown(COIBoard* board, SDL_Event* event, void* context);
 void title(COIBoard* board, SDL_Event* event, void* context);

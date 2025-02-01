@@ -1233,6 +1233,7 @@ void townDestroyBoard(TownContext* context) {
   PauseOverlayDestroy(context->pauseOverlay, context->board);
   TextBoxDestroy(context->textBox);
   LinkedListDestroy(context->topTentacles);
+  COITextTypeDestroy(context->textType);
 
   LinkedListResetCursor(context->allActors);
   Actor* currentActor = LinkedListNext(context->allActors);

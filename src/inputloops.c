@@ -55,7 +55,7 @@ static int _sdlEventToDirectionalInput(SDL_Event* event) {
 }
 
 static void _changeBoardToThreadTown(COIBoard* townBoard) {
-  COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown);  
+  COIWindowSetBoard(COI_GLOBAL_WINDOW, townBoard, &threadTown, &threadTownCallback);  
   TownContext* townContext = (TownContext*)townBoard->context;
   townApplyTimeChanges(townContext);
   if (townContext->pInfo->party[0]->sprite->_x >= TOWN_MUSIC_X_TRIGGER || townContext->_creepy) {
@@ -89,7 +89,8 @@ static void _processBattleResult(COIBoard* board, BattleContext* battleContext, 
   switch (result) {
   case BR_LOSS:
     nextBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, board->loader, GAME_OVER_DEATH, battleContext->pInfo);
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, nextBoard, gameOver);
+    playerInfoDestroy(battleContext->pInfo);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, nextBoard, gameOver, &gameOverCallback);
     COISoundPlay(COI_SOUND_SLUDGE_NORMAL);
     battleDestroyBoard(board);
     break;
@@ -321,7 +322,7 @@ void gameOver(COIBoard* board, SDL_Event* event, void* context) {
     switch(input) {
     case MOVING_PAUSE:
     case MOVING_DELETE:
-      COIWindowSetBoard(COI_GLOBAL_WINDOW, titleCreateBoard(), title);
+      COIWindowSetBoard(COI_GLOBAL_WINDOW, titleCreateBoard(), title, &titleCallback);
       gameOverDestroyBoard(gameOverContext);
       break;
     }
@@ -342,8 +343,10 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
     } else {
       gameOverBoard = gameOverCreateBoard(COI_GLOBAL_WINDOW, COI_GLOBAL_LOADER, GAME_OVER_TIME, townContext->pInfo); 
     }
+    playerInfoDestroy(townContext->pInfo);
+    townDestroyBoard(townContext);
     COISoundPlay(COI_SOUND_SLUDGE);
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOverBoard, gameOver);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, gameOverBoard, gameOver, &gameOverCallback);
     return;
   }
 
@@ -362,7 +365,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
 					      threadTown,
 					      townContext->terrain,
 					      townContext->pInfo);
-    COIWindowSetBoard(COI_GLOBAL_WINDOW, battleBoard, &battle);
+    COIWindowSetBoard(COI_GLOBAL_WINDOW, battleBoard, &battle, &battleCallback);
     townContext->willEnterBattle = false;
     return;
   }
@@ -418,7 +421,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       player->movementDirection = MOVING_NONE;
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForGeneralStore(board, townContext->pInfo);
-        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
+        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory, &armoryCallback);
         COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break;      
@@ -426,7 +429,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       player->movementDirection = MOVING_NONE;
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForWeaponsStore(board, townContext->pInfo);
-        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
+        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory, &armoryCallback);
         COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break;
@@ -434,7 +437,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       player->movementDirection = MOVING_NONE;
       if (!townShopIsClosed()) {
         otherBoard = armoryCreateBoardForPotionStore(board, townContext->pInfo);
-        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory);
+        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &armory, &armoryCallback);
         COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break; 
@@ -443,7 +446,7 @@ void threadTown(COIBoard* board, SDL_Event* event, void* context) {
       if (townContext->pInfo->renting == RS_RENTING) {
         townContext->pauseOverlay->dirty = true;
         otherBoard = RentHouseCreateBoard(townContext->pInfo, board);
-        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse);
+        COIWindowSetBoard(COI_GLOBAL_WINDOW, otherBoard, &rentHouse, &rentHouseCallback);
         COISoundPlay(COI_SOUND_GEMSTONES);
       }
       break;
@@ -495,3 +498,41 @@ void rentHouse(COIBoard* board, SDL_Event* event, void* context) {
   }
 }
 
+
+void threadTownCallback(COIBoard* board, void* context) {
+  TownContext* townContext = (TownContext*)context;
+  playerInfoDestroy(townContext->pInfo);
+  townDestroyBoard(townContext);
+}
+
+void armoryCallback(COIBoard* board, void* context) {
+  ArmoryContext* armoryContext = (ArmoryContext*)context;
+  TownContext* townContext = armoryContext->outsideBoard->context;
+  playerInfoDestroy(townContext->pInfo);
+  townDestroyBoard(townContext);
+  armoryDestroy(armoryContext);
+}
+
+void battleCallback(COIBoard* board, void* context) {
+  BattleContext* battleContext = (BattleContext*)context;
+  TownContext* townContext = (TownContext*)battleContext->outside->context;
+  playerInfoDestroy(townContext->pInfo);
+  townDestroyBoard(townContext);
+  battleDestroyBoard(board);
+}
+
+void gameOverCallback(COIBoard* board, void* context) {
+  gameOverDestroyBoard((GameOverContext*)context);
+}
+
+void titleCallback(COIBoard* board, void* context) {
+  titleDestroyBoard((TitleContext*)context);
+}
+
+void rentHouseCallback(COIBoard* board, void* context) {
+  RentHouseContext* rentHouseContext = (RentHouseContext*)context;
+  TownContext* townContext = (TownContext*)rentHouseContext->outsideBoard->context;
+  playerInfoDestroy(townContext->pInfo);
+  townDestroyBoard(townContext);
+  RentHouseDestroyBoard((RentHouseContext*)context);
+}

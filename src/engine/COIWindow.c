@@ -34,6 +34,7 @@ COIWindow* COIWindowCreate() {
   window->_renderer = SDL_CreateRenderer(window->_screen, -1, 0);
   window->_currentBoard = NULL;
   window->_loop = NULL;
+  window->_boardFreeCB = NULL;
   window->shouldQuit = false;
   COITransitionInit(&window->transition, COI_TRANSITION_NONE, window);
 
@@ -203,13 +204,20 @@ void COIWindowLoop(void* window_v, bool repeat) {
       return;
     }
   }
+
+  if (window->_boardFreeCB) {
+    window->_boardFreeCB(window->_currentBoard, window->_currentBoard->context);
+  }
+
+
 }
 
-void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop) {
+void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop, COIBoardFreeCallback callback) {
   board->_frameWidth = WINDOW_BASE_WIDTH;
   board->_frameHeight = WINDOW_BASE_HEIGHT;
   window->_currentBoard = board;
   window->_loop = loop;
+  window->_boardFreeCB = callback;
   COIBoardQueueDraw(window->_currentBoard);
   COIBoardUpdateBGColor(board);
 }

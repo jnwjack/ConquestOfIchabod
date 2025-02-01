@@ -308,6 +308,9 @@ void COIPreferencesMenuInit(COIPreferencesMenu* menu, COIBoard* board) {
 
   menu->oldEffectValue = GLOBAL_PREFERENCES.effectVolume;
   menu->oldMusicValue = GLOBAL_PREFERENCES.musicVolume;
+
+  COITextTypeDestroy(textType);
+  COITextTypeDestroy(textTypeGray);
 }
 
 static void _setComponentActive(COIPreferencesMenu* menu, unsigned int componentIndex, bool active) {

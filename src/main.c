@@ -52,7 +52,7 @@ static void _init() {
   COIAssetLoaderInit();
 
   COIBoard* titleBoard = titleCreateBoard();
-  COIWindowSetBoard(COI_GLOBAL_WINDOW, titleBoard, title);
+  COIWindowSetBoard(COI_GLOBAL_WINDOW, titleBoard, title, &titleCallback);
 }
 
 void _cleanup() {

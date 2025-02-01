@@ -32,7 +32,7 @@ Mix_Music* _loadMusic(const char* soundString) {
   snprintf(temp, 100, "sound/%s", soundString);
   Mix_Music* music = Mix_LoadMUS(temp);
   if (!music) {
-    printf("Error: Couldn't load sound %s\n", soundString);
+    printf("Error: Couldn't load sound %s\n", temp);
   }
 
   return music;  
@@ -46,13 +46,13 @@ void COISoundInit() {
   invalid = _loadSound("invalid.wav");
   hit = _loadSound("hit.wav");
   defeat = _loadSound("battle_death.wav");
-  threadTownMusic = _loadMusic("threadtown.wav");
-  titleMusic = _loadMusic("title.wav");
-  battleMusic = _loadMusic("battle.wav");
-  sludgeMusic = _loadMusic("sludge.wav");
-  fairyMusic = _loadMusic("fairy.wav");
-  sludgeNormalMusic = _loadMusic("sludge_normal.wav");
-  gemstonesMusic = _loadMusic("gemstones.wav");
+  threadTownMusic = _loadMusic("threadtown.mp3");
+  titleMusic = _loadMusic("title.mp3");
+  battleMusic = _loadMusic("battle.mp3");
+  sludgeMusic = _loadMusic("sludge.mp3");
+  fairyMusic = _loadMusic("fairy.mp3");
+  sludgeNormalMusic = _loadMusic("sludge_normal.mp3");
+  gemstonesMusic = _loadMusic("gemstones.mp3");
 }
 
 void COISoundPlay(COISoundID sound) {

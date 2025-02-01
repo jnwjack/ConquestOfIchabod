@@ -11,6 +11,7 @@ Inventory* inventoryCreate(ItemList* items) {
 
 void inventoryDestroy(Inventory* inventory) {
   free(inventory->backpack);
+  ItemListDestroy(inventory->items);
   free(inventory);
 }
 

@@ -560,6 +560,8 @@ LevelUpSplash* LevelUpSplashCreate(COIBoard* board, PlayerInfo* pInfo) {
   COIMenuSetVisible(splash->menu);
   splash->descBox->_visible = true;
 
+  COITextTypeDestroy(tt);
+
   return splash;
 }
 
@@ -636,6 +638,7 @@ void LevelUpSplashDestroy(LevelUpSplash* splash, COIBoard* board) {
   COIMenuDestroyAndFreeComponents(splash->confirmMenu, board);
 
   COIBoardRemoveDynamicSprite(board, splash->descBox, 0);
+  COISpriteDestroy(splash->descBox);
 
   free(splash);
 }

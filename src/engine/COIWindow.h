@@ -17,6 +17,7 @@
 #define WINDOW_BASE_HEIGHT 480
 
 typedef void (*COILoop)(COIBoard*, SDL_Event* event, void* context);
+typedef void (*COIBoardFreeCallback)(COIBoard*, void* context);
 
 typedef struct COIWindow {
   SDL_Window* _screen;
@@ -27,6 +28,7 @@ typedef struct COIWindow {
   float _factorW;
   float _factorH;
   COILoop _loop;
+  COIBoardFreeCallback _boardFreeCB;
   void* _loopContext;
   bool shouldQuit;
   COITransition transition;
@@ -37,7 +39,7 @@ void COIWindowReloadPreferences(COIWindow* window);
 void COIWindowDestroy(COIWindow* window);
 
 void COIWindowLoop(void* window, bool repeat);
-void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop);
+void COIWindowSetBoard(COIWindow* window, COIBoard* board, COILoop loop, COIBoardFreeCallback callback);
 SDL_Renderer* COIWindowGetRenderer(COIWindow* window);
 void COIWindowInit();
 
