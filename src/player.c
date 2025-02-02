@@ -67,7 +67,7 @@ PlayerInfo* playerInfoCreate(char* name,  COISprite* sprite, Inventory* inventor
   #ifdef __COI_DEBUG__
   info->xpForLevelUp = 0;
   #else
-  info->xpForLevelUp = 180;
+  info->xpForLevelUp = 125;
   #endif
   info->renting = RS_NOT_RENTING;
   info->spriteAge = SA_YOUNG;

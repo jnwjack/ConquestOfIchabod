@@ -571,8 +571,9 @@ static void _talkToNostalgicGuy(TownContext* context) {
 
 static void _talkToTownsGuy(TownContext* context) {
   TextBoxSetStrings(context->textBox,
-    "This is Thread Town.",
-    "To the northeast, there's Havonvale.",
+    "This is Thread Town. Our shopping district is just north through the grass.",
+    "My brother's farm is near there, too.",
+    "To the far northeast, past a large stone road, there's Havonvale.",
     "If you head north from there, you'll find Denburg. It lies on the river.",
     "Follow that river and you'll end up in Starshire, the capital city!",
     NULL);

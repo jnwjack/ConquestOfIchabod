@@ -645,9 +645,9 @@ ActionSummary* battleBehaviorDoAction(BattleAction* action, COITextType* textTyp
     summary = ActionSummaryCreate(board, box, textType, temp, NULL);
     // Higher chance to succeed if we're faster than the target.
     if (actorModifiedAgi(action->target) <= actorModifiedAgi(action->actor)) {
-      action->successfulFlee = generateRandomBoolWeighted(0.85);
+      action->successfulFlee = generateRandomBoolWeighted(0.9);
     } else {
-      action->successfulFlee = generateRandomBoolWeighted(0.5);
+      action->successfulFlee = generateRandomBoolWeighted(0.6);
     }
     if (action->successfulFlee) {
       ActionSummaryAddString(summary, "YOU ESCAPE!", board, box, textType);
