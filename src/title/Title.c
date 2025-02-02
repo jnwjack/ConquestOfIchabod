@@ -375,28 +375,30 @@ void _processInputCharacterCreation(TitleContext* context, int direction) {
 }
 
 void _processInputMain(TitleContext* context, int direction) {
-  int newIndex = context->selectedStringIndex;
-  switch (direction) {
-  case MOVING_LEFT:
-    COISoundPlay(COI_SOUND_BLIP);
-    newIndex = MAX(TITLE_STRING_NEW_GAME, context->selectedStringIndex - 1);
-    break;
-  case MOVING_RIGHT:
-    COISoundPlay(COI_SOUND_BLIP);
-    newIndex = MIN(TITLE_STRING_OPTIONS, context->selectedStringIndex + 1);
-    break;
-  case MOVING_SELECT:
-    _select(context);
-  default:
-    return;
-  }
+  // Are we NOT watching intro?
+  if (context->currentSlide == -1) {
+    int newIndex = context->selectedStringIndex;
+    switch (direction) {
+    case MOVING_LEFT:
+      COISoundPlay(COI_SOUND_BLIP);
+      newIndex = MAX(TITLE_STRING_NEW_GAME, context->selectedStringIndex - 1);
+      break;
+    case MOVING_RIGHT:
+      COISoundPlay(COI_SOUND_BLIP);
+      newIndex = MIN(TITLE_STRING_OPTIONS, context->selectedStringIndex + 1);
+      break;
+    case MOVING_SELECT:
+      _select(context);
+    default:
+      return;
+    }
 
-  if (newIndex != context->selectedStringIndex
-      && context->currentSlide == -1 /* Are we NOT watching intro? */) {
-    _setStringSelected(context, context->selectedStringIndex, false);
-    _setStringSelected(context, newIndex, true);
-    COIBoardQueueDraw(context->board);
-    context->selectedStringIndex = newIndex;
+    if (newIndex != context->selectedStringIndex) {
+      _setStringSelected(context, context->selectedStringIndex, false);
+      _setStringSelected(context, newIndex, true);
+      COIBoardQueueDraw(context->board);
+      context->selectedStringIndex = newIndex;
+    }
   }
 }
 
